@@ -121,10 +121,13 @@ export default function Freelancer() {
     switch (item.type) {
       case "search":
         return (
-          <View style={styles.searchContainer}>
+          <TouchableOpacity 
+            style={styles.searchContainer}
+            onPress={() => navigation.navigate("Search")}
+          >
             <Search size={20} color="#6b7280" />
             <Text style={styles.searchPlaceholder}>Search projects or freelancers</Text>
-          </View>
+          </TouchableOpacity>
         );
 
       case "features":

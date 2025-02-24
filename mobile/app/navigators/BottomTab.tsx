@@ -5,7 +5,7 @@ import Profile from "@/screens/profile";
 import WorklyticAI from "@/screens/worklyticAI";
 import MyProjects from "@/screens/myProjects";
 import Projects from "@/screens/projects";
-import Chat from "@/screens/chat";
+import Inbox from "@/screens/inbox";
 
 const Tab = createBottomTabNavigator();
 
@@ -36,7 +36,7 @@ export default function BottomTab() {
             case "MyProjects":
               iconName = focused ? "briefcase" : "briefcase-outline";
               break;
-            case "Chat":
+            case "inbox":
               iconName = focused ? "chatbubbles" : "chatbubbles-outline";
               break;
             case "Profile":
@@ -51,7 +51,7 @@ export default function BottomTab() {
       <Tab.Screen name="Home" component={Home} />
       <Tab.Screen name="Projects" component={Projects} />
       <Tab.Screen name="WorklyticAI" component={WorklyticAI} />
-      <Tab.Screen name="Chat" component={Chat} />
+      <Tab.Screen name="inbox" component={Inbox} />
       <Tab.Screen name="MyProjects" component={MyProjects} />
       <Tab.Screen name="Profile" component={Profile} />
     </Tab.Navigator>

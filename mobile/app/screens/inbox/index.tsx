@@ -57,13 +57,7 @@ export default function Chat(): JSX.Element {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Messages</Text>
       </View>
-      <FlatList<ChatItem>
-        data={chatData}
-        renderItem={renderChatItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContainer}
-        showsVerticalScrollIndicator={false}
-      />
+      <FlatList<ChatItem> data={chatData} renderItem={renderChatItem} keyExtractor={(item) => item.id} contentContainerStyle={styles.listContainer} showsVerticalScrollIndicator={false} />
     </View>
   );
 }

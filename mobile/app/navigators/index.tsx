@@ -4,6 +4,7 @@ import ProjectDetails from "@/screens/projects/projectDetails";
 import Settings from "@/screens/profile/settings";
 import SignIn from "@/screens/auth/signIn";
 import SignUp from "@/screens/auth/signUp";
+import Search from "@/screens/search";
 
 const Stack = createStackNavigator();
 
@@ -14,6 +15,7 @@ export type RootStackParamList = {
   SignIn: undefined;
   SignUp: undefined;
   ForgotPassword: undefined;
+  Search: undefined;
 };
 
 export default function AppNavigator() {
@@ -28,6 +30,7 @@ export default function AppNavigator() {
       <Stack.Screen name="ProjectDetails" component={ProjectDetails} />
       <Stack.Screen name="SignIn" component={SignIn} />
       <Stack.Screen name="SignUp" component={SignUp} />
+      <Stack.Screen name="Search" component={Search} />
     </Stack.Navigator>
   );
 }
