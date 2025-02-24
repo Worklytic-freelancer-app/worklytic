@@ -281,12 +281,14 @@ const styles = StyleSheet.create({
   },
   projectsScroll: {
     paddingLeft: 20,
+    paddingBottom: 8, // Add padding to bottom
   },
   projectCard: {
     width: 280,
     backgroundColor: "#fff",
     borderRadius: 16,
     marginRight: 16,
+    marginBottom: 8, // Add margin to bottom
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -325,6 +327,7 @@ const styles = StyleSheet.create({
   },
   freelancersScroll: {
     paddingLeft: 20,
+    paddingBottom: 8, // Add padding to bottom
   },
   freelancerCard: {
     width: 160,
@@ -332,6 +335,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginRight: 16,
+    marginBottom: 8, // Add margin to bottom
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
