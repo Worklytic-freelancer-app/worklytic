@@ -1,5 +1,6 @@
 import { createStackNavigator } from "@react-navigation/stack";
 import BottomTab from "./BottomTab";
+import ProjectDetails from "@/screens/projects/projectDetails";
 
 const Stack = createStackNavigator();
 
@@ -20,6 +21,7 @@ export default function AppNavigator() {
       }}
     >
       <Stack.Screen name="Home" component={BottomTab} />
+      <Stack.Screen name="ProjectDetails" component={ProjectDetails} />
     </Stack.Navigator>
   );
 }
