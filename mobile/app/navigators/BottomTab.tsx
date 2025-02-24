@@ -51,8 +51,8 @@ export default function BottomTab() {
       <Tab.Screen name="Home" component={Home} />
       <Tab.Screen name="Projects" component={Projects} />
       <Tab.Screen name="WorklyticAI" component={WorklyticAI} />
-      <Tab.Screen name="MyProjects" component={MyProjects} />
       <Tab.Screen name="Chat" component={Chat} />
+      <Tab.Screen name="MyProjects" component={MyProjects} />
       <Tab.Screen name="Profile" component={Profile} />
     </Tab.Navigator>
   );
