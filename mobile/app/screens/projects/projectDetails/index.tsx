@@ -1,7 +1,10 @@
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ChevronLeft, Clock, DollarSign, Briefcase, MapPin } from "lucide-react-native";
+import { ChevronLeft, Clock, DollarSign, Briefcase, MapPin, MessageCircle } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
+
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RootStackParamList } from "@/navigators";
 
 interface ProjectDetails {
   id: number;
@@ -11,6 +14,7 @@ interface ProjectDetails {
   location: string;
   duration: string;
   postedBy: {
+    id: number;
     name: string;
     image: string;
     rating: number;
@@ -20,9 +24,11 @@ interface ProjectDetails {
   image: string;
 }
 
+type ProjectDetailsNavigationProp = StackNavigationProp<RootStackParamList>;
+
 export default function ProjectDetails() {
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation();
+  const navigation = useNavigation<ProjectDetailsNavigationProp>();
 
   const project: ProjectDetails = {
     id: 1,
@@ -32,6 +38,7 @@ export default function ProjectDetails() {
     location: "Remote",
     duration: "3 months",
     postedBy: {
+      id: 1,
       name: "Tech Solutions Inc.",
       image: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=800&auto=format&fit=crop&q=60",
       rating: 4.8,
@@ -119,6 +126,18 @@ export default function ProjectDetails() {
       </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: insets.bottom }]}>
+        <TouchableOpacity
+          style={styles.chatButton}
+          onPress={() =>
+            navigation.navigate("DirectMessage", {
+              userId: project.postedBy.id,
+              userName: project.postedBy.name,
+              userImage: project.postedBy.image,
+            })
+          }
+        >
+          <MessageCircle size={24} color="#2563eb" />
+        </TouchableOpacity>
         <TouchableOpacity style={styles.applyButton}>
           <Text style={styles.applyButtonText}>Apply Now</Text>
         </TouchableOpacity>
@@ -127,6 +146,7 @@ export default function ProjectDetails() {
   );
 }
 
+// Add these styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -254,8 +274,22 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#f3f4f6",
     backgroundColor: "#fff",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  chatButton: {
+    width: 52,
+    height: 52,
+    borderRadius: 12,
+    backgroundColor: "#eff6ff",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#2563eb",
   },
   applyButton: {
+    flex: 1,
     backgroundColor: "#2563eb",
     paddingVertical: 16,
     borderRadius: 12,

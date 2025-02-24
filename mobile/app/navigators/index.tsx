@@ -5,6 +5,7 @@ import Settings from "@/screens/profile/settings";
 import SignIn from "@/screens/auth/signIn";
 import SignUp from "@/screens/auth/signUp";
 import Search from "@/screens/search";
+import DirectMessage from "@/screens/inbox/directMessage";
 
 const Stack = createStackNavigator();
 
@@ -16,6 +17,11 @@ export type RootStackParamList = {
   SignUp: undefined;
   ForgotPassword: undefined;
   Search: undefined;
+  DirectMessage: {
+    userId: number;
+    userName: string;
+    userImage: string;
+  };
 };
 
 export default function AppNavigator() {
@@ -31,6 +37,7 @@ export default function AppNavigator() {
       <Stack.Screen name="SignIn" component={SignIn} />
       <Stack.Screen name="SignUp" component={SignUp} />
       <Stack.Screen name="Search" component={Search} />
+      <Stack.Screen name="DirectMessage" component={DirectMessage} />
     </Stack.Navigator>
   );
 }
