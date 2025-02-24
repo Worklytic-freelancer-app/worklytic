@@ -1,6 +1,9 @@
 import { createStackNavigator } from "@react-navigation/stack";
 import BottomTab from "./BottomTab";
 import ProjectDetails from "@/screens/projects/projectDetails";
+import Settings from "@/screens/profile/settings";
+import SignIn from "@/screens/auth/signIn";
+import SignUp from "@/screens/auth/signUp";
 
 const Stack = createStackNavigator();
 
@@ -20,8 +23,11 @@ export default function AppNavigator() {
         headerShown: false,
       }}
     >
-      <Stack.Screen name="Home" component={BottomTab} />
+      <Stack.Screen name="BottomTab" component={BottomTab} />
+      <Stack.Screen name="Settings" component={Settings} />
       <Stack.Screen name="ProjectDetails" component={ProjectDetails} />
+      <Stack.Screen name="SignIn" component={SignIn} />
+      <Stack.Screen name="SignUp" component={SignUp} />
     </Stack.Navigator>
   );
 }
