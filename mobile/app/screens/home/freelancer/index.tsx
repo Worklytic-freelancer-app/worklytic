@@ -107,7 +107,10 @@ export default function Freelancer() {
   );
 
   const renderFreelancer = ({ item }: { item: Freelancer }) => (
-    <TouchableOpacity style={styles.freelancerCard}>
+    <TouchableOpacity 
+      style={styles.freelancerCard}
+      onPress={() => navigation.navigate("FreelancerDetails", { freelancerId: item.id })}
+    >
       <Image source={{ uri: item.image }} style={styles.freelancerImage} />
       <Text style={styles.freelancerName}>{item.name}</Text>
       <Text style={styles.freelancerRole}>{item.role}</Text>
@@ -156,11 +159,18 @@ export default function Freelancer() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>{item.title}</Text>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => navigation.navigate("Projects")}>
                 <Text style={styles.seeAllButton}>See All</Text>
               </TouchableOpacity>
             </View>
-            <FlatList<Project> data={item.data as Project[]} renderItem={renderProject} keyExtractor={(item) => item.id.toString()} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.projectsScroll} />
+            <FlatList<Project> 
+              data={item.data as Project[]} 
+              renderItem={renderProject} 
+              keyExtractor={(item) => item.id.toString()} 
+              horizontal 
+              showsHorizontalScrollIndicator={false} 
+              contentContainerStyle={styles.projectsScroll} 
+            />
           </View>
         );
 
@@ -169,7 +179,7 @@ export default function Freelancer() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>{item.title}</Text>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => navigation.navigate("Freelancers")}>
                 <Text style={styles.seeAllButton}>See All</Text>
               </TouchableOpacity>
             </View>

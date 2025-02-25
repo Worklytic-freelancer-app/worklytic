@@ -1,0 +1,14 @@
+{
+  "development": {
+    "url": "mongodb+srv://robbysugandaaa:UhrfaNFgXHAwOS6k@robbysuganda.8uxdc.mongodb.net/",
+    "database": "my_database"
+  },
+  "test": {
+    "url": "mongodb://localhost:27017",
+    "database": "my_database_test"
+  },
+  "production": {
+    "url": "mongodb://localhost:27017",
+    "database": "my_database_prod"
+  }
+}

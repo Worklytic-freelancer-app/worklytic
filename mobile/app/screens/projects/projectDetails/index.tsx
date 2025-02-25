@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity } from "rea
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ChevronLeft, Clock, DollarSign, Briefcase, MapPin, MessageCircle } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
+import React, { useState } from "react";
 
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
@@ -26,7 +27,13 @@ interface ProjectDetails {
 
 type ProjectDetailsNavigationProp = StackNavigationProp<RootStackParamList>;
 
+// Add to imports
+import ProjectDiscussion from "./projectDiscussion";
+
 export default function ProjectDetails() {
+  // Add state for modal
+  const [showTerms, setShowTerms] = useState(false);
+
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<ProjectDetailsNavigationProp>();
 
@@ -138,10 +145,20 @@ export default function ProjectDetails() {
         >
           <MessageCircle size={24} color="#2563eb" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.applyButton}>
+        <TouchableOpacity style={styles.applyButton} onPress={() => setShowTerms(true)}>
           <Text style={styles.applyButtonText}>Apply Now</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Add the ProjectDiscussion component */}
+      <ProjectDiscussion
+        isVisible={showTerms}
+        onClose={() => setShowTerms(false)}
+        onAccept={() => {
+          setShowTerms(false);
+          // Handle acceptance logic here
+        }}
+      />
     </View>
   );
 }
@@ -157,7 +174,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingBottom: 10,
   },
   backButton: {
     width: 40,
