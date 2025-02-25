@@ -121,10 +121,7 @@ export default function Freelancer() {
     switch (item.type) {
       case "search":
         return (
-          <TouchableOpacity 
-            style={styles.searchContainer}
-            onPress={() => navigation.navigate("Search")}
-          >
+          <TouchableOpacity style={styles.searchContainer} onPress={() => navigation.navigate("Search")}>
             <Search size={20} color="#6b7280" />
             <Text style={styles.searchPlaceholder}>Search projects or freelancers</Text>
           </TouchableOpacity>
@@ -157,7 +154,12 @@ export default function Freelancer() {
       case "projects":
         return (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{item.title}</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{item.title}</Text>
+              <TouchableOpacity>
+                <Text style={styles.seeAllButton}>See All</Text>
+              </TouchableOpacity>
+            </View>
             <FlatList<Project> data={item.data as Project[]} renderItem={renderProject} keyExtractor={(item) => item.id.toString()} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.projectsScroll} />
           </View>
         );
@@ -165,7 +167,12 @@ export default function Freelancer() {
       case "freelancers":
         return (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{item.title}</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{item.title}</Text>
+              <TouchableOpacity>
+                <Text style={styles.seeAllButton}>See All</Text>
+              </TouchableOpacity>
+            </View>
             <FlatList<Freelancer>
               data={item.data as Freelancer[]}
               renderItem={renderFreelancer}
@@ -272,12 +279,24 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: 24,
   },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
     color: "#111827",
     marginBottom: 16,
-    paddingHorizontal: 20,
+  },
+  seeAllButton: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#2563eb",
+    marginBottom: 18,
   },
   projectsScroll: {
     paddingLeft: 20,
