@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Search, Bell, Briefcase, Zap, TrendingUp } from "lucide-react-native";
+import { Search, Bell } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
@@ -107,10 +107,7 @@ export default function Freelancer() {
   );
 
   const renderFreelancer = ({ item }: { item: Freelancer }) => (
-    <TouchableOpacity 
-      style={styles.freelancerCard}
-      onPress={() => navigation.navigate("FreelancerDetails", { freelancerId: item.id })}
-    >
+    <TouchableOpacity style={styles.freelancerCard} onPress={() => navigation.navigate("FreelancerDetails", { freelancerId: item.id })}>
       <Image source={{ uri: item.image }} style={styles.freelancerImage} />
       <Text style={styles.freelancerName}>{item.name}</Text>
       <Text style={styles.freelancerRole}>{item.role}</Text>
@@ -130,30 +127,6 @@ export default function Freelancer() {
           </TouchableOpacity>
         );
 
-      case "features":
-        return (
-          <View style={styles.featuresContainer}>
-            <TouchableOpacity style={styles.featureItem}>
-              <View style={[styles.featureIcon, { backgroundColor: "#e0f2fe" }]}>
-                <Briefcase size={24} color="#0284c7" />
-              </View>
-              <Text style={styles.featureText}>Browse Projects</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.featureItem}>
-              <View style={[styles.featureIcon, { backgroundColor: "#fef3c7" }]}>
-                <Zap size={24} color="#d97706" />
-              </View>
-              <Text style={styles.featureText}>AI Match</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.featureItem}>
-              <View style={[styles.featureIcon, { backgroundColor: "#dcfce7" }]}>
-                <TrendingUp size={24} color="#16a34a" />
-              </View>
-              <Text style={styles.featureText}>Top Rated</Text>
-            </TouchableOpacity>
-          </View>
-        );
-
       case "projects":
         return (
           <View style={styles.section}>
@@ -163,14 +136,7 @@ export default function Freelancer() {
                 <Text style={styles.seeAllButton}>See All</Text>
               </TouchableOpacity>
             </View>
-            <FlatList<Project> 
-              data={item.data as Project[]} 
-              renderItem={renderProject} 
-              keyExtractor={(item) => item.id.toString()} 
-              horizontal 
-              showsHorizontalScrollIndicator={false} 
-              contentContainerStyle={styles.projectsScroll} 
-            />
+            <FlatList<Project> data={item.data as Project[]} renderItem={renderProject} keyExtractor={(item) => item.id.toString()} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.projectsScroll} />
           </View>
         );
 

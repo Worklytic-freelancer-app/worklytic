@@ -1,6 +1,9 @@
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Clock, CheckCircle2, XCircle } from "lucide-react-native";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RootStackParamList } from "@/navigators";
 
 interface MyProject {
   id: number;
@@ -17,6 +20,7 @@ interface MyProject {
 
 export default function MyProjects() {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   const myProjects: MyProject[] = [
     {
@@ -70,7 +74,7 @@ export default function MyProjects() {
   };
 
   const renderProject = ({ item }: { item: MyProject }) => (
-    <TouchableOpacity style={styles.projectCard}>
+    <TouchableOpacity style={styles.projectCard} onPress={() => navigation.navigate("MyProjectDetails", { projectId: item.id })}>
       <Image source={{ uri: item.image }} style={styles.projectImage} />
       <View style={styles.projectInfo}>
         <View style={styles.projectHeader}>

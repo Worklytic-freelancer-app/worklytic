@@ -8,6 +8,8 @@ import Search from "@/screens/search";
 import DirectMessage from "@/screens/inbox/directMessage";
 import Freelancers from "@/screens/profileDetails/freelancers";
 import FreelancerDetails from "@/screens/profileDetails/freelancers/freelancerDetails";
+import MyProjectDetails from "@/screens/myProjects/myProjectDetails";
+import MyProjects from "@/screens/myProjects";
 
 const Stack = createStackNavigator();
 
@@ -21,6 +23,8 @@ export type RootStackParamList = {
   ForgotPassword: undefined;
   Search: undefined;
   Freelancers: undefined;
+  MyProjects: undefined;
+  MyProjectDetails: { projectId: number };
   DirectMessage: {
     userId: number;
     userName: string;
@@ -47,6 +51,8 @@ export default function AppNavigator() {
       <Stack.Screen name="DirectMessage" component={DirectMessage} />
       <Stack.Screen name="Freelancers" component={Freelancers} />
       <Stack.Screen name="FreelancerDetails" component={FreelancerDetails} />
+      <Stack.Screen name="MyProjects" component={MyProjects} />
+      <Stack.Screen name="MyProjectDetails" component={MyProjectDetails} />
     </Stack.Navigator>
   );
 }

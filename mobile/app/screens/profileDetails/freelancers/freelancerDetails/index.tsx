@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, FlatList } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Star, MapPin, Mail, Phone, Calendar, ChevronLeft, ExternalLink } from "lucide-react-native";
+import { MapPin, Mail, Phone, Calendar, ChevronLeft } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 
 interface Project {
@@ -11,13 +11,10 @@ interface Project {
   completionDate: string;
   clientName: string;
   image: string;
-}
-
-interface Portfolio {
-  id: number;
-  title: string;
-  image: string;
-  link: string;
+  category: string;
+  budget: string;
+  duration: string;
+  status: string;
 }
 
 export default function FreelancerDetails() {
@@ -28,9 +25,8 @@ export default function FreelancerDetails() {
     id: 1,
     name: "John Doe",
     role: "Senior Mobile Developer",
-    rating: 4.8,
     totalProjects: 47,
-    hourlyRate: "Rp 500.000",
+    successRate: "95%",
     location: "Jakarta, Indonesia",
     joinedDate: "January 2022",
     about: "Experienced mobile developer with 5+ years of expertise in React Native and iOS development. Passionate about creating intuitive and performant mobile applications.",
@@ -48,18 +44,11 @@ export default function FreelancerDetails() {
       completionDate: "Dec 2023",
       clientName: "Tech Store Inc.",
       image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800&auto=format&fit=crop&q=60",
+      category: "Mobile Development",
+      budget: "Rp 75.000.000",
+      duration: "3 months",
+      status: "Completed",
     },
-    // Add more projects
-  ];
-
-  const portfolio: Portfolio[] = [
-    {
-      id: 1,
-      title: "Food Delivery App",
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800&auto=format&fit=crop&q=60",
-      link: "https://example.com/portfolio/1",
-    },
-    // Add more portfolio items
   ];
 
   const renderProject = ({ item }: { item: Project }) => (
@@ -70,16 +59,6 @@ export default function FreelancerDetails() {
         <Text style={styles.projectDescription}>{item.description}</Text>
         <Text style={styles.projectMeta}>Client: {item.clientName}</Text>
         <Text style={styles.projectMeta}>Completed: {item.completionDate}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-
-  const renderPortfolioItem = ({ item }: { item: Portfolio }) => (
-    <TouchableOpacity style={styles.portfolioCard}>
-      <Image source={{ uri: item.image }} style={styles.portfolioImage} />
-      <View style={styles.portfolioOverlay}>
-        <Text style={styles.portfolioTitle}>{item.title}</Text>
-        <ExternalLink size={20} color="#fff" />
       </View>
     </TouchableOpacity>
   );
@@ -100,17 +79,10 @@ export default function FreelancerDetails() {
           <Text style={styles.name}>{freelancer.name}</Text>
           <Text style={styles.role}>{freelancer.role}</Text>
 
-          <View style={styles.ratingContainer}>
-            <Star size={16} color="#FDB022" fill="#FDB022" />
-            <Text style={styles.rating}>{freelancer.rating} ({freelancer.totalProjects} projects)</Text>
-          </View>
-
           <View style={styles.locationContainer}>
             <MapPin size={16} color="#6B7280" />
             <Text style={styles.location}>{freelancer.location}</Text>
           </View>
-
-          <Text style={styles.hourlyRate}>{freelancer.hourlyRate}/hour</Text>
         </View>
 
         <View style={styles.section}>
@@ -149,30 +121,11 @@ export default function FreelancerDetails() {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Completed Projects</Text>
-          <FlatList
-            data={completedProjects}
-            renderItem={renderProject}
-            keyExtractor={(item) => item.id.toString()}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.projectsContainer}
-          />
+          <FlatList data={completedProjects} renderItem={renderProject} keyExtractor={(item) => item.id.toString()} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.projectsContainer} />
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Portfolio</Text>
-          <FlatList
-            data={portfolio}
-            renderItem={renderPortfolioItem}
-            keyExtractor={(item) => item.id.toString()}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.portfolioContainer}
-          />
-        </View>
-
-        <TouchableOpacity style={styles.hireButton}>
-          <Text style={styles.hireButtonText}>Hire Now</Text>
+        <TouchableOpacity style={[styles.hireButton, { backgroundColor: "#10B981" }]}>
+          <Text style={styles.hireButtonText}>Chat</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -225,16 +178,6 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     marginBottom: 12,
   },
-  ratingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  rating: {
-    marginLeft: 4,
-    fontSize: 14,
-    color: "#111827",
-  },
   locationContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -244,11 +187,6 @@ const styles = StyleSheet.create({
     marginLeft: 4,
     fontSize: 14,
     color: "#6B7280",
-  },
-  hourlyRate: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#2563EB",
   },
   section: {
     paddingHorizontal: 20,
@@ -331,38 +269,7 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     marginBottom: 4,
   },
-  portfolioContainer: {
-    paddingRight: 20,
-  },
-  portfolioCard: {
-    width: 200,
-    height: 150,
-    marginRight: 16,
-    borderRadius: 12,
-    overflow: "hidden",
-  },
-  portfolioImage: {
-    width: "100%",
-    height: "100%",
-  },
-  portfolioOverlay: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    padding: 12,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  portfolioTitle: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#fff",
-  },
   hireButton: {
-    backgroundColor: "#2563EB",
     marginHorizontal: 20,
     marginBottom: 32,
     paddingVertical: 16,
