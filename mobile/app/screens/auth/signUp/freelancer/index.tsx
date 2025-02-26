@@ -1,10 +1,12 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Mail, Lock, Eye, EyeOff, User, Briefcase, LogIn } from "lucide-react-native";
+import { Mail, Lock, Eye, EyeOff, User } from "lucide-react-native";
 import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
+import { baseUrl } from "@/constant/baseUrl";
+import { Alert } from "react-native";
 
 type SignUpScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -16,7 +18,38 @@ export default function SignUpFreelancer() {
     fullName: "",
     email: "",
     password: "",
+    role: "freelancer",
   });
+
+  async function signUp() {
+    try {
+      console.log("Sending signup request with form data:", form);
+
+      const res = await fetch(`${baseUrl}/api/signUp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(form),
+      });
+
+      console.log("Response status:", res.status);
+      const responseData = await res.text();
+      console.log("Response data:", responseData);
+
+      if (res.ok) {
+        const data = JSON.parse(responseData);
+        Alert.alert("Success", "Registration successful! Please login with your credentials.", [{ text: "OK", onPress: () => navigation.navigate("SignIn") }]);
+      } else {
+        Alert.alert("Error", `Registration failed: ${responseData}`);
+      }
+    } catch (error) {
+      console.error("Signup error:", error);
+
+      Alert.alert("Error", "An unexpected error occurred. Please try again.");
+    }
+  }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -45,7 +78,7 @@ export default function SignUpFreelancer() {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={styles.signUpButton} onPress={() => navigation.navigate("BottomTab")}>
+          <TouchableOpacity style={styles.signUpButton} onPress={signUp}>
             <Text style={styles.signUpButtonText}>Create Account</Text>
           </TouchableOpacity>
 

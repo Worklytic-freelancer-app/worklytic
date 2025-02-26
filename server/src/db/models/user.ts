@@ -8,17 +8,31 @@ export type UserModel = {
   email: string;
   password: string;
   role: "freelancer" | "client";
+  phone?: string;
+  createdAt: string;
+  updatedAt: string;
+  balance: number;
+  skills?: string[];
+  description?: string;
 };
 
-export type UserModelCreateInput = Omit<UserModel, "_id">;
+export type UserModelCreateInput = Omit<UserModel, "_id" | "createdAt" | "updatedAt" | "balance"> & {
+  phone?: string;
+  skills?: string[];
+  description?: string;
+};
 
 export const createUser = async (user: UserModelCreateInput) => {
   const db = await getDb();
   const collection = db.collection("users");
 
-  const modifiedUser: UserModelCreateInput = {
+  const now = new Date().toISOString();
+  const modifiedUser = {
     ...user,
     password: hashText(user.password),
+    createdAt: now,
+    updatedAt: now,
+    balance: 0,
   };
 
   const newUser = await collection.insertOne(modifiedUser);

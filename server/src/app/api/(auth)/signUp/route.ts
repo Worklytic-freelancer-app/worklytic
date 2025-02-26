@@ -7,10 +7,12 @@ const UserInputSignUpSchema = z.object({
   name: z.string().min(1, { message: "Nama harus diisi" }),
   email: z.string().min(1, { message: "Email harus diisi" }).email({ message: "Format email tidak valid" }),
   password: z.string().min(5, { message: "Password minimal 5 karakter" }),
-  role: z.enum(["client", "freelancer"]).default("freelancer"),
+  role: z.enum(["client", "freelancer"]),
 });
 
 export async function POST(request: NextRequest) {
+    console.log("masuk di POST");
+    
   try {
     console.log("POST /api/auth/signUp");
 
