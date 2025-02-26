@@ -10,6 +10,8 @@ import Freelancers from "@/screens/profileDetails/freelancers";
 import FreelancerDetails from "@/screens/profileDetails/freelancers/freelancerDetails";
 import MyProjectDetails from "@/screens/myProjects/myProjectDetails";
 import MyProjects from "@/screens/myProjects";
+import SignUpFreelancer from "@/screens/auth/signUp/freelancer";
+import SignUpClient from "@/screens/auth/signUp/client";
 
 const Stack = createStackNavigator();
 
@@ -20,6 +22,8 @@ export type RootStackParamList = {
   ProjectDetails: { projectId: number };
   SignIn: undefined;
   SignUp: undefined;
+  SignUpFreelancer: undefined;
+  SignUpClient: undefined;
   ForgotPassword: undefined;
   Search: undefined;
   Freelancers: undefined;
@@ -47,6 +51,8 @@ export default function AppNavigator() {
       <Stack.Screen name="ProjectDetails" component={ProjectDetails} />
       <Stack.Screen name="SignIn" component={SignIn} />
       <Stack.Screen name="SignUp" component={SignUp} />
+      <Stack.Screen name="SignUpFreelancer" component={SignUpFreelancer} />
+      <Stack.Screen name="SignUpClient" component={SignUpClient} />
       <Stack.Screen name="Search" component={Search} />
       <Stack.Screen name="DirectMessage" component={DirectMessage} />
       <Stack.Screen name="Freelancers" component={Freelancers} />

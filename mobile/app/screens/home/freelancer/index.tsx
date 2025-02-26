@@ -30,7 +30,7 @@ export default function Freelancer() {
 
   interface Section {
     id: string;
-    type: "search" | "features" | "projects" | "freelancers";
+    type: "search" | "balance" | "features" | "projects" | "freelancers";
     title?: string;
     data?: Project[] | Freelancer[];
   }
@@ -77,6 +77,10 @@ export default function Freelancer() {
       type: "search",
     },
     {
+      id: "balance",
+      type: "balance",
+    },
+    {
       id: "features",
       type: "features",
     },
@@ -119,6 +123,45 @@ export default function Freelancer() {
 
   const renderSection = ({ item }: { item: Section }) => {
     switch (item.type) {
+      case "balance":
+        return (
+          <View style={styles.balanceContainer}>
+            <View style={styles.balanceHeader}>
+              <View style={styles.balanceIconContainer}>
+                <Text style={styles.balanceIcon}>S</Text>
+              </View>
+              <View style={styles.balanceTextContainer}>
+                <Text style={styles.balanceLabel}>Worklytic Balance</Text>
+                <Text style={styles.balanceAmount}>Rp0</Text>
+              </View>
+              <TouchableOpacity style={styles.balanceButton}>
+                <Text style={styles.balanceButtonText}></Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.incomeContainer}>
+              <View style={styles.incomeItem}>
+                <Text style={styles.incomeLabel}>Total pendapatan bulan ini</Text>
+                <Text style={styles.incomeAmount}>Rp0</Text>
+              </View>
+              <View style={styles.incomeItem}>
+                <Text style={styles.incomeLabel}>Total pendapatan dari awal</Text>
+                <Text style={styles.incomeAmount}>Rp0</Text>
+              </View>
+            </View>
+            <Text style={styles.statisticsTitle}>Statistik Anda</Text>
+            <View style={styles.statisticsContainer}>
+              <View style={styles.statisticItem}>
+                <Text style={styles.statisticLabel}>Order Completion</Text>
+                <Text style={styles.statisticValue}>0%</Text>
+              </View>
+              <View style={styles.statisticItem}>
+                <Text style={styles.statisticLabel}>Rating</Text>
+                <Text style={styles.statisticValue}>0/5.0</Text>
+              </View>
+            </View>
+          </View>
+        );
+
       case "search":
         return (
           <TouchableOpacity style={styles.searchContainer} onPress={() => navigation.navigate("Search")}>
@@ -183,6 +226,104 @@ export default function Freelancer() {
 }
 
 const styles = StyleSheet.create({
+  balanceContainer: {
+    backgroundColor: "#1a237e",
+    borderRadius: 16,
+    marginHorizontal: 20,
+    marginBottom: 24,
+    padding: 16,
+  },
+  balanceHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  balanceIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#ffd700",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  balanceIcon: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#1a237e",
+  },
+  balanceTextContainer: {
+    flex: 1,
+  },
+  balanceLabel: {
+    fontSize: 14,
+    color: "#ffffff",
+    marginBottom: 4,
+  },
+  balanceAmount: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#ffffff",
+  },
+  balanceButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  balanceButtonText: {
+    fontSize: 18,
+    color: "#ffffff",
+  },
+  incomeContainer: {
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255, 255, 255, 0.1)",
+    paddingBottom: 16,
+    marginBottom: 16,
+  },
+  incomeItem: {
+    marginBottom: 8,
+  },
+  incomeLabel: {
+    fontSize: 14,
+    color: "#ffffff",
+    marginBottom: 4,
+  },
+  incomeAmount: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#ffffff",
+  },
+  statisticsTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#ffffff",
+    marginBottom: 12,
+  },
+  statisticsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  statisticItem: {
+    flex: 1,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: 12,
+    padding: 12,
+    alignItems: "center",
+    marginHorizontal: 4,
+  },
+  statisticLabel: {
+    fontSize: 14,
+    color: "#ffffff",
+    marginBottom: 4,
+  },
+  statisticValue: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#ffffff",
+  },
   container: {
     flex: 1,
     backgroundColor: "#fff",

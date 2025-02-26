@@ -3,6 +3,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Search as SearchIcon, ArrowLeft } from "lucide-react-native";
 import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RootStackParamList } from "@/navigators";
 
 interface SearchResult {
   id: number;
@@ -16,7 +18,8 @@ interface SearchResult {
 
 export default function Search(): JSX.Element {
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  
   const [searchQuery, setSearchQuery] = useState("");
 
   const searchResults: SearchResult[] = [
@@ -38,8 +41,19 @@ export default function Search(): JSX.Element {
     },
   ];
 
+  const handleResultPress = (item: SearchResult) => {
+    if (item.type === "project") {
+      navigation.navigate("ProjectDetails", { projectId: item.id });
+    } else {
+      navigation.navigate("FreelancerDetails", { freelancerId: item.id });
+    }
+  };
+
   const renderSearchResult = ({ item }: { item: SearchResult }) => (
-    <TouchableOpacity style={styles.resultCard}>
+    <TouchableOpacity 
+      style={styles.resultCard}
+      onPress={() => handleResultPress(item)}
+    >
       <Image source={{ uri: item.image }} style={styles.resultImage} />
       <View style={styles.resultContent}>
         <Text style={styles.resultTitle}>

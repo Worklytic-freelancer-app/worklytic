@@ -109,13 +109,21 @@ By accepting these terms, you agree to:
           </ScrollView>
 
           <View style={[styles.modalFooter, { paddingBottom: insets.bottom }]}>
-            <TouchableOpacity style={[styles.modalButton, !canAccept && styles.modalButtonDisabled]} disabled={!canAccept} onPress={onAccept}>
-              <Text style={[styles.modalButtonText, !canAccept && styles.modalButtonTextDisabled]}>{canAccept ? "Accept & Continue" : "Please read all terms"}</Text>
-            </TouchableOpacity>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.buttonFlex, !canAccept && styles.modalButtonDisabled]} 
+                disabled={!canAccept} 
+                onPress={onAccept}
+              >
+                <Text style={[styles.modalButtonText, !canAccept && styles.modalButtonTextDisabled]}>
+                  {canAccept ? "Accept & Continue" : "Please read all terms"}
+                </Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={onClose}>
-              <Text style={[styles.modalButtonText, styles.cancelButtonText]}>Cancel</Text>
-            </TouchableOpacity>
+              <TouchableOpacity style={[styles.modalButton, styles.cancelButton, styles.buttonFlex]} onPress={onClose}>
+                <Text style={[styles.modalButtonText, styles.cancelButtonText]}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </View>
@@ -139,8 +147,14 @@ const styles = StyleSheet.create({
   },
   modalFooter: {
     marginTop: 20,
+    paddingBottom: 0,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
     gap: 12,
-    paddingBottom: 0, // Remove default padding bottom since we're using insets
+  },
+  buttonFlex: {
+    flex: 1,
   },
   modalHeader: {
     alignItems: "center",

@@ -20,21 +20,16 @@ export default function SignIn() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <View style={styles.logoContainer}>
-          <Briefcase size={48} color="#2563eb" />
-        </View>
-        <Text style={styles.title}>Welcome Back!</Text>
-        <Text style={styles.subtitle}>Sign in to continue using Prolancer</Text>
+        <Text style={styles.title}>Sign In to Worklytic</Text>
+        <Text style={styles.subtitle}>Welcome back! Please enter your details</Text>
       </View>
 
       <View style={styles.form}>
         <View style={styles.inputContainer}>
-          <Mail size={20} color="#6b7280" />
           <TextInput style={styles.input} placeholder="Email" placeholderTextColor="#6b7280" keyboardType="email-address" autoCapitalize="none" value={form.email} onChangeText={(text) => setForm({ ...form, email: text })} />
         </View>
 
         <View style={styles.inputContainer}>
-          <Lock size={20} color="#6b7280" />
           <TextInput style={styles.input} placeholder="Password" placeholderTextColor="#6b7280" secureTextEntry={!showPassword} value={form.password} onChangeText={(text) => setForm({ ...form, password: text })} />
           <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeButton}>
             {showPassword ? <EyeOff size={20} color="#6b7280" /> : <Eye size={20} color="#6b7280" />}
@@ -55,13 +50,7 @@ export default function SignIn() {
           <View style={styles.dividerLine} />
         </View>
 
-        <TouchableOpacity
-          style={styles.googleButton}
-          onPress={() => {
-            /* Handle Google Sign In */
-          }}
-        >
-          <LogIn size={20} color="#374151" />
+        <TouchableOpacity style={styles.googleButton}>
           <Text style={styles.googleButtonText}>Continue with Google</Text>
         </TouchableOpacity>
       </View>
@@ -80,28 +69,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+    paddingHorizontal: 24,
+    justifyContent: "center",
   },
   header: {
     alignItems: "center",
-    paddingVertical: 32,
-  },
-  logo: {
-    width: 120,
-    height: 120,
-    marginBottom: 24,
+    paddingVertical: 48,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "700",
     color: "#111827",
-    marginBottom: 8,
+    marginBottom: 12,
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: 16,
     color: "#6b7280",
+    textAlign: "center",
   },
   form: {
-    padding: 20,
+    marginTop: 24,
   },
   inputContainer: {
     flexDirection: "row",
@@ -110,12 +97,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     marginBottom: 16,
+    height: 56,
   },
   input: {
     flex: 1,
-    height: 48,
-    marginLeft: 12,
-    fontSize: 15,
+    fontSize: 16,
     color: "#111827",
   },
   eyeButton: {
@@ -133,7 +119,7 @@ const styles = StyleSheet.create({
   signInButton: {
     backgroundColor: "#2563eb",
     borderRadius: 12,
-    height: 48,
+    height: 56,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 24,
@@ -164,7 +150,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#fff",
     borderRadius: 12,
-    height: 48,
+    height: 56,
     borderWidth: 1,
     borderColor: "#e5e7eb",
   },
@@ -172,30 +158,26 @@ const styles = StyleSheet.create({
     color: "#374151",
     fontSize: 16,
     fontWeight: "500",
-    marginLeft: 12,
   },
   footer: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   footerText: {
     fontSize: 14,
+    marginTop: 20,
     color: "#6b7280",
   },
   footerLink: {
     fontSize: 14,
+    marginTop: 20,
     color: "#2563eb",
     fontWeight: "500",
-  },
-  logoContainer: {
-    width: 96,
-    height: 96,
-    backgroundColor: "#eff6ff",
-    borderRadius: 48,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 24,
   },
 });

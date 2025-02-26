@@ -42,6 +42,18 @@ export default function Profile() {
           </View>
         </View>
 
+        <View style={styles.balanceContainer}>
+          <View style={styles.balanceHeader}>
+            <View style={styles.balanceIconContainer}>
+              <Text style={styles.balanceIcon}>S</Text>
+            </View>
+            <View style={styles.balanceTextContainer}>
+              <Text style={styles.balanceLabel}>Worklytic Balance</Text>
+              <Text style={styles.balanceAmount}>Rp0</Text>
+            </View>
+          </View>
+        </View>
+
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
             <Text style={styles.statNumber}>25</Text>
@@ -203,5 +215,91 @@ const styles = StyleSheet.create({
     color: "#4b5563",
     fontSize: 14,
     fontWeight: "500",
+  },
+  balanceContainer: {
+    backgroundColor: "#1a237e",
+    borderRadius: 16,
+    marginHorizontal: 0,
+    marginBottom: 24,
+    padding: 16,
+  },
+  balanceHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  balanceIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#ffd700",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  balanceIcon: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#1a237e",
+  },
+  balanceTextContainer: {
+    flex: 1,
+  },
+  balanceLabel: {
+    fontSize: 14,
+    color: "#ffffff",
+    marginBottom: 4,
+  },
+  balanceAmount: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#ffffff",
+  },
+  incomeContainer: {
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255, 255, 255, 0.1)",
+    paddingBottom: 16,
+    marginBottom: 16,
+  },
+  incomeItem: {
+    marginBottom: 8,
+  },
+  incomeLabel: {
+    fontSize: 14,
+    color: "#ffffff",
+    marginBottom: 4,
+  },
+  incomeAmount: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#ffffff",
+  },
+  statisticsTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#ffffff",
+    marginBottom: 12,
+  },
+  statisticsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  statisticItem: {
+    flex: 1,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: 12,
+    padding: 12,
+    alignItems: "center",
+    marginHorizontal: 4,
+  },
+  statisticLabel: {
+    fontSize: 14,
+    color: "#ffffff",
+    marginBottom: 4,
+  },
+  statisticValue: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#ffffff",
   },
 });

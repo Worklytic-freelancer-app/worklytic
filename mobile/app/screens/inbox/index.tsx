@@ -1,5 +1,8 @@
 import { View, Text, Image, FlatList, StyleSheet, ListRenderItem, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RootStackParamList } from "@/navigators";
 
 interface ChatItem {
   id: string;
@@ -31,9 +34,17 @@ const chatData: ChatItem[] = [
 
 export default function Chat(): JSX.Element {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   const renderChatItem: ListRenderItem<ChatItem> = ({ item }) => (
-    <Pressable style={styles.chatItem}>
+    <Pressable 
+      style={styles.chatItem}
+      onPress={() => navigation.navigate('DirectMessage', {
+        userId: parseInt(item.id),
+        userName: item.name,
+        userImage: item.profilePic
+      })}
+    >
       <Image source={{ uri: item.profilePic }} style={styles.profilePic} />
       <View style={styles.messageContent}>
         <View style={styles.messageHeader}>
