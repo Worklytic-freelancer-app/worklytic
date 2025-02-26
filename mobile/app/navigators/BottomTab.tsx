@@ -3,7 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Home from "@/screens/home";
 import Profile from "@/screens/profile";
 import WorklyticAI from "@/screens/worklyticAI";
-import MyProjects from "@/screens/myProjects";
+import Workspace from "@/screens/workspace";
 import Projects from "@/screens/projects";
 import Inbox from "@/screens/inbox";
 
@@ -33,7 +33,7 @@ export default function BottomTab() {
             case "WorklyticAI":
               iconName = focused ? "sparkles" : "sparkles-outline";
               break;
-            case "MyProjects":
+            case "Workspace":
               iconName = focused ? "briefcase" : "briefcase-outline";
               break;
             case "inbox":
@@ -52,7 +52,7 @@ export default function BottomTab() {
       <Tab.Screen name="Projects" component={Projects} />
       <Tab.Screen name="WorklyticAI" component={WorklyticAI} />
       <Tab.Screen name="inbox" component={Inbox} />
-      <Tab.Screen name="MyProjects" component={MyProjects} />
+      <Tab.Screen name="Workspace" component={Workspace} />
       <Tab.Screen name="Profile" component={Profile} />
     </Tab.Navigator>
   );

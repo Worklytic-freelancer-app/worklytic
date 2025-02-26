@@ -212,8 +212,7 @@ export default function Freelancer() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Hello, John 👋</Text>
-          <Text style={styles.subGreeting}>Find your perfect project today</Text>
+          <Text style={styles.greeting}>Worklytic</Text>
         </View>
         <TouchableOpacity style={styles.notificationButton}>
           <Bell size={24} color="#374151" />

@@ -8,10 +8,11 @@ import Search from "@/screens/search";
 import DirectMessage from "@/screens/inbox/directMessage";
 import Freelancers from "@/screens/profileDetails/freelancers";
 import FreelancerDetails from "@/screens/profileDetails/freelancers/freelancerDetails";
-import MyProjectDetails from "@/screens/myProjects/myProjectDetails";
-import MyProjects from "@/screens/myProjects";
+import WorkspaceDetails from "@/screens/workspace/workspaceDetails";
+import Workspace from "@/screens/workspace";
 import SignUpFreelancer from "@/screens/auth/signUp/freelancer";
 import SignUpClient from "@/screens/auth/signUp/client";
+import PostProject from "@/screens/postProject";
 
 const Stack = createStackNavigator();
 
@@ -27,8 +28,9 @@ export type RootStackParamList = {
   ForgotPassword: undefined;
   Search: undefined;
   Freelancers: undefined;
-  MyProjects: undefined;
-  MyProjectDetails: { projectId: number };
+  Workspace: undefined;
+  WorkspaceDetails: { projectId: number };
+  PostProject: undefined;
   DirectMessage: {
     userId: number;
     userName: string;
@@ -57,8 +59,9 @@ export default function AppNavigator() {
       <Stack.Screen name="DirectMessage" component={DirectMessage} />
       <Stack.Screen name="Freelancers" component={Freelancers} />
       <Stack.Screen name="FreelancerDetails" component={FreelancerDetails} />
-      <Stack.Screen name="MyProjects" component={MyProjects} />
-      <Stack.Screen name="MyProjectDetails" component={MyProjectDetails} />
+      <Stack.Screen name="Workspace" component={Workspace} />
+      <Stack.Screen name="WorkspaceDetails" component={WorkspaceDetails} />
+      <Stack.Screen name="PostProject" component={PostProject} />
     </Stack.Navigator>
   );
 }

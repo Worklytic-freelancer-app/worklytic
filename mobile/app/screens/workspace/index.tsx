@@ -18,7 +18,7 @@ interface MyProject {
   image: string;
 }
 
-export default function MyProjects() {
+export default function Workspace() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
@@ -74,7 +74,7 @@ export default function MyProjects() {
   };
 
   const renderProject = ({ item }: { item: MyProject }) => (
-    <TouchableOpacity style={styles.projectCard} onPress={() => navigation.navigate("MyProjectDetails", { projectId: item.id })}>
+    <TouchableOpacity style={styles.projectCard} onPress={() => navigation.navigate("WorkspaceDetails", { projectId: item.id })}>
       <Image source={{ uri: item.image }} style={styles.projectImage} />
       <View style={styles.projectInfo}>
         <View style={styles.projectHeader}>

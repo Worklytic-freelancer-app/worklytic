@@ -13,7 +13,7 @@ interface Feature {
   completedDate?: string;
 }
 
-export default function MyProjectDetails() {
+export default function WorkspaceDetails() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const route = useRoute();
