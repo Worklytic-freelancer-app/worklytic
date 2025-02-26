@@ -77,10 +77,6 @@ export default function Freelancer() {
       type: "search",
     },
     {
-      id: "balance",
-      type: "balance",
-    },
-    {
       id: "features",
       type: "features",
     },
@@ -123,45 +119,6 @@ export default function Freelancer() {
 
   const renderSection = ({ item }: { item: Section }) => {
     switch (item.type) {
-      case "balance":
-        return (
-          <View style={styles.balanceContainer}>
-            <View style={styles.balanceHeader}>
-              <View style={styles.balanceIconContainer}>
-                <Text style={styles.balanceIcon}>S</Text>
-              </View>
-              <View style={styles.balanceTextContainer}>
-                <Text style={styles.balanceLabel}>Worklytic Balance</Text>
-                <Text style={styles.balanceAmount}>Rp0</Text>
-              </View>
-              <TouchableOpacity style={styles.balanceButton}>
-                <Text style={styles.balanceButtonText}></Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.incomeContainer}>
-              <View style={styles.incomeItem}>
-                <Text style={styles.incomeLabel}>Total pendapatan bulan ini</Text>
-                <Text style={styles.incomeAmount}>Rp0</Text>
-              </View>
-              <View style={styles.incomeItem}>
-                <Text style={styles.incomeLabel}>Total pendapatan dari awal</Text>
-                <Text style={styles.incomeAmount}>Rp0</Text>
-              </View>
-            </View>
-            <Text style={styles.statisticsTitle}>Statistik Anda</Text>
-            <View style={styles.statisticsContainer}>
-              <View style={styles.statisticItem}>
-                <Text style={styles.statisticLabel}>Order Completion</Text>
-                <Text style={styles.statisticValue}>0%</Text>
-              </View>
-              <View style={styles.statisticItem}>
-                <Text style={styles.statisticLabel}>Rating</Text>
-                <Text style={styles.statisticValue}>0/5.0</Text>
-              </View>
-            </View>
-          </View>
-        );
-
       case "search":
         return (
           <TouchableOpacity style={styles.searchContainer} onPress={() => navigation.navigate("Search")}>
@@ -416,14 +373,14 @@ const styles = StyleSheet.create({
   },
   projectsScroll: {
     paddingLeft: 20,
-    paddingBottom: 8, // Add padding to bottom
+    paddingBottom: 8,
   },
   projectCard: {
     width: 280,
     backgroundColor: "#fff",
     borderRadius: 16,
     marginRight: 16,
-    marginBottom: 8, // Add margin to bottom
+    marginBottom: 8,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -462,7 +419,7 @@ const styles = StyleSheet.create({
   },
   freelancersScroll: {
     paddingLeft: 20,
-    paddingBottom: 8, // Add padding to bottom
+    paddingBottom: 8,
   },
   freelancerCard: {
     width: 160,
@@ -470,7 +427,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginRight: 16,
-    marginBottom: 8, // Add margin to bottom
+    marginBottom: 8,
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
