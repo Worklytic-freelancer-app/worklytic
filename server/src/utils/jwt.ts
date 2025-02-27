@@ -1,16 +1,22 @@
-import jwt, { type JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
+import * as jose from "jose";
 
-// import * as jose from "jose";
+interface Payload {
+  id: string;
+  email: string;
+}
 
-const SECRET_KEY = process.env.JWT_SECRET || "this-is-not-a-safe-key";
+const JWT_SECRET = "rahasia";
 
-export const createToken = (payload: JwtPayload) => jwt.sign(payload, SECRET_KEY);
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET is not defined");
+}
 
-export const readPayload = (token: string) => jwt.verify(token, SECRET_KEY);
+export const generateToken = (payload: Payload) => {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
+};
 
-// export const readPayloadJose = async <T>(token: string) => {
-//   const secretKey = new TextEncoder().encode(SECRET_KEY);
-//   const payloadJose = await jose.jwtVerify<T>(token, secretKey);
-
-//   return payloadJose.payload;
-// };
+export const verifyToken = async (token: string) => {
+  const { payload } = await jose.jwtVerify(token, new TextEncoder().encode(JWT_SECRET));
+  return payload;
+};

@@ -37,13 +37,15 @@ export default function Chat(): JSX.Element {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   const renderChatItem: ListRenderItem<ChatItem> = ({ item }) => (
-    <Pressable 
+    <Pressable
       style={styles.chatItem}
-      onPress={() => navigation.navigate('DirectMessage', {
-        userId: parseInt(item.id),
-        userName: item.name,
-        userImage: item.profilePic
-      })}
+      onPress={() =>
+        navigation.navigate("DirectMessage", {
+          userId: parseInt(item.id),
+          userName: item.name,
+          userImage: item.profilePic,
+        })
+      }
     >
       <Image source={{ uri: item.profilePic }} style={styles.profilePic} />
       <View style={styles.messageContent}>

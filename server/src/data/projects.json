@@ -1,0 +1,101 @@
+[
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f800",
+        "clientId": "67c09e7ea8bf2bcd8d03f7fc",
+        "title": "Pengembangan Sistem ERP Terintegrasi",
+        "description": "Membutuhkan pengembangan sistem ERP yang dapat mengintegrasikan proses bisnis perusahaan meliputi inventory, accounting, HR, dan sales management. Sistem harus dapat diakses secara real-time dan memiliki dashboard analytics.",
+        "budget": 75000000,
+        "category": "Web Development",
+        "location": "Surabaya, Indonesia",
+        "duration": "6 bulan",
+        "status": "Open",
+        "requirements": [
+            "Pengalaman minimal 5 tahun dalam pengembangan ERP",
+            "Menguasai React.js dan Node.js",
+            "Familiar dengan database PostgreSQL",
+            "Memahami proses bisnis perusahaan"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1460925895917-afdab827c52f",
+            "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3"
+        ],
+        "assignedFreelancer": [],
+        "features": [
+            "Multi-user access control",
+            "Real-time reporting",
+            "Mobile responsive",
+            "API Integration"
+        ],
+        "createdAt": "2024-02-27T17:18:54.570Z",
+        "updatedAt": "2024-02-27T17:18:54.570Z",
+        "progress": 0
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f801",
+        "clientId": "67c09e7ea8bf2bcd8d03f7fc",
+        "title": "Redesign Website Perusahaan",
+        "description": "Mencari UI/UX designer untuk melakukan redesign website perusahaan dengan fokus pada user experience dan konversi yang lebih baik. Website harus responsif dan modern.",
+        "budget": 25000000,
+        "category": "UI/UX Design",
+        "location": "Remote",
+        "duration": "2 bulan",
+        "status": "In Progress",
+        "requirements": [
+            "Portfolio desain website B2B",
+            "Kemampuan UI/UX research",
+            "Familiar dengan Figma",
+            "Pengalaman dalam design system"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8"
+        ],
+        "assignedFreelancer": [
+            {
+                "_id": "67c09e7ea8bf2bcd8d03f7fd",
+                "fullName": "Dewi Safitri",
+                "profileImage": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
+                "email": "dewi.safitri@outlook.com",
+                "role": "freelancer"
+            }
+        ],
+        "features": [
+            "Landing page redesign",
+            "Mobile responsive design",
+            "Design system documentation",
+            "Interactive prototypes"
+        ],
+        "createdAt": "2024-01-15T10:30:00.000Z",
+        "updatedAt": "2024-02-20T15:45:00.000Z",
+        "progress": 60
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f802",
+        "clientId": "67c09e7ea8bf2bcd8d03f7fc",
+        "title": "Pengembangan Aplikasi Mobile Internal",
+        "description": "Membutuhkan pengembangan aplikasi mobile untuk manajemen internal perusahaan. Aplikasi harus dapat digunakan di iOS dan Android.",
+        "budget": 45000000,
+        "category": "Mobile Development",
+        "location": "Surabaya, Indonesia",
+        "duration": "4 bulan",
+        "status": "Open",
+        "requirements": [
+            "Pengalaman React Native/Flutter",
+            "Kemampuan backend integration",
+            "Understanding of mobile UI/UX",
+            "Knowledge of mobile security best practices"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c"
+        ],
+        "assignedFreelancer": [],
+        "features": [
+            "Cross-platform compatibility",
+            "Offline functionality",
+            "Push notifications",
+            "Secure authentication"
+        ],
+        "createdAt": "2024-02-25T09:00:00.000Z",
+        "updatedAt": "2024-02-25T09:00:00.000Z",
+        "progress": 0
+    }
+]

@@ -55,7 +55,7 @@ export type Project = {
   image: string[];
   createdAt: string;
   updatedAt: string;
-  assignedFreelancer?: ObjectId;
+  assignedFreelancer?: User[];
   features: ProjectFeature[];
   progress: number;
 };
@@ -64,8 +64,8 @@ export type ProjectFeature = {
   _id?: ObjectId;
   title: string;
   description: string;
-  status: "completed" | "in_progress" | "planned";
   completedDate?: Date;
+  image?: string;
 };
 
 export type Service = {
@@ -98,8 +98,8 @@ export type Review = {
   _id?: ObjectId;
   projectId?: ObjectId;
   serviceId?: ObjectId;
-  reviewerId: ObjectId;
-  receiverId: ObjectId;
+  reviewerId?: ObjectId;
+  receiverId?: ObjectId;
   rating: number;
   comment?: string;
   createdAt: string;

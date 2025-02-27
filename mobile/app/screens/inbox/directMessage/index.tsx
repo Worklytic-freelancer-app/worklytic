@@ -47,12 +47,8 @@ export default function DirectMessage() {
 
   const renderMessage = ({ item }: { item: Message }) => (
     <View style={[styles.messageContainer, item.sender === "user" ? styles.userMessage : styles.otherMessage]}>
-      <Text style={[styles.messageText, item.sender === "user" ? styles.userMessageText : styles.otherMessageText]}>
-        {item.text}
-      </Text>
-      <Text style={[styles.timestamp, item.sender === "user" ? styles.userTimestamp : styles.otherTimestamp]}>
-        {item.timestamp}
-      </Text>
+      <Text style={[styles.messageText, item.sender === "user" ? styles.userMessageText : styles.otherMessageText]}>{item.text}</Text>
+      <Text style={[styles.timestamp, item.sender === "user" ? styles.userTimestamp : styles.otherTimestamp]}>{item.timestamp}</Text>
     </View>
   );
 
@@ -64,10 +60,7 @@ export default function DirectMessage() {
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={[styles.container, { paddingTop: insets.top }]}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
+    <KeyboardAvoidingView style={[styles.container, { paddingTop: insets.top }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <ChevronLeft size={24} color="#374151" />
@@ -79,28 +72,11 @@ export default function DirectMessage() {
         <View style={{ width: 40 }} />
       </View>
 
-      <FlatList
-        data={messages}
-        renderItem={renderMessage}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.messagesList}
-        inverted
-      />
+      <FlatList data={messages} renderItem={renderMessage} keyExtractor={(item) => item.id} contentContainerStyle={styles.messagesList} inverted />
 
       <View style={[styles.inputContainer, { paddingBottom: insets.bottom || 20 }]}>
-        <TextInput
-          style={styles.input}
-          placeholder="Type a message..."
-          value={message}
-          onChangeText={setMessage}
-          multiline
-          maxLength={500}
-        />
-        <TouchableOpacity 
-          style={[styles.sendButton, !message.trim() && styles.sendButtonDisabled]}
-          onPress={handleSend}
-          disabled={!message.trim()}
-        >
+        <TextInput style={styles.input} placeholder="Type a message..." value={message} onChangeText={setMessage} multiline maxLength={500} />
+        <TouchableOpacity style={[styles.sendButton, !message.trim() && styles.sendButtonDisabled]} onPress={handleSend} disabled={!message.trim()}>
           <Send size={20} color={message.trim() ? "#2563eb" : "#94a3b8"} />
         </TouchableOpacity>
       </View>
