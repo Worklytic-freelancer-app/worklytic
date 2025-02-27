@@ -13,7 +13,7 @@ const UserInputSignInSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
-    console.log(data, "data");
+    // console.log(data, "data");
 
     const parsedData = UserInputSignInSchema.safeParse(data);
 

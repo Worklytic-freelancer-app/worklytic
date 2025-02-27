@@ -22,7 +22,7 @@ export default function SignIn() {
 
   async function handleSignIn() {
     try {
-      const response = await fetch(`${baseUrl}/auth/login`, {
+      const response = await fetch(`${baseUrl}/api/signIn`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -30,9 +30,10 @@ export default function SignIn() {
         body: JSON.stringify(form),
       });
       const result = await response.json();
+
       if (response.ok) {
         await SecureStore.setItemAsync("token", result.token);
-        navigation.navigate("BottomTab");
+        Alert.alert("Success", "Login successful!.", [{ text: "OK", onPress: () => navigation.navigate("BottomTab") }]);
       } else {
         Alert.alert("Error", result.message);
       }
