@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from "react-native";
+
+import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Mail, Lock, Eye, EyeOff, User } from "lucide-react-native";
 import { useState } from "react";
@@ -7,10 +8,15 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 import { baseUrl } from "@/constant/baseUrl";
 import { Alert } from "react-native";
+import { SecureStoreUtils } from "@/utils/SecureStore";
 
 type SignUpScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
-export default function SignUpClient() {
+interface SignUpFormProps {
+  role: "client" | "freelancer";
+}
+
+export default function SignUpForm({ role }: SignUpFormProps) {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<SignUpScreenNavigationProp>();
   const [showPassword, setShowPassword] = useState(false);
@@ -18,43 +24,88 @@ export default function SignUpClient() {
     name: "",
     email: "",
     password: "",
-    role: "client",
+    role: role,
   });
 
   async function signUp() {
     try {
-      console.log("Sending signup request with form data:", form);
-
-      const res = await fetch(`${baseUrl}/api/signUp`, {
+      const response = await fetch(`${baseUrl}/api/auth/sign-up`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Accept: "application/json",
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          fullName: form.name,
+          email: form.email,
+          password: form.password,
+          role: form.role
+        }),
       });
 
-      console.log("Response status:", res.status);
-      const responseData = await res.text();
-      console.log("Response data:", responseData);
+      const result = await response.json();
 
-      if (res.ok) {
-        const data = JSON.parse(responseData);
-        Alert.alert("Success", "Registration successful! Please login with your credentials.", [{ text: "OK", onPress: () => navigation.navigate("SignIn") }]);
+      if (response.ok && result.success) {
+        // Simpan token dan data user
+        await SecureStoreUtils.setAuthData({
+          token: result.data.token,
+          user: result.data.user
+        });
+
+        Alert.alert(
+          "Sukses", 
+          result.message, 
+          [{ 
+            text: "OK", 
+            onPress: () => navigation.navigate("BottomTab") 
+          }]
+        );
       } else {
-        Alert.alert("Error", `Registration failed: ${responseData}`);
+        Alert.alert("Error", result.message || "Gagal melakukan registrasi");
       }
     } catch (error) {
       console.error("Signup error:", error);
-
-      Alert.alert("Error", "An unexpected error occurred. Please try again.");
+      Alert.alert("Error", "Terjadi kesalahan saat proses registrasi");
     }
   }
+
+  const validateForm = () => {
+    if (!form.name.trim()) {
+      Alert.alert("Error", "Nama lengkap harus diisi");
+      return false;
+    }
+    if (!form.email.trim()) {
+      Alert.alert("Error", "Email harus diisi");
+      return false;
+    }
+    if (!form.password.trim()) {
+      Alert.alert("Error", "Password harus diisi");
+      return false;
+    }
+    // Validasi email sederhana
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      Alert.alert("Error", "Format email tidak valid");
+      return false;
+    }
+    // Validasi password minimal 6 karakter
+    if (form.password.length < 6) {
+      Alert.alert("Error", "Password minimal 6 karakter");
+      return false;
+    }
+    return true;
+  };
+
+  const handleSignUp = () => {
+    if (validateForm()) {
+      signUp();
+    }
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.contentContainer}>
         <View style={styles.header}>
-          <Text style={styles.title}>Sign Up as Client</Text>
+          <Text style={styles.title}>Sign Up as {role === "client" ? "Client" : "Freelancer"}</Text>
           <Text style={styles.subtitle}>Create your account to get started</Text>
         </View>
 
@@ -77,7 +128,7 @@ export default function SignUpClient() {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={styles.signUpButton} onPress={signUp}>
+          <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
             <Text style={styles.signUpButtonText}>Create Account</Text>
           </TouchableOpacity>
 
