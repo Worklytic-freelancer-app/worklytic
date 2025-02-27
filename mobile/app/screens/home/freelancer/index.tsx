@@ -4,7 +4,6 @@ import { Search, Bell } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
-import { useUser } from "@/hooks/useUser";
 import { baseUrl } from "@/constant/baseUrl";
 import { useEffect, useState } from "react";
 import { SecureStoreUtils } from "@/utils/SecureStore";
@@ -14,7 +13,6 @@ type FreelancerScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 export default function Freelancer() {
   const navigation = useNavigation<FreelancerScreenNavigationProp>();
   const insets = useSafeAreaInsets();
-  const { user } = useUser();
   const [recommendedProjects, setRecommendedProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
 
