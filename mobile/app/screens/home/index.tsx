@@ -1,9 +1,12 @@
-import { View, Text } from "react-native";
+import Client from "./client";
+import Freelancer from "./freelancer";
+import React from "react";
 
 export default function Home() {
   return (
-    <View>
-      <Text>Home</Text>
-    </View>
+    <>
+      <Client />
+      {/* <Freelancer /> */}
+    </>
   );
 }
