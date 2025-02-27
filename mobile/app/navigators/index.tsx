@@ -13,6 +13,7 @@ import Workspace from "@/screens/workspace";
 import SignUpFreelancer from "@/screens/auth/signUp/freelancer";
 import SignUpClient from "@/screens/auth/signUp/client";
 import PostProject from "@/screens/postProject";
+import AddService from "@/screens/profile/freelancer/addService";
 
 const Stack = createStackNavigator();
 
@@ -62,6 +63,7 @@ export default function AppNavigator() {
       <Stack.Screen name="Workspace" component={Workspace} />
       <Stack.Screen name="WorkspaceDetails" component={WorkspaceDetails} />
       <Stack.Screen name="PostProject" component={PostProject} />
+      <Stack.Screen name="AddService" component={AddService} />
     </Stack.Navigator>
   );
 }

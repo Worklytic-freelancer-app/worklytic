@@ -1,11 +1,13 @@
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Dimensions, Animated, NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ChevronLeft, Clock, DollarSign, Briefcase, MapPin, MessageCircle } from "lucide-react-native";
+import { ChevronLeft, Clock, DollarSign, MapPin, MessageCircle } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
+import ProjectDiscussion from "./projectDiscussion";
 
 interface ProjectDetails {
   id: number;
@@ -27,15 +29,26 @@ interface ProjectDetails {
 
 type ProjectDetailsNavigationProp = StackNavigationProp<RootStackParamList>;
 
-// Add to imports
-import ProjectDiscussion from "./projectDiscussion";
-
 export default function ProjectDetails() {
-  // Add state for modal
-  const [showTerms, setShowTerms] = useState(false);
-
+  const [activeSlide, setActiveSlide] = useState(0);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollY = useRef(new Animated.Value(0)).current;
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<ProjectDetailsNavigationProp>();
+  const [showTerms, setShowTerms] = useState(false);
+  const windowWidth = Dimensions.get("window").width;
+
+  const headerOpacity = scrollY.interpolate({
+    inputRange: [250, 300],
+    outputRange: [0, 1],
+    extrapolate: "clamp",
+  });
+
+  const headerTranslateY = scrollY.interpolate({
+    inputRange: [250, 300],
+    outputRange: [0, 0],
+    extrapolate: "clamp",
+  });
 
   const project: ProjectDetails = {
     id: 1,
@@ -56,20 +69,78 @@ export default function ProjectDetails() {
     image: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&auto=format&fit=crop&q=60",
   };
 
+  // Mock images for the carousel
+  const projectImages = [
+    "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&auto=format&fit=crop&q=60",
+    "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=60",
+    "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&auto=format&fit=crop&q=60",
+    "https://images.unsplash.com/photo-1555774698-0b77e0d5fac6?w=800&auto=format&fit=crop&q=60",
+  ];
+
+  const handleScroll = (event: any) => {
+    const slideSize = event.nativeEvent.layoutMeasurement.width;
+    const offset = event.nativeEvent.contentOffset.x;
+    const activeIndex = Math.round(offset / slideSize);
+    setActiveSlide(activeIndex);
+  };
+
+  const handleMainScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    scrollY.setValue(offsetY);
+  };
+
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <ChevronLeft size={24} color="#374151" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Project Details</Text>
-        <View style={{ width: 40 }} />
-      </View>
+    <View style={styles.container}>
+      {/* Animated Header */}
+      <Animated.View
+        style={[
+          styles.animatedHeader,
+          {
+            transform: [{ translateY: headerTranslateY }],
+            opacity: headerOpacity,
+          },
+        ]}
+      >
+        <View
+          style={[
+            styles.headerContent,
+            {
+              paddingTop: insets.top,
+            },
+          ]}
+        >
+          <TouchableOpacity style={styles.headerBackButton} onPress={() => navigation.goBack()}>
+            <ChevronLeft size={24} color="#374151" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle} numberOfLines={1}>
+            {project.title}
+          </Text>
+        </View>
+      </Animated.View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <Image source={{ uri: project.image }} style={styles.projectImage} />
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} onScroll={handleMainScroll} scrollEventThrottle={16} contentContainerStyle={{ paddingTop: 0 }}>
+        <View style={styles.carouselContainer}>
+          <ScrollView ref={scrollViewRef} horizontal pagingEnabled showsHorizontalScrollIndicator={false} onMomentumScrollEnd={handleScroll}>
+            {projectImages.map((image, index) => (
+              <View key={index} style={styles.carouselItemContainer}>
+                <Image source={{ uri: image }} style={styles.carouselImage} />
+              </View>
+            ))}
+          </ScrollView>
 
-        <View style={styles.projectInfo}>
+          {/* Carousel Back Button */}
+          <TouchableOpacity style={[styles.carouselBackButton, { marginTop: insets.top }]} onPress={() => navigation.goBack()}>
+            <ChevronLeft size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+
+          <View style={styles.paginationContainer}>
+            {projectImages.map((_, index) => (
+              <View key={index} style={[styles.paginationDot, index === activeSlide ? styles.paginationDotActive : styles.paginationDotInactive]} />
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.content}>
           <Text style={styles.title}>{project.title}</Text>
 
           <View style={styles.statsContainer}>
@@ -90,16 +161,6 @@ export default function ProjectDetails() {
               <View>
                 <Text style={styles.statLabel}>Duration</Text>
                 <Text style={styles.statValue}>{project.duration}</Text>
-              </View>
-            </View>
-
-            <View style={styles.statItem}>
-              <View style={[styles.statIcon, { backgroundColor: "#dcfce7" }]}>
-                <MapPin size={20} color="#16a34a" />
-              </View>
-              <View>
-                <Text style={styles.statLabel}>Location</Text>
-                <Text style={styles.statValue}>{project.location}</Text>
               </View>
             </View>
           </View>
@@ -163,41 +224,103 @@ export default function ProjectDetails() {
   );
 }
 
-// Add these styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
   },
-  header: {
+  animatedHeader: {
+    position: "absolute",
+    backgroundColor: "#fff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#f3f4f6",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+    width: "100%",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
+  },
+  headerContent: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingBottom: 10,
+    paddingBottom: 16,
+    height: 100,
+    backgroundColor: "#fff",
   },
-  backButton: {
+  headerBackButton: {
+    width: 22,
+    height: 22,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f3f4f6",
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#111827",
+    marginLeft: 16,
+    flex: 1,
+  },
+  content: {
+    padding: 20,
+  },
+  carouselContainer: {
+    height: 300,
+    backgroundColor: "#f3f4f6",
+    position: "relative",
+    marginTop: 0,
+  },
+  carouselBackButton: {
+    position: "absolute",
+    top: 10,
+    left: 20,
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
     alignItems: "center",
     justifyContent: "center",
+    zIndex: 10,
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#111827",
+  carouselItemContainer: {
+    width: Dimensions.get("window").width,
+    height: 300,
   },
-  content: {
-    flex: 1,
-  },
-  projectImage: {
+  carouselImage: {
     width: "100%",
-    height: 200,
+    height: "100%",
+    resizeMode: "cover",
   },
-  projectInfo: {
-    padding: 20,
+  paginationContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    position: "absolute",
+    bottom: 20,
+    left: 0,
+    right: 0,
+  },
+  paginationDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginHorizontal: 4,
+  },
+  paginationDotActive: {
+    backgroundColor: "#2563eb",
+  },
+  paginationDotInactive: {
+    backgroundColor: "rgba(255, 255, 255, 0.6)",
   },
   title: {
     fontSize: 24,
@@ -213,6 +336,10 @@ const styles = StyleSheet.create({
   statItem: {
     flexDirection: "row",
     alignItems: "center",
+    backgroundColor: "#f9fafb",
+    padding: 16,
+    borderRadius: 12,
+    flex: 0.48,
   },
   statIcon: {
     width: 40,
