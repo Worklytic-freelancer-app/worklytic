@@ -25,7 +25,7 @@ export default function Freelancer() {
   const fetchProjects = async () => {
     try {
       const token = await SecureStoreUtils.getToken();
-      const response = await fetch(`${baseUrl}/api/projects`, {
+      const response = await fetch(`${baseUrl}/api/projects/recommendations`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -33,30 +33,7 @@ export default function Freelancer() {
       const result = await response.json();
       
       if (result.success) {
-        // Hanya tampilkan rekomendasi jika user memiliki skills
-        if (user?.skills && user.skills.length > 0) {
-          // Filter projects berdasarkan skills user
-          const filteredProjects = result.data.filter((project: Project) => {
-            const categoryLower = project.category.toLowerCase();
-            return user.skills.some(skill => {
-              const skillLower = skill.toLowerCase();
-              return (
-                categoryLower.includes(skillLower) || 
-                skillLower.includes('react') && categoryLower.includes('web') ||
-                skillLower.includes('react native') && categoryLower.includes('mobile') ||
-                skillLower.includes('ui') && categoryLower.includes('design') ||
-                skillLower.includes('ux') && categoryLower.includes('design')
-              );
-            });
-          });
-          
-          // Sort projects berdasarkan budget tertinggi
-          const sortedProjects = filteredProjects.sort((a: Project, b: Project) => b.budget - a.budget);
-          setRecommendedProjects(sortedProjects);
-        } else {
-          // Jika tidak ada skills, set empty array
-          setRecommendedProjects([]);
-        }
+        setRecommendedProjects(result.data);
       }
     } catch (error) {
       console.error('Error fetching projects:', error);

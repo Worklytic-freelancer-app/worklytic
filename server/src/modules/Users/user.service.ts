@@ -50,6 +50,7 @@ class UserService {
             const token = generateToken({
                 id: result.data._id.toString(),
                 email: result.data.email,
+                User: result.data,
             });
 
             return {
@@ -82,6 +83,7 @@ class UserService {
             const token = generateToken({
                 id: result.data._id.toString(),
                 email: result.data.email,
+                User: result.data,
             });
 
             return {

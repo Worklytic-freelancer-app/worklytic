@@ -1,9 +1,11 @@
 import jwt from "jsonwebtoken";
 import * as jose from "jose";
+import type { Users } from "../modules/Users/user.schema";
 
 interface Payload {
   id: string;
   email: string;
+  User: Users;
 }
 
 const JWT_SECRET = "rahasia";

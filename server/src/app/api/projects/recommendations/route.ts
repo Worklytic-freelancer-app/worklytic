@@ -16,14 +16,14 @@ export async function GET(req: Request) {
         const user = JSON.parse(userHeader);
         
         // Cek apakah user memiliki skills
-        if (!user.skills || user.skills.length === 0) {
+        if (!user.User.skills || user.User.skills.length === 0) {
             return NextResponse.json({
                 success: true,
                 data: []
             });
         }
 
-        const result = await Project.getRecommendationsBySkills(user.skills);
+        const result = await Project.getRecommendationsBySkills(user.User.skills);
         return NextResponse.json(result);
     } catch (error) {
         return NextResponse.json(
