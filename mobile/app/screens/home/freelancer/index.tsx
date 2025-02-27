@@ -1,23 +1,81 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Search, Bell } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
+import { useUser } from "@/hooks/useUser";
+import { baseUrl } from "@/constant/baseUrl";
+import { useEffect, useState } from "react";
+import { SecureStoreUtils } from "@/utils/SecureStore";
 
 type FreelancerScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
 export default function Freelancer() {
   const navigation = useNavigation<FreelancerScreenNavigationProp>();
   const insets = useSafeAreaInsets();
+  const { user } = useUser();
+  const [recommendedProjects, setRecommendedProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    try {
+      const token = await SecureStoreUtils.getToken();
+      const response = await fetch(`${baseUrl}/api/projects`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        // Hanya tampilkan rekomendasi jika user memiliki skills
+        if (user?.skills && user.skills.length > 0) {
+          // Filter projects berdasarkan skills user
+          const filteredProjects = result.data.filter((project: Project) => {
+            const categoryLower = project.category.toLowerCase();
+            return user.skills.some(skill => {
+              const skillLower = skill.toLowerCase();
+              return (
+                categoryLower.includes(skillLower) || 
+                skillLower.includes('react') && categoryLower.includes('web') ||
+                skillLower.includes('react native') && categoryLower.includes('mobile') ||
+                skillLower.includes('ui') && categoryLower.includes('design') ||
+                skillLower.includes('ux') && categoryLower.includes('design')
+              );
+            });
+          });
+          
+          // Sort projects berdasarkan budget tertinggi
+          const sortedProjects = filteredProjects.sort((a: Project, b: Project) => b.budget - a.budget);
+          setRecommendedProjects(sortedProjects);
+        } else {
+          // Jika tidak ada skills, set empty array
+          setRecommendedProjects([]);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   interface Project {
-    id: number;
+    _id: string;
     title: string;
-    budget: string;
+    description: string;
+    budget: number;
     category: string;
-    postedBy: string;
-    image: string;
+    location: string;
+    duration: string;
+    status: string;
+    image: string[];
+    clientId: string;
   }
 
   interface Freelancer {
@@ -34,25 +92,6 @@ export default function Freelancer() {
     title?: string;
     data?: Project[] | Freelancer[];
   }
-
-  const recommendedProjects: Project[] = [
-    {
-      id: 1,
-      title: "Mobile App Development",
-      budget: "Rp 37.500.000",
-      category: "Development",
-      postedBy: "Tech Solutions Inc.",
-      image: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&auto=format&fit=crop&q=60",
-    },
-    {
-      id: 2,
-      title: "Website Redesign",
-      budget: "Rp 27.000.000",
-      category: "Design",
-      postedBy: "Creative Agency",
-      image: "https://images.unsplash.com/photo-1547658719-da2b51169166?w=800&auto=format&fit=crop&q=60",
-    },
-  ];
 
   const topFreelancers: Freelancer[] = [
     {
@@ -76,38 +115,48 @@ export default function Freelancer() {
       id: "search",
       type: "search",
     },
-    {
-      id: "features",
-      type: "features",
-    },
-    {
+    // ! Cari tau kenapa harus as const
+    // Hanya tampilkan section rekomendasi jika ada projects yang sesuai
+    ...(recommendedProjects.length > 0 ? [{
       id: "projects",
-      type: "projects",
+      type: "projects" as const,
       title: "Recommended for You",
       data: recommendedProjects,
+    }] : []),
+    {
+      id: "features",
+      type: "features" as const,
     },
     {
       id: "freelancers",
-      type: "freelancers",
+      type: "freelancers" as const,
       title: "Top Freelancers",
       data: topFreelancers,
     },
   ];
 
   const renderProject = ({ item }: { item: Project }) => (
-    <TouchableOpacity style={styles.projectCard} onPress={() => navigation.navigate("ProjectDetails", { projectId: item.id })}>
-      <Image source={{ uri: item.image }} style={styles.projectImage} />
+    <TouchableOpacity 
+      style={styles.projectCard} 
+      onPress={() => navigation.navigate("ProjectDetails", { projectId: item._id })}
+    >
+      <Image 
+        source={{ uri: item.image[0] || 'https://via.placeholder.com/280x140' }} 
+        style={styles.projectImage} 
+      />
       <View style={styles.projectInfo}>
         <Text style={styles.projectTitle}>{item.title}</Text>
         <Text style={styles.projectCategory}>{item.category}</Text>
-        <Text style={styles.projectBudget}>{item.budget}</Text>
-        <Text style={styles.projectPoster}>{item.postedBy}</Text>
+        <Text style={styles.projectBudget}>
+          Rp{item.budget.toLocaleString('id-ID')}
+        </Text>
+        <Text style={styles.projectLocation}>📍 {item.location}</Text>
       </View>
     </TouchableOpacity>
   );
 
   const renderFreelancer = ({ item }: { item: Freelancer }) => (
-    <TouchableOpacity style={styles.freelancerCard} onPress={() => navigation.navigate("FreelancerDetails", { freelancerId: item.id })}>
+      <TouchableOpacity style={styles.freelancerCard} onPress={() => console.log("Freelancer Card Pressed")}>
       <Image source={{ uri: item.image }} style={styles.freelancerImage} />
       <Text style={styles.freelancerName}>{item.name}</Text>
       <Text style={styles.freelancerRole}>{item.role}</Text>
@@ -136,7 +185,7 @@ export default function Freelancer() {
                 <Text style={styles.seeAllButton}>See All</Text>
               </TouchableOpacity>
             </View>
-            <FlatList<Project> data={item.data as Project[]} renderItem={renderProject} keyExtractor={(item) => item.id.toString()} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.projectsScroll} />
+            <FlatList<Project> data={item.data as Project[]} renderItem={renderProject} keyExtractor={(item) => item._id} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.projectsScroll} />
           </View>
         );
 
@@ -413,7 +462,7 @@ const styles = StyleSheet.create({
     color: "#059669",
     marginBottom: 4,
   },
-  projectPoster: {
+  projectLocation: {
     fontSize: 14,
     color: "#6b7280",
   },
