@@ -12,7 +12,7 @@ export default function Projects() {
   const insets = useSafeAreaInsets();
 
   interface Project {
-    id: number;
+    id: string;
     title: string;
     budget: string;
     category: string;
@@ -24,7 +24,7 @@ export default function Projects() {
 
   const projects: Project[] = [
     {
-      id: 1,
+      id: "1",
       title: "Mobile App Development",
       budget: "Rp 37.500.000",
       category: "Development",
@@ -34,7 +34,7 @@ export default function Projects() {
       postedTime: "2 hours ago",
     },
     {
-      id: 2,
+      id: "2",
       title: "Website Redesign",
       budget: "Rp 27.000.000",
       category: "Design",

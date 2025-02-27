@@ -1,42 +1,69 @@
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Dimensions, Animated, NativeScrollEvent, NativeSyntheticEvent } from "react-native";
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Dimensions, Animated, NativeScrollEvent, NativeSyntheticEvent, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ChevronLeft, Clock, DollarSign, MapPin, MessageCircle } from "lucide-react-native";
-import { useNavigation } from "@react-navigation/native";
-import React, { useState, useRef } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
-
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import React, { useState, useRef, useEffect } from "react";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
+import { baseUrl } from "@/constant/baseUrl";
+import { SecureStoreUtils } from "@/utils/SecureStore";
 import ProjectDiscussion from "./projectDiscussion";
 
 interface ProjectDetails {
-  id: number;
+  _id: string;
+  clientId: string;
   title: string;
-  budget: string;
+  description: string;
+  budget: number;
   category: string;
   location: string;
   duration: string;
-  postedBy: {
-    id: number;
-    name: string;
-    image: string;
-    rating: number;
-  };
-  description: string;
+  status: string;
   requirements: string[];
-  image: string;
+  image: string[];
+  features: string[];
+  assignedFreelancer: any[];
+  progress: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
-type ProjectDetailsNavigationProp = StackNavigationProp<RootStackParamList>;
+type ProjectDetailsRouteProp = RouteProp<RootStackParamList, 'ProjectDetails'>;
 
 export default function ProjectDetails() {
   const [activeSlide, setActiveSlide] = useState(0);
+  const [project, setProject] = useState<ProjectDetails | null>(null);
+  const [loading, setLoading] = useState(true);
   const scrollViewRef = useRef<ScrollView>(null);
   const scrollY = useRef(new Animated.Value(0)).current;
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation<ProjectDetailsNavigationProp>();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const route = useRoute<ProjectDetailsRouteProp>();
   const [showTerms, setShowTerms] = useState(false);
   const windowWidth = Dimensions.get("window").width;
+
+  useEffect(() => {
+    fetchProjectDetails();
+  }, []);
+
+  const fetchProjectDetails = async () => {
+    try {
+      const token = await SecureStoreUtils.getToken();
+      const response = await fetch(`${baseUrl}/api/projects/${route.params.projectId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const result = await response.json();
+      if (result.success) {
+        setProject(result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching project details:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const headerOpacity = scrollY.interpolate({
     inputRange: [250, 300],
@@ -50,33 +77,6 @@ export default function ProjectDetails() {
     extrapolate: "clamp",
   });
 
-  const project: ProjectDetails = {
-    id: 1,
-    title: "Mobile App Development",
-    budget: "Rp 37.500.000",
-    category: "Development",
-    location: "Remote",
-    duration: "3 months",
-    postedBy: {
-      id: 1,
-      name: "Tech Solutions Inc.",
-      image: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=800&auto=format&fit=crop&q=60",
-      rating: 4.8,
-    },
-    description:
-      "Looking for an experienced mobile developer to create a modern, user-friendly application. The project involves building both iOS and Android versions using React Native. The app will include features such as user authentication, real-time messaging, and integration with REST APIs.",
-    requirements: ["5+ years of mobile development experience", "Strong knowledge of React Native", "Experience with REST APIs", "Good understanding of UI/UX principles", "Excellent communication skills"],
-    image: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&auto=format&fit=crop&q=60",
-  };
-
-  // Mock images for the carousel
-  const projectImages = [
-    "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&auto=format&fit=crop&q=60",
-    "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=60",
-    "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&auto=format&fit=crop&q=60",
-    "https://images.unsplash.com/photo-1555774698-0b77e0d5fac6?w=800&auto=format&fit=crop&q=60",
-  ];
-
   const handleScroll = (event: any) => {
     const slideSize = event.nativeEvent.layoutMeasurement.width;
     const offset = event.nativeEvent.contentOffset.x;
@@ -88,6 +88,14 @@ export default function ProjectDetails() {
     const offsetY = event.nativeEvent.contentOffset.y;
     scrollY.setValue(offsetY);
   };
+
+  if (loading || !project) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -121,7 +129,7 @@ export default function ProjectDetails() {
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} onScroll={handleMainScroll} scrollEventThrottle={16} contentContainerStyle={{ paddingTop: 0 }}>
         <View style={styles.carouselContainer}>
           <ScrollView ref={scrollViewRef} horizontal pagingEnabled showsHorizontalScrollIndicator={false} onMomentumScrollEnd={handleScroll}>
-            {projectImages.map((image, index) => (
+            {project.image.map((image, index) => (
               <View key={index} style={styles.carouselItemContainer}>
                 <Image source={{ uri: image }} style={styles.carouselImage} />
               </View>
@@ -134,7 +142,7 @@ export default function ProjectDetails() {
           </TouchableOpacity>
 
           <View style={styles.paginationContainer}>
-            {projectImages.map((_, index) => (
+            {project.image.map((_, index) => (
               <View key={index} style={[styles.paginationDot, index === activeSlide ? styles.paginationDotActive : styles.paginationDotInactive]} />
             ))}
           </View>
@@ -150,7 +158,7 @@ export default function ProjectDetails() {
               </View>
               <View>
                 <Text style={styles.statLabel}>Budget</Text>
-                <Text style={styles.statValue}>{project.budget}</Text>
+                <Text style={styles.statValue}>Rp{project.budget.toLocaleString('id-ID')}</Text>
               </View>
             </View>
 
@@ -181,14 +189,13 @@ export default function ProjectDetails() {
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Posted By</Text>
-            <View style={styles.posterContainer}>
-              <Image source={{ uri: project.postedBy.image }} style={styles.posterImage} />
-              <View style={styles.posterInfo}>
-                <Text style={styles.posterName}>{project.postedBy.name}</Text>
-                <Text style={styles.posterRating}>⭐️ {project.postedBy.rating}</Text>
+            <Text style={styles.sectionTitle}>Features</Text>
+            {project.features.map((feature, index) => (
+              <View key={index} style={styles.requirementItem}>
+                <View style={styles.bullet} />
+                <Text style={styles.requirementText}>{feature}</Text>
               </View>
-            </View>
+            ))}
           </View>
         </View>
       </ScrollView>
@@ -196,22 +203,20 @@ export default function ProjectDetails() {
       <View style={[styles.footer, { paddingBottom: insets.bottom }]}>
         <TouchableOpacity
           style={styles.chatButton}
-          onPress={() =>
-            navigation.navigate("DirectMessage", {
-              userId: project.postedBy.id,
-              userName: project.postedBy.name,
-              userImage: project.postedBy.image,
-            })
-          }
+          onPress={() => console.log("Chat Button Pressed")}
         >
           <MessageCircle size={24} color="#2563eb" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.applyButton} onPress={() => setShowTerms(true)}>
-          <Text style={styles.applyButtonText}>Apply Now</Text>
+        <TouchableOpacity 
+          style={styles.applyButton}
+          onPress={() => setShowTerms(true)}
+        >
+          <Text style={styles.applyButtonText}>
+            Apply Now
+          </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Add the ProjectDiscussion component */}
       <ProjectDiscussion
         isVisible={showTerms}
         onClose={() => setShowTerms(false)}
@@ -390,29 +395,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#4b5563",
   },
-  posterContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  posterImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginRight: 12,
-  },
-  posterInfo: {
-    flex: 1,
-  },
-  posterName: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#111827",
-    marginBottom: 4,
-  },
-  posterRating: {
-    fontSize: 14,
-    color: "#6b7280",
-  },
   footer: {
     padding: 20,
     borderTopWidth: 1,
@@ -443,5 +425,11 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
   },
 });
