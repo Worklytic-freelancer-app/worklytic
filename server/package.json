@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "rm -rf .next && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "reset": "bun kontas unseed --all && bun kontas seed --all"
   },
   "dependencies": {
     "@types/jsonwebtoken": "^9.0.9",
