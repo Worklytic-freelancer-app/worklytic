@@ -7,73 +7,63 @@ import { RootStackParamList } from "@/navigators";
 
 type ClientScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
+// Add Freelancer interface
+interface Freelancer {
+  id: number;
+  name: string;
+  role: string;
+  rating: number;
+  image: string;
+}
+
+// Move Service interface to top with other interfaces
+interface Service {
+  id: number;
+  freelancerName: string;
+  freelancerImage: string;
+  title: string;
+  price: string;
+  rating: number;
+  reviews: number;
+  image: string;
+}
+
+// Add Section interface
+interface Section {
+  id: string;
+  type: "search" | "post-project" | "projects" | "freelancers";
+  title?: string;
+  data?: Freelancer[] | Service[];
+}
+
 export default function Client() {
   const navigation = useNavigation<ClientScreenNavigationProp>();
   const insets = useSafeAreaInsets();
 
-  interface Project {
-    id: number;
-    title: string;
-    budget: string;
-    category: string;
-    status: string;
-    applicants: number;
-    image: string;
-  }
-
-  interface Freelancer {
-    id: number;
-    name: string;
-    role: string;
-    rating: number;
-    image: string;
-  }
-
-  interface Section {
-    id: string;
-    type: "search" | "post-project" | "projects" | "freelancers";
-    title?: string;
-    data?: Project[] | Freelancer[];
-  }
-
-  const myProjects: Project[] = [
+  const services: Service[] = [
     {
       id: 1,
+      freelancerName: "John Doe",
+      freelancerImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80",
       title: "Mobile App Development",
-      budget: "Rp 37.500.000",
-      category: "Development",
-      status: "Open",
-      applicants: 5,
+      price: "Rp5.000.000",
+      rating: 4.8,
+      reviews: 25,
       image: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&auto=format&fit=crop&q=60",
     },
     {
       id: 2,
-      title: "Website Redesign",
-      budget: "Rp 27.000.000",
-      category: "Design",
-      status: "Open",
-      applicants: 3,
+      freelancerName: "Jane Smith",
+      freelancerImage: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&auto=format&fit=crop&q=60",
+      title: "Web Development",
+      price: "Rp4.000.000",
+      rating: 4.9,
+      reviews: 32,
       image: "https://images.unsplash.com/photo-1547658719-da2b51169166?w=800&auto=format&fit=crop&q=60",
     },
   ];
 
-  const topFreelancers: Freelancer[] = [
-    {
-      id: 1,
-      name: "Sarah Chen",
-      role: "UI/UX Designer",
-      rating: 4.9,
-      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&auto=format&fit=crop&q=60",
-    },
-    {
-      id: 2,
-      name: "Michael Ross",
-      role: "Full Stack Developer",
-      rating: 4.8,
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800&auto=format&fit=crop&q=60",
-    },
-  ];
-
+  // Update sections array to use services
   const sections: Section[] = [
     {
       id: "search",
@@ -86,45 +76,57 @@ export default function Client() {
     {
       id: "projects",
       type: "projects",
-      title: "My Posted Projects",
-      data: myProjects,
+      title: "Popular Services",
+      data: services,
     },
     {
       id: "freelancers",
       type: "freelancers",
       title: "Top Freelancers",
-      data: topFreelancers,
+      data: [
+        {
+          id: 1,
+          name: "John Doe",
+          role: "Mobile Developer",
+          rating: 4.8,
+          image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80"
+        },
+        {
+          id: 2,
+          name: "Jane Smith",
+          role: "Web Developer",
+          rating: 4.9,
+          image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&auto=format&fit=crop&q=60"
+        }
+      ],
     },
   ];
 
-  const renderProject = ({ item }: { item: Project }) => (
-    <TouchableOpacity style={styles.projectCard} onPress={() => navigation.navigate("ProjectDetails", { projectId: item.id })}>
-      <Image source={{ uri: item.image }} style={styles.projectImage} />
-      <View style={styles.projectInfo}>
-        <Text style={styles.projectTitle}>{item.title}</Text>
-        <Text style={styles.projectCategory}>{item.category}</Text>
-        <Text style={styles.projectBudget}>{item.budget}</Text>
-        <View style={styles.projectStats}>
-          <View style={styles.statusContainer}>
-            <Text style={styles.statusText}>{item.status}</Text>
+  // Move renderService before it's used
+  const renderService = ({ item }: { item: Service }) => (
+    <TouchableOpacity 
+      style={styles.serviceCard} 
+      onPress={() => navigation.navigate("ServiceDetails", { serviceId: item.id })}
+    >
+      <Image source={{ uri: item.image }} style={styles.serviceImage} />
+      <View style={styles.serviceInfo}>
+        <View style={styles.freelancerInfo}>
+          <Image source={{ uri: item.freelancerImage }} style={styles.freelancerThumb} />
+          <Text style={styles.freelancerName}>{item.freelancerName}</Text>
+        </View>
+        <Text style={styles.serviceTitle}>{item.title}</Text>
+        <Text style={styles.servicePrice}>{item.price}</Text>
+        <View style={styles.serviceStats}>
+          <View style={styles.ratingContainer}>
+            <Text style={styles.rating}>⭐️ {item.rating}</Text>
           </View>
-          <Text style={styles.applicantsText}>{item.applicants} Applicants</Text>
+          <Text style={styles.reviewsText}>({item.reviews} reviews)</Text>
         </View>
       </View>
     </TouchableOpacity>
   );
 
-  const renderFreelancer = ({ item }: { item: Freelancer }) => (
-    <TouchableOpacity style={styles.freelancerCard} onPress={() => navigation.navigate("FreelancerDetails", { freelancerId: item.id })}>
-      <Image source={{ uri: item.image }} style={styles.freelancerImage} />
-      <Text style={styles.freelancerName}>{item.name}</Text>
-      <Text style={styles.freelancerRole}>{item.role}</Text>
-      <View style={styles.ratingContainer}>
-        <Text style={styles.rating}>⭐️ {item.rating}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-
+  // Update renderSection's projects case
   const renderSection = ({ item }: { item: Section }) => {
     switch (item.type) {
       case "post-project":
@@ -155,11 +157,18 @@ export default function Client() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>{item.title}</Text>
-              <TouchableOpacity onPress={() => navigation.navigate("Projects")}>
+              <TouchableOpacity onPress={() => navigation.navigate("Services")}>
                 <Text style={styles.seeAllButton}>See All</Text>
               </TouchableOpacity>
             </View>
-            <FlatList<Project> data={item.data as Project[]} renderItem={renderProject} keyExtractor={(item) => item.id.toString()} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.projectsScroll} />
+            <FlatList<Service>
+              data={item.data as Service[]}
+              renderItem={renderService}
+              keyExtractor={(item) => item.id.toString()}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.servicesScroll}
+            />
           </View>
         );
 
@@ -174,7 +183,19 @@ export default function Client() {
             </View>
             <FlatList<Freelancer>
               data={item.data as Freelancer[]}
-              renderItem={renderFreelancer}
+              renderItem={({ item }: { item: Freelancer }) => (
+                <TouchableOpacity 
+                  style={styles.freelancerCard}
+                  onPress={() => navigation.navigate("FreelancerDetails", { freelancerId: item.id })}
+                >
+                  <Image source={{ uri: item.image }} style={styles.freelancerImage} />
+                  <Text style={styles.freelancerName}>{item.name}</Text>
+                  <Text style={styles.freelancerRole}>{item.role}</Text>
+                  <View style={styles.ratingContainer}>
+                    <Text style={styles.rating}>⭐️ {item.rating}</Text>
+                  </View>
+                </TouchableOpacity>
+              )}
               keyExtractor={(item) => item.id.toString()}
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -407,11 +428,68 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
-    marginTop: 8
+    marginTop: 8,
   },
   rating: {
     fontSize: 12,
     color: "#6b7280",
-    fontWeight: "500"
-  }
+    fontWeight: "500",
+  },
+  serviceCard: {
+    width: 280,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    marginRight: 16,
+    marginBottom: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  serviceImage: {
+    width: "100%",
+    height: 140,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
+  serviceInfo: {
+    padding: 16,
+  },
+  freelancerInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  freelancerThumb: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    marginRight: 8,
+  },
+  serviceTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#111827",
+    marginBottom: 8,
+  },
+  servicePrice: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#059669",
+    marginBottom: 8,
+  },
+  serviceStats: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  reviewsText: {
+    fontSize: 12,
+    color: "#6b7280",
+    marginLeft: 4,
+  },
+  servicesScroll: {
+    paddingLeft: 20,
+    paddingBottom: 8,
+  },
 });

@@ -6,14 +6,16 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 
+// Update the SearchResult interface to include service type
 interface SearchResult {
   id: number;
-  type: "project" | "freelancer";
+  type: "project" | "freelancer" | "service";  // Add service type
   title?: string;
   name?: string;
   description: string;
   image: string;
   tags: string[];
+  price?: string;  // Add price for services
 }
 
 export default function Search(): JSX.Element {
@@ -39,13 +41,24 @@ export default function Search(): JSX.Element {
       image: "https://picsum.photos/200?random=2",
       tags: ["UI/UX", "Figma", "Design"],
     },
+    {
+      id: 3,
+      type: "service",
+      title: "Mobile App Development Service",
+      description: "Professional mobile app development with React Native",
+      price: "Rp5.000.000",
+      image: "https://picsum.photos/200?random=3",
+      tags: ["Mobile", "Development", "React Native"],
+    },
   ];
 
   const handleResultPress = (item: SearchResult) => {
     if (item.type === "project") {
       navigation.navigate("ProjectDetails", { projectId: item.id });
-    } else {
+    } else if (item.type === "freelancer") {
       navigation.navigate("FreelancerDetails", { freelancerId: item.id });
+    } else {
+      navigation.navigate("ServiceDetails", { serviceId: item.id });
     }
   };
 
@@ -57,11 +70,14 @@ export default function Search(): JSX.Element {
       <Image source={{ uri: item.image }} style={styles.resultImage} />
       <View style={styles.resultContent}>
         <Text style={styles.resultTitle}>
-          {item.type === "project" ? item.title : item.name}
+          {item.type === "freelancer" ? item.name : item.title}
         </Text>
         <Text style={styles.resultDescription} numberOfLines={2}>
           {item.description}
         </Text>
+        {item.type === "service" && (
+          <Text style={styles.servicePrice}>{item.price}</Text>
+        )}
         <View style={styles.tagsContainer}>
           {item.tags.map((tag, index) => (
             <View key={index} style={styles.tag}>
@@ -187,5 +203,11 @@ const styles = StyleSheet.create({
   tagText: {
     fontSize: 12,
     color: "#374151",
+  },
+  servicePrice: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#2563eb",
+    marginBottom: 8,
   },
 });

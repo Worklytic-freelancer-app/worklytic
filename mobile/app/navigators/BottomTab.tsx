@@ -4,7 +4,7 @@ import Home from "@/screens/home";
 import Profile from "@/screens/profile/freelancer";
 import WorklyticAI from "@/screens/worklyticAI";
 import Workspace from "@/screens/workspace";
-import Projects from "@/screens/projects";
+import Search from "@/screens/search";
 import Inbox from "@/screens/inbox";
 
 const Tab = createBottomTabNavigator();
@@ -27,8 +27,8 @@ export default function BottomTab() {
             case "Home":
               iconName = focused ? "home" : "home-outline";
               break;
-            case "Projects":
-              iconName = focused ? "folder" : "folder-outline";
+            case "Search": // Update case
+              iconName = focused ? "search" : "search-outline";
               break;
             case "WorklyticAI":
               iconName = focused ? "sparkles" : "sparkles-outline";
@@ -49,7 +49,7 @@ export default function BottomTab() {
       })}
     >
       <Tab.Screen name="Home" component={Home} />
-      <Tab.Screen name="Projects" component={Projects} />
+      <Tab.Screen name="Search" component={Search} />
       <Tab.Screen name="WorklyticAI" component={WorklyticAI} />
       <Tab.Screen name="inbox" component={Inbox} />
       <Tab.Screen name="Workspace" component={Workspace} />

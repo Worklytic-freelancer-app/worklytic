@@ -14,6 +14,8 @@ import SignUpFreelancer from "@/screens/auth/signUp/freelancer";
 import SignUpClient from "@/screens/auth/signUp/client";
 import PostProject from "@/screens/postProject";
 import AddService from "@/screens/profile/freelancer/addService";
+import Services from "@/screens/services";
+import ServiceDetails from "@/screens/services/serviceDetails";
 
 const Stack = createStackNavigator();
 
@@ -32,6 +34,9 @@ export type RootStackParamList = {
   Workspace: undefined;
   WorkspaceDetails: { projectId: number };
   PostProject: undefined;
+  AddService: undefined;
+  Services: undefined;
+  ServiceDetails: { serviceId: number };
   DirectMessage: {
     userId: number;
     userName: string;
@@ -64,6 +69,8 @@ export default function AppNavigator() {
       <Stack.Screen name="WorkspaceDetails" component={WorkspaceDetails} />
       <Stack.Screen name="PostProject" component={PostProject} />
       <Stack.Screen name="AddService" component={AddService} />
+      <Stack.Screen name="Services" component={Services} />
+      <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
     </Stack.Navigator>
   );
 }

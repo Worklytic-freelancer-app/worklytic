@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, FlatList }
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MapPin, Mail, Phone, Calendar, ChevronLeft } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RootStackParamList } from "@/navigators";
 
 interface Project {
   id: number;
@@ -17,10 +19,22 @@ interface Project {
   status: string;
 }
 
-export default function FreelancerDetails() {
-  const insets = useSafeAreaInsets();
-  const navigation = useNavigation();
+// First, add the Service interface near the top with other interfaces
+interface Service {
+  id: number;
+  title: string;
+  description: string;
+  price: string;
+  image: string;
+  category: string;
+}
 
+type FreelancerDetailsNavigationProp = StackNavigationProp<RootStackParamList>;
+
+export default function FreelancerDetails() {
+  const navigation = useNavigation<FreelancerDetailsNavigationProp>();
+  const insets = useSafeAreaInsets();
+  
   const freelancer = {
     id: 1,
     name: "John Doe",
@@ -59,6 +73,42 @@ export default function FreelancerDetails() {
         <Text style={styles.projectDescription}>{item.description}</Text>
         <Text style={styles.projectMeta}>Client: {item.clientName}</Text>
         <Text style={styles.projectMeta}>Completed: {item.completionDate}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
+  // Add services data
+  const services: Service[] = [
+    {
+      id: 1,
+      title: "Mobile App Development",
+      description: "Full-stack mobile app development with React Native",
+      price: "Rp5.000.000",
+      image: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&auto=format&fit=crop&q=60",
+      category: "Development",
+    },
+    {
+      id: 2,
+      title: "UI/UX Design",
+      description: "Modern and intuitive mobile app design",
+      price: "Rp3.000.000",
+      image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=60",
+      category: "Design",
+    },
+  ];
+
+  // Add render function for services
+  const renderService = (service: Service) => (
+    <TouchableOpacity 
+      key={service.id}
+      style={styles.serviceCard}
+      onPress={() => navigation.navigate("ServiceDetails", { serviceId: service.id })}
+    >
+      <Image source={{ uri: service.image }} style={styles.serviceImage} />
+      <View style={styles.serviceInfo}>
+        <Text style={styles.serviceTitle}>{service.title}</Text>
+        <Text style={styles.serviceDescription}>{service.description}</Text>
+        <Text style={styles.servicePrice}>{service.price}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -120,8 +170,26 @@ export default function FreelancerDetails() {
         </View>
 
         <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Services</Text>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.servicesContainer}
+          >
+            {services.map(renderService)}
+          </ScrollView>
+        </View>
+
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>Completed Projects</Text>
-          <FlatList data={completedProjects} renderItem={renderProject} keyExtractor={(item) => item.id.toString()} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.projectsContainer} />
+          <FlatList 
+            data={completedProjects} 
+            renderItem={renderProject} 
+            keyExtractor={(item) => item.id.toString()} 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            contentContainerStyle={styles.projectsContainer} 
+          />
         </View>
 
         <TouchableOpacity style={[styles.hireButton, { backgroundColor: "#10B981" }]}>
@@ -280,5 +348,41 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#fff",
+  },
+  servicesContainer: {
+    paddingRight: 20,
+  },
+  serviceCard: {
+    width: 280,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginRight: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  serviceImage: {
+    width: '100%',
+    height: 160,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+  },
+  serviceInfo: {
+    padding: 16,
+  },
+  serviceTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 8,
+  },
+  serviceDescription: {
+    fontSize: 14,
+    color: '#4B5563',
+    marginBottom: 12,
+  },
+  servicePrice: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2563EB',
   },
 });
