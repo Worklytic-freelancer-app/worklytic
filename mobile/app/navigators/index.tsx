@@ -10,10 +10,8 @@ import Freelancers from "@/screens/profileDetails/freelancers";
 import FreelancerDetails from "@/screens/profileDetails/freelancers/freelancerDetails";
 import WorkspaceDetails from "@/screens/workspace/workspaceDetails";
 import Workspace from "@/screens/workspace";
-import SignUpFreelancer from "@/screens/auth/signUp/freelancer";
-import SignUpClient from "@/screens/auth/signUp/client";
 import PostProject from "@/screens/postProject";
-import AddService from "@/screens/profile/freelancer/addService";
+import AddService from "@/screens/profile/addService";
 import Services from "@/screens/services";
 import ServiceDetails from "@/screens/services/serviceDetails";
 
@@ -23,25 +21,25 @@ export type RootStackParamList = {
   BottomTab: undefined;
   Settings: undefined;
   Projects: undefined;
-  ProjectDetails: { projectId: number };
+  ProjectDetails: { projectId: string };
   SignIn: undefined;
-  SignUp: { role: "freelancer" | "client" };
+  SignUp: { role: "freelancer" | "client" } | undefined;
   ForgotPassword: undefined;
   Search: undefined;
   Freelancers: undefined;
   Workspace: undefined;
-  WorkspaceDetails: { projectId: number };
+  WorkspaceDetails: { projectId: string };
   PostProject: undefined;
   AddService: undefined;
   Services: undefined;
-  ServiceDetails: { serviceId: number };
+  ServiceDetails: { serviceId: string };
   DirectMessage: {
-    userId: number;
+    userId: string;
     userName: string;
     userImage: string;
   };
   FreelancerDetails: {
-    freelancerId: number;
+    freelancerId: string;
   };
 };
 
@@ -58,8 +56,6 @@ export default function AppNavigator() {
       <Stack.Screen name="ProjectDetails" component={ProjectDetails} />
       <Stack.Screen name="SignIn" component={SignIn} />
       <Stack.Screen name="SignUp" component={SignUp} />
-      <Stack.Screen name="SignUpFreelancer" component={SignUpFreelancer} />
-      <Stack.Screen name="SignUpClient" component={SignUpClient} />
       <Stack.Screen name="Search" component={Search} />
       <Stack.Screen name="DirectMessage" component={DirectMessage} />
       <Stack.Screen name="Freelancers" component={Freelancers} />

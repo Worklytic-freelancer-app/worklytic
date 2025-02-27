@@ -112,17 +112,17 @@ export default function SignUpForm({ role }: SignUpFormProps) {
         <View style={styles.form}>
           <View style={styles.inputContainer}>
             <User size={20} color="#6b7280" />
-            <TextInput style={styles.input} placeholder="Full Name" placeholderTextColor="#6b7280" value={form.name} onChangeText={(text) => setForm({ ...form, name: text })} />
+            <TextInput autoCapitalize="none" style={styles.input} placeholder="Full Name" placeholderTextColor="#6b7280" value={form.name} onChangeText={(text) => setForm({ ...form, name: text })} />
           </View>
 
           <View style={styles.inputContainer}>
             <Mail size={20} color="#6b7280" />
-            <TextInput style={styles.input} placeholder="Email" placeholderTextColor="#6b7280" keyboardType="email-address" autoCapitalize="none" value={form.email} onChangeText={(text) => setForm({ ...form, email: text })} />
+            <TextInput autoCapitalize="none" style={styles.input} placeholder="Email" placeholderTextColor="#6b7280" keyboardType="email-address" value={form.email} onChangeText={(text) => setForm({ ...form, email: text })} />
           </View>
 
           <View style={styles.inputContainer}>
             <Lock size={20} color="#6b7280" />
-            <TextInput style={styles.input} placeholder="Password" placeholderTextColor="#6b7280" secureTextEntry={!showPassword} value={form.password} onChangeText={(text) => setForm({ ...form, password: text })} />
+            <TextInput autoCapitalize="none" style={styles.input} placeholder="Password" placeholderTextColor="#6b7280" secureTextEntry={!showPassword} value={form.password} onChangeText={(text) => setForm({ ...form, password: text })} />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeButton}>
               {showPassword ? <EyeOff size={20} color="#6b7280" /> : <Eye size={20} color="#6b7280" />}
             </TouchableOpacity>
