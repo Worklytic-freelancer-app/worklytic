@@ -5,9 +5,9 @@ import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
-import * as SecureStore from "expo-secure-store";
 import { Alert } from "react-native";
 import { baseUrl } from "@/constant/baseUrl";
+import { SecureStoreUtils } from "@/utils/SecureStore";
 
 type SignInScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -22,7 +22,7 @@ export default function SignIn() {
 
   async function handleSignIn() {
     try {
-      const response = await fetch(`${baseUrl}/api/signIn`, {
+      const response = await fetch(`${baseUrl}/api/auth/sign-in`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -31,15 +31,26 @@ export default function SignIn() {
       });
       const result = await response.json();
 
-      if (response.ok) {
-        await SecureStore.setItemAsync("token", result.token);
-        Alert.alert("Success", "Login successful!.", [{ text: "OK", onPress: () => navigation.navigate("BottomTab") }]);
+      if (response.ok && result.success) {
+        await SecureStoreUtils.setAuthData({
+          token: result.data.token,
+          user: result.data.user
+        });
+        
+        Alert.alert(
+          "Sukses", 
+          result.message, 
+          [{ 
+            text: "OK", 
+            onPress: () => navigation.navigate("BottomTab") 
+          }]
+        );
       } else {
-        Alert.alert("Error", result.message);
+        Alert.alert("Error", result.message || "Gagal melakukan login");
       }
     } catch (error) {
       console.error("Error signing in:", error);
-      Alert.alert("Error", "An error occurred while signing in.");
+      Alert.alert("Error", "Terjadi kesalahan saat proses login");
     }
   }
 

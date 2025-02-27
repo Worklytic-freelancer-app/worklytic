@@ -50,6 +50,7 @@ export type RootStackParamList = {
 export default function AppNavigator() {
   return (
     <Stack.Navigator
+      initialRouteName="SignIn"
       screenOptions={{
         headerShown: false,
       }}
