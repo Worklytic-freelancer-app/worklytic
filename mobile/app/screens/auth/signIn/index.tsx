@@ -5,6 +5,9 @@ import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
+import * as SecureStore from "expo-secure-store";
+import { Alert } from "react-native";
+import { baseUrl } from "@/constant/baseUrl";
 
 type SignInScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -16,6 +19,28 @@ export default function SignIn() {
     email: "",
     password: "",
   });
+
+  async function handleSignIn() {
+    try {
+      const response = await fetch(`${baseUrl}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
+      const result = await response.json();
+      if (response.ok) {
+        await SecureStore.setItemAsync("token", result.token);
+        navigation.navigate("BottomTab");
+      } else {
+        Alert.alert("Error", result.message);
+      }
+    } catch (error) {
+      console.error("Error signing in:", error);
+      Alert.alert("Error", "An error occurred while signing in.");
+    }
+  }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -40,7 +65,7 @@ export default function SignIn() {
           <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.signInButton} onPress={() => navigation.navigate("BottomTab")}>
+        <TouchableOpacity style={styles.signInButton} onPress={handleSignIn}>
           <Text style={styles.signInButtonText}>Sign In</Text>
         </TouchableOpacity>
 

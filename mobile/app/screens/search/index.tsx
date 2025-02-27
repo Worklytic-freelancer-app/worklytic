@@ -9,19 +9,19 @@ import { RootStackParamList } from "@/navigators";
 // Update the SearchResult interface to include service type
 interface SearchResult {
   id: number;
-  type: "project" | "freelancer" | "service";  // Add service type
+  type: "project" | "freelancer" | "service"; // Add service type
   title?: string;
   name?: string;
   description: string;
   image: string;
   tags: string[];
-  price?: string;  // Add price for services
+  price?: string; // Add price for services
 }
 
 export default function Search(): JSX.Element {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  
+
   const [searchQuery, setSearchQuery] = useState("");
 
   const searchResults: SearchResult[] = [
@@ -63,21 +63,14 @@ export default function Search(): JSX.Element {
   };
 
   const renderSearchResult = ({ item }: { item: SearchResult }) => (
-    <TouchableOpacity 
-      style={styles.resultCard}
-      onPress={() => handleResultPress(item)}
-    >
+    <TouchableOpacity style={styles.resultCard} onPress={() => handleResultPress(item)}>
       <Image source={{ uri: item.image }} style={styles.resultImage} />
       <View style={styles.resultContent}>
-        <Text style={styles.resultTitle}>
-          {item.type === "freelancer" ? item.name : item.title}
-        </Text>
+        <Text style={styles.resultTitle}>{item.type === "freelancer" ? item.name : item.title}</Text>
         <Text style={styles.resultDescription} numberOfLines={2}>
           {item.description}
         </Text>
-        {item.type === "service" && (
-          <Text style={styles.servicePrice}>{item.price}</Text>
-        )}
+        {item.type === "service" && <Text style={styles.servicePrice}>{item.price}</Text>}
         <View style={styles.tagsContainer}>
           {item.tags.map((tag, index) => (
             <View key={index} style={styles.tag}>
@@ -92,32 +85,16 @@ export default function Search(): JSX.Element {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <ArrowLeft size={24} color="#374151" />
         </TouchableOpacity>
         <View style={styles.searchContainer}>
           <SearchIcon size={20} color="#6b7280" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search projects or freelancers"
-            placeholderTextColor="#6b7280"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            autoFocus
-          />
+          <TextInput style={styles.searchInput} placeholder="Search" placeholderTextColor="#6b7280" value={searchQuery} onChangeText={setSearchQuery} autoFocus />
         </View>
       </View>
 
-      <FlatList
-        data={searchResults}
-        renderItem={renderSearchResult}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.resultsList}
-        showsVerticalScrollIndicator={false}
-      />
+      <FlatList data={searchResults} renderItem={renderSearchResult} keyExtractor={(item) => item.id.toString()} contentContainerStyle={styles.resultsList} showsVerticalScrollIndicator={false} />
     </View>
   );
 }

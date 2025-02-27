@@ -15,7 +15,7 @@ export default function SignUpFreelancer() {
   const navigation = useNavigation<SignUpScreenNavigationProp>();
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({
-    fullName: "",
+    name: "",
     email: "",
     password: "",
     role: "freelancer",
@@ -62,7 +62,7 @@ export default function SignUpFreelancer() {
         <View style={styles.form}>
           <View style={styles.inputContainer}>
             <User size={20} color="#6b7280" />
-            <TextInput style={styles.input} placeholder="Full Name" placeholderTextColor="#6b7280" value={form.fullName} onChangeText={(text) => setForm({ ...form, fullName: text })} />
+            <TextInput style={styles.input} placeholder="Full Name" placeholderTextColor="#6b7280" value={form.name} onChangeText={(text) => setForm({ ...form, name: text })} />
           </View>
 
           <View style={styles.inputContainer}>

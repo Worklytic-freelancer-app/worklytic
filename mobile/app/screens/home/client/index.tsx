@@ -5,6 +5,9 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 
+import { useEffect } from "react";
+import * as SecureStore from "expo-secure-store";
+
 type ClientScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
 // Add Freelancer interface
@@ -39,6 +42,11 @@ interface Section {
 export default function Client() {
   const navigation = useNavigation<ClientScreenNavigationProp>();
   const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    console.log("BottomTab rendered");
+    console.log("SecureStore", SecureStore.getItemAsync("token"));
+  }, []);
 
   const services: Service[] = [
     {
@@ -89,25 +97,22 @@ export default function Client() {
           name: "John Doe",
           role: "Mobile Developer",
           rating: 4.8,
-          image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80"
+          image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80",
         },
         {
           id: 2,
           name: "Jane Smith",
           role: "Web Developer",
           rating: 4.9,
-          image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&auto=format&fit=crop&q=60"
-        }
+          image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&auto=format&fit=crop&q=60",
+        },
       ],
     },
   ];
 
   // Move renderService before it's used
   const renderService = ({ item }: { item: Service }) => (
-    <TouchableOpacity 
-      style={styles.serviceCard} 
-      onPress={() => navigation.navigate("ServiceDetails", { serviceId: item.id })}
-    >
+    <TouchableOpacity style={styles.serviceCard} onPress={() => navigation.navigate("ServiceDetails", { serviceId: item.id })}>
       <Image source={{ uri: item.image }} style={styles.serviceImage} />
       <View style={styles.serviceInfo}>
         <View style={styles.freelancerInfo}>
@@ -148,7 +153,7 @@ export default function Client() {
         return (
           <TouchableOpacity style={styles.searchContainer} onPress={() => navigation.navigate("Search")}>
             <Search size={20} color="#6b7280" />
-            <Text style={styles.searchPlaceholder}>Search freelancers</Text>
+            <Text style={styles.searchPlaceholder}>Search </Text>
           </TouchableOpacity>
         );
 
@@ -161,14 +166,7 @@ export default function Client() {
                 <Text style={styles.seeAllButton}>See All</Text>
               </TouchableOpacity>
             </View>
-            <FlatList<Service>
-              data={item.data as Service[]}
-              renderItem={renderService}
-              keyExtractor={(item) => item.id.toString()}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.servicesScroll}
-            />
+            <FlatList<Service> data={item.data as Service[]} renderItem={renderService} keyExtractor={(item) => item.id.toString()} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.servicesScroll} />
           </View>
         );
 
@@ -184,10 +182,7 @@ export default function Client() {
             <FlatList<Freelancer>
               data={item.data as Freelancer[]}
               renderItem={({ item }: { item: Freelancer }) => (
-                <TouchableOpacity 
-                  style={styles.freelancerCard}
-                  onPress={() => navigation.navigate("FreelancerDetails", { freelancerId: item.id })}
-                >
+                <TouchableOpacity style={styles.freelancerCard} onPress={() => navigation.navigate("FreelancerDetails", { freelancerId: item.id })}>
                   <Image source={{ uri: item.image }} style={styles.freelancerImage} />
                   <Text style={styles.freelancerName}>{item.name}</Text>
                   <Text style={styles.freelancerRole}>{item.role}</Text>

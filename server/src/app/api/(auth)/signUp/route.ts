@@ -11,10 +11,10 @@ const UserInputSignUpSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-    console.log("masuk di POST");
-    
+  // console.log("masuk di POST");
+
   try {
-    console.log("POST /api/auth/signUp");
+    // console.log("POST /api/auth/signUp");
 
     const data = await request.json();
     const parsedData = UserInputSignUpSchema.safeParse(data);
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
           statusCode: 400,
           message: "Validation Error",
           errors: {
-            email: "Email sudah terdaftar",
+            email: "Email already exists",
           },
         },
         { status: 400 }

@@ -9,6 +9,8 @@ import Inbox from "@/screens/inbox";
 
 const Tab = createBottomTabNavigator();
 
+
+
 export default function BottomTab() {
   return (
     <Tab.Navigator

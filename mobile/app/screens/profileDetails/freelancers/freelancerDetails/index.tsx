@@ -192,9 +192,16 @@ export default function FreelancerDetails() {
           />
         </View>
 
-        <TouchableOpacity style={[styles.hireButton, { backgroundColor: "#10B981" }]}>
-          <Text style={styles.hireButtonText}>Chat</Text>
-        </TouchableOpacity>
+        <TouchableOpacity 
+              onPress={() => navigation.navigate("DirectMessage", {
+                userId: freelancer.id,
+                userName: freelancer.name,
+                userImage: freelancer.image,
+              })} 
+              style={[styles.hireButton, { backgroundColor: "#2563EB" }]}
+            >
+              <Text style={styles.hireButtonText}>Chat</Text>
+            </TouchableOpacity>
       </ScrollView>
     </View>
   );
