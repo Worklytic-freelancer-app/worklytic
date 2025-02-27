@@ -40,6 +40,8 @@ class UserService {
             });
             
             const result = await User.create(validated);
+
+            // console.log(result, "result");
             
             if (!result.data) {
                 throw new Error("Failed to create user");

@@ -7,30 +7,27 @@ export class User {
   }
 }
 
-const CreateUserSchema = z.object({
+// Untuk data lengkap user
+const UserSchema = z.object({
   fullName: z.string(),
   email: z.string().email(),
   password: z.string().min(6),
   role: z.enum(["freelancer", "client"]),
-});
-
-// Untuk data lengkap user
-const UserSchema = CreateUserSchema.extend({
-  profileImage: z.string().optional().default(""),
-  location: z.string().optional().default(""),
-  balance: z.number().optional().default(0),
-  about: z.string().optional().default(""),
-  phone: z.string().optional().default(""),
-  hourlyRate: z.number().optional().default(0),
-  skills: z.array(z.string()).optional().default([]),
-  totalProjects: z.number().optional().default(0),
-  successRate: z.number().optional().default(0),
-  companyName: z.string().optional().default(""),
-  industry: z.string().optional().default(""),
-  website: z.string().optional().default(""),
-  totalPostedProjects: z.number().optional().default(0),
-  rating: z.number().optional().default(0),
-  totalReviews: z.number().optional().default(0),
+  profileImage: z.string().default(""),
+  location: z.string().default(""),
+  balance: z.number().default(0),
+  about: z.string().default(""),
+  phone: z.string().default(""),
+  hourlyRate: z.number().default(0),
+  skills: z.array(z.string()).default([]),
+  totalProjects: z.number().default(0),
+  successRate: z.number().default(0),
+  companyName: z.string().default(""),
+  industry: z.string().default(""),
+  website: z.string().default(""),
+  totalPostedProjects: z.number().default(0),
+  rating: z.number().default(0),
+  totalReviews: z.number().default(0),
 });
 
 const WithIdSchema = z.object({
@@ -46,7 +43,7 @@ export const UserIdValidate = z.object({
   id: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId format"),
 });
 
-export const CreateUserValidate = CreateUserSchema;
+export const CreateUserValidate = UserSchema;
 
 export const UsersValidate = UserSchema.merge(WithIdSchema).merge(TimestampSchema);
 
