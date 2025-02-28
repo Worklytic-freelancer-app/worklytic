@@ -14,14 +14,16 @@ import PostProject from "@/screens/postProject";
 import AddService from "@/screens/profile/addService";
 import Services from "@/screens/services";
 import ServiceDetails from "@/screens/services/serviceDetails";
-
+import Projects from "@/screens/projects";
+import EditProfile from "@/screens/profile/editProfile";
+import Profile from "@/screens/profile";
 const Stack = createStackNavigator();
 
 export type RootStackParamList = {
   BottomTab: undefined;
   Settings: undefined;
   Projects: undefined;
-  ProjectDetails: { projectId: string };
+  ProjectDetails: { projectId: string; clientId: string };
   SignIn: undefined;
   SignUp: { role: "freelancer" | "client" } | undefined;
   ForgotPassword: undefined;
@@ -41,6 +43,7 @@ export type RootStackParamList = {
   FreelancerDetails: {
     freelancerId: string;
   };
+  EditProfile: undefined;
 };
 
 export default function AppNavigator() {
@@ -51,11 +54,12 @@ export default function AppNavigator() {
         headerShown: false,
       }}
     >
+      <Stack.Screen name="SignIn" component={SignIn} />
+      <Stack.Screen name="SignUp" component={SignUp} />
       <Stack.Screen name="BottomTab" component={BottomTab} />
       <Stack.Screen name="Settings" component={Settings} />
       <Stack.Screen name="ProjectDetails" component={ProjectDetails} />
-      <Stack.Screen name="SignIn" component={SignIn} />
-      <Stack.Screen name="SignUp" component={SignUp} />
+      <Stack.Screen name="Projects" component={Projects} />
       <Stack.Screen name="Search" component={Search} />
       <Stack.Screen name="DirectMessage" component={DirectMessage} />
       <Stack.Screen name="Freelancers" component={Freelancers} />
@@ -66,6 +70,8 @@ export default function AppNavigator() {
       <Stack.Screen name="AddService" component={AddService} />
       <Stack.Screen name="Services" component={Services} />
       <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
+      <Stack.Screen name="EditProfile" component={EditProfile} />
+      <Stack.Screen name="Profile" component={Profile} />
     </Stack.Navigator>
   );
 }

@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Search, Star, MapPin, Filter } from "lucide-react-native";
+import { Search, Star, MapPin, Filter, ChevronLeft } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 
 interface Freelancer {
-  id: number;
+  id: string;
   name: string;
   role: string;
   rating: number;
@@ -26,7 +26,7 @@ export default function Freelancers() {
 
   const freelancers: Freelancer[] = [
     {
-      id: 1,
+      id: "1",
       name: "John Doe",
       role: "Mobile Developer",
       rating: 4.8,
@@ -36,7 +36,7 @@ export default function Freelancers() {
       image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800&auto=format&fit=crop&q=60",
     },
     {
-      id: 2,
+      id: "2",
       name: "Jane Smith",
       role: "UI/UX Designer",
       rating: 4.9,
@@ -84,6 +84,12 @@ export default function Freelancers() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <ChevronLeft size={24} color="#374151" />
+        </TouchableOpacity>
         <Text style={styles.title}>Freelancers</Text>
         <TouchableOpacity style={styles.filterButton}>
           <Filter size={24} color="#374151" />
@@ -103,7 +109,7 @@ export default function Freelancers() {
       <FlatList
         data={freelancers}
         renderItem={renderFreelancer}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
       />
@@ -123,10 +129,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
   },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#f3f4f6",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   title: {
     fontSize: 24,
     fontWeight: "700",
     color: "#111827",
+    flex: 1,
+    textAlign: 'center',
+    marginHorizontal: 16,
   },
   filterButton: {
     width: 40,

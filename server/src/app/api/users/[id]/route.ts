@@ -40,3 +40,25 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
         );
     }
 }
+
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    try {
+        const { id } = await params;
+        const { image } = await req.json();
+        
+        if (!image) {
+            return NextResponse.json(
+                { message: "Image data is required" },
+                { status: 400 }
+            );
+        }
+
+        const result = await User.updateProfileImage(id, image);
+        return NextResponse.json(result);
+    } catch (error) {
+        return NextResponse.json(
+            { message: error instanceof Error ? error.message : "Failed to update profile image" },
+            { status: 500 }
+        );
+    }
+}

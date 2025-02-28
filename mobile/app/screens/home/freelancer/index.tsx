@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Search, Bell } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -18,6 +18,7 @@ export default function Freelancer() {
 
   useEffect(() => {
     fetchProjects();
+    console.log(recommendedProjects, "recommendedProjects");
   }, []);
 
   const fetchProjects = async () => {
@@ -113,7 +114,7 @@ export default function Freelancer() {
   const renderProject = ({ item }: { item: Project }) => (
     <TouchableOpacity 
       style={styles.projectCard} 
-      onPress={() => navigation.navigate("ProjectDetails", { projectId: item._id })}
+      onPress={() => navigation.navigate("ProjectDetails", { projectId: item._id, clientId: item.clientId })}
     >
       <Image 
         source={{ uri: item.image[0] || 'https://via.placeholder.com/280x140' }} 

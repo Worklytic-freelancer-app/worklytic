@@ -2,6 +2,7 @@ import { ObjectId } from "mongodb";
 import { db } from "../../config";
 import type { CreateUser, UpdateUser, Users, UserId } from "./user.schema";
 import { User } from "./user.schema";
+import { uploadImage } from '../../utils/cloudinary';
 
 export type Result<T> = {
   success: boolean;
@@ -139,6 +140,37 @@ export class UserRepository {
       };
     } catch (error) {
       throw new Error(error instanceof Error ? error.message : "Failed to delete user");
+    }
+  };
+
+  updateProfileImage = async ({ id }: UserId, imageData: string): Promise<Result<Users>> => {
+    try {
+      const imageUrl = await uploadImage(imageData);
+      
+      const collection = await this.getCollection();
+      const result = await collection.findOneAndUpdate(
+        { _id: new ObjectId(id) },
+        {
+          $set: {
+            profileImage: imageUrl,
+            updatedAt: new Date(),
+          },
+        },
+        { returnDocument: "after" }
+      );
+
+      if (!result) {
+        throw new Error("User not found");
+      }
+
+      return {
+        success: true,
+        message: "Profile image updated successfully",
+        data: new User(result) as Users,
+      };
+    } catch (error) {
+      console.log(error, "Failed to update profile image");
+      throw new Error(error instanceof Error ? error.message : "Failed to update profile image");
     }
   };
 }
