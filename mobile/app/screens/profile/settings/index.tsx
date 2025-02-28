@@ -12,6 +12,15 @@ export default function Settings() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<SettingsScreenNavigationProp>();
 
+  const handleOptionPress = (title: string) => {
+    switch (title) {
+      case "Edit Profile":
+        navigation.navigate("EditProfile");
+        break;
+      // Tambahkan case lain untuk opsi lainnya jika diperlukan
+    }
+  };
+
   const settingsOptions = [
     { icon: User, title: "Edit Profile", subtitle: "Change your profile information" },
     { icon: Bell, title: "Notifications", subtitle: "Manage your notifications" },
@@ -61,7 +70,11 @@ export default function Settings() {
 
       <ScrollView style={styles.content}>
         {settingsOptions.map((option, index) => (
-          <TouchableOpacity key={index} style={styles.settingItem}>
+          <TouchableOpacity 
+            key={index} 
+            style={styles.settingItem}
+            onPress={() => handleOptionPress(option.title)}
+          >
             <View style={styles.settingIcon}>
               <option.icon size={22} color="#4b5563" />
             </View>

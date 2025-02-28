@@ -18,6 +18,8 @@ interface User {
   website: string;
   rating: number;
   totalReviews: number;
+  companyName?: string;
+  industry?: string;
 }
 
 export const useUser = () => {
