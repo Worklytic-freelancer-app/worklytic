@@ -98,6 +98,10 @@ class UserService {
             throw new Error(error instanceof Error ? error.message : "Failed to login");
         }
     }
+
+    updateProfileImage = async (id: string, imageData: string): Promise<Result<Users>> => {
+        return await User.updateProfileImage({ id }, imageData);
+    };
 }
 
 export const Service = new UserService();

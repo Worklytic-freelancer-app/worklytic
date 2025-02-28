@@ -16,7 +16,7 @@ import Services from "@/screens/services";
 import ServiceDetails from "@/screens/services/serviceDetails";
 import Projects from "@/screens/projects";
 import EditProfile from "@/screens/profile/editProfile";
-
+import Profile from "@/screens/profile";
 const Stack = createStackNavigator();
 
 export type RootStackParamList = {
@@ -71,6 +71,7 @@ export default function AppNavigator() {
       <Stack.Screen name="Services" component={Services} />
       <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
       <Stack.Screen name="EditProfile" component={EditProfile} />
+      <Stack.Screen name="Profile" component={Profile} />
     </Stack.Navigator>
   );
 }

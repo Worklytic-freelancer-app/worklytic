@@ -12,6 +12,7 @@
   "dependencies": {
     "@types/jsonwebtoken": "^9.0.9",
     "bcryptjs": "^3.0.2",
+    "cloudinary": "^2.5.1",
     "jose": "^6.0.8",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.13.1",

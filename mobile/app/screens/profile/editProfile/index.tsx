@@ -1,32 +1,52 @@
-import { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Image, Alert } from "react-native";
+import { useState, useEffect } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Image, Alert, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ChevronLeft, Camera, X, Globe, Briefcase, Mail, Phone } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useUser } from "@/hooks/useUser";
 import * as ImagePicker from 'expo-image-picker';
+import { baseUrl } from "@/constant/baseUrl";
+import { SecureStoreUtils } from "@/utils/SecureStore";
+import { styles as profileStyles } from "../index";
 
-const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&auto=format&fit=crop&q=60";
+const DEFAULT_IMAGE = "";
 
 export default function EditProfile() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const { user } = useUser();
-
+  const { user, loading, error, refetch } = useUser();
+  
   const [formData, setFormData] = useState({
-    fullName: user?.fullName || "",
-    email: user?.email || "",
-    profileImage: user?.profileImage || DEFAULT_IMAGE,
-    location: user?.location || "",
-    about: user?.about || "",
-    phone: user?.phone || "",
-    website: user?.website || "",
-    skills: user?.skills || [],
-    companyName: user?.companyName || "",
-    industry: user?.industry || "",
+    fullName: "",
+    email: "",
+    profileImage: DEFAULT_IMAGE,
+    location: "",
+    about: "",
+    phone: "",
+    website: "",
+    skills: [] as string[],
+    companyName: "",
+    industry: "",
   });
 
   const [newSkill, setNewSkill] = useState("");
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        fullName: user.fullName || "",
+        email: user.email || "",
+        profileImage: user.profileImage || DEFAULT_IMAGE,
+        location: user.location || "",
+        about: user.about || "",
+        phone: user.phone || "",
+        website: user.website || "",
+        skills: user.skills || [],
+        companyName: user.companyName || "",
+        industry: user.industry || "",
+      });
+    }
+  }, [user]);
 
   const handleImagePick = async () => {
     try {
@@ -35,14 +55,52 @@ export default function EditProfile() {
         allowsEditing: true,
         aspect: [1, 1],
         quality: 1,
+        base64: true,
       });
 
-      if (!result.canceled) {
-        // Di sini nanti akan diintegrasikan dengan Cloudinary
+      if (!result.canceled && result.assets[0].base64) {
+        const token = await SecureStoreUtils.getToken();
+        const userData = await SecureStoreUtils.getUserData();
+        
         setFormData({ ...formData, profileImage: result.assets[0].uri });
+
+        const response = await fetch(`${baseUrl}/api/users/${userData._id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            image: `data:image/jpeg;base64,${result.assets[0].base64}`,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // navigation.navigate("Profile" as never);
+            setFormData(prev => ({
+                ...prev,
+                profileImage: data.data.profileImage,
+          }));
+          Alert.alert("Sukses", "Foto profil berhasil diperbarui");
+          
+          await refetch();
+        } else {
+          Alert.alert("Error", "Gagal mengupload foto profil");
+          setFormData(prev => ({
+            ...prev,
+            profileImage: user?.profileImage || DEFAULT_IMAGE,
+          }));
+        }
       }
     } catch (error) {
-      Alert.alert("Error", "Gagal memilih gambar");
+      console.log(error);
+      Alert.alert("Error", "Gagal memilih/mengupload gambar");
+      setFormData(prev => ({
+        ...prev,
+        profileImage: user?.profileImage || DEFAULT_IMAGE,
+      }));
     }
   };
 
@@ -56,6 +114,11 @@ export default function EditProfile() {
     }
   };
 
+  console.log(
+    formData
+  );
+  
+
   const handleRemoveSkill = (skillToRemove: string) => {
     setFormData({
       ...formData,
@@ -63,11 +126,55 @@ export default function EditProfile() {
     });
   };
 
-  const handleSave = () => {
-    // Implementasi penyimpanan data akan ditambahkan nanti
-    Alert.alert("Sukses", "Profil berhasil diperbarui");
-    navigation.goBack();
+  const handleSave = async () => {
+    try {
+      const token = await SecureStoreUtils.getToken();
+      const userData = await SecureStoreUtils.getUserData();
+
+      const response = await fetch(`${baseUrl}/api/users/${userData._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          location: formData.location,
+          about: formData.about,
+          phone: formData.phone,
+          website: formData.website,
+          skills: formData.skills,
+          companyName: formData.companyName,
+          industry: formData.industry,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        await refetch(); // Refresh data user
+        Alert.alert("Sukses", "Profil berhasil diperbarui");
+        navigation.navigate("Profile" as never);
+      } else {
+        Alert.alert("Error", data.message || "Gagal memperbarui profil");
+      }
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Error", "Terjadi kesalahan saat memperbarui profil");
+    }
   };
+
+  if (loading) {
+    return (
+      <View style={profileStyles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
+    );
+  }
+
+  if (error || !user) {
+    return null; // Atau tampilkan komponen error
+  }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>

@@ -8,9 +8,17 @@ import About from "./components/About";
 import Skills from "./components/Skills";
 import Services from "./components/Services";
 import { useUser } from "@/hooks/useUser";
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 
 export default function Profile() {
-  const { user, loading, error } = useUser();
+  const { user, loading, error, refetch } = useUser();
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [])
+  );
 
   if (loading) {
     return (
@@ -23,6 +31,7 @@ export default function Profile() {
   if (error || !user) {
     return null; // Atau tampilkan komponen error
   }
+
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -61,7 +70,7 @@ export default function Profile() {
   );
 }
 
-const styles = StyleSheet.create({
+export const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: "#fff",
