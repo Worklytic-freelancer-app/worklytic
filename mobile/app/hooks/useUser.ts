@@ -33,8 +33,8 @@ export const useUser = () => {
     try {
       const userData = await SecureStoreUtils.getUserData();
       const token = await SecureStoreUtils.getToken();
-      console.log(userData, "userData");
-      console.log(token, "token");
+      // console.log(userData, "userData");
+      // console.log(token, "token");
       
       if (!userData?._id) {
         throw new Error('User ID not found');
@@ -48,7 +48,7 @@ export const useUser = () => {
       });
       const result = await response.json();
 
-      console.log(result, "result");
+      // console.log(result, "result");
 
       if (result.success) {
         setUser(result.data);

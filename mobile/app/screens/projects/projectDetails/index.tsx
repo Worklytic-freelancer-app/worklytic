@@ -41,9 +41,11 @@ export default function ProjectDetails() {
   const route = useRoute<ProjectDetailsRouteProp>();
   const [showTerms, setShowTerms] = useState(false);
   const windowWidth = Dimensions.get("window").width;
+  const [client, setClient] = useState<any>(null);
 
   useEffect(() => {
     fetchProjectDetails();
+    fetchClientDetails();
   }, []);
 
   const fetchProjectDetails = async () => {
@@ -62,6 +64,23 @@ export default function ProjectDetails() {
       console.error('Error fetching project details:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchClientDetails = async () => {
+    try {
+      const token = await SecureStoreUtils.getToken();
+      const response = await fetch(`${baseUrl}/api/users/${route.params.clientId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const result = await response.json();
+      if (result.success) {
+        setClient(result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching client details:', error);
     }
   };
 
@@ -196,6 +215,22 @@ export default function ProjectDetails() {
                 <Text style={styles.requirementText}>{feature}</Text>
               </View>
             ))}
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Project Owner</Text>
+            {client && (
+              <View style={styles.clientInfo}>
+                <Image 
+                  source={{ uri: client.profileImage }} 
+                  style={styles.clientImage} 
+                />
+                <View>
+                  <Text style={styles.clientName}>{client.fullName}</Text>
+                  <Text style={styles.clientLocation}>{project.location}</Text>
+                </View>
+              </View>
+            )}
           </View>
         </View>
       </ScrollView>
@@ -431,5 +466,29 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',
+  },
+  clientInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f9fafb',
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 8,
+  },
+  clientImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 12,
+  },
+  clientName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  clientLocation: {
+    fontSize: 14,
+    color: '#6b7280',
   },
 });

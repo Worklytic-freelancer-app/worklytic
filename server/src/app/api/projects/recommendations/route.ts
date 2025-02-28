@@ -24,6 +24,8 @@ export async function GET(req: Request) {
         }
 
         const result = await Project.getRecommendationsBySkills(user.User.skills);
+        console.log(result, "result");
+        
         return NextResponse.json(result);
     } catch (error) {
         return NextResponse.json(

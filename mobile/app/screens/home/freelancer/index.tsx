@@ -18,6 +18,7 @@ export default function Freelancer() {
 
   useEffect(() => {
     fetchProjects();
+    console.log(recommendedProjects, "recommendedProjects");
   }, []);
 
   const fetchProjects = async () => {
@@ -113,7 +114,7 @@ export default function Freelancer() {
   const renderProject = ({ item }: { item: Project }) => (
     <TouchableOpacity 
       style={styles.projectCard} 
-      onPress={() => navigation.navigate("ProjectDetails", { projectId: item._id })}
+      onPress={() => navigation.navigate("ProjectDetails", { projectId: item._id, clientId: item.clientId })}
     >
       <Image 
         source={{ uri: item.image[0] || 'https://via.placeholder.com/280x140' }} 

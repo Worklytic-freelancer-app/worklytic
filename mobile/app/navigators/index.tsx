@@ -22,7 +22,7 @@ export type RootStackParamList = {
   BottomTab: undefined;
   Settings: undefined;
   Projects: undefined;
-  ProjectDetails: { projectId: string };
+  ProjectDetails: { projectId: string; clientId: string };
   SignIn: undefined;
   SignUp: { role: "freelancer" | "client" } | undefined;
   ForgotPassword: undefined;
@@ -52,12 +52,12 @@ export default function AppNavigator() {
         headerShown: false,
       }}
     >
+      <Stack.Screen name="SignIn" component={SignIn} />
+      <Stack.Screen name="SignUp" component={SignUp} />
       <Stack.Screen name="BottomTab" component={BottomTab} />
       <Stack.Screen name="Settings" component={Settings} />
       <Stack.Screen name="ProjectDetails" component={ProjectDetails} />
       <Stack.Screen name="Projects" component={Projects} />
-      <Stack.Screen name="SignIn" component={SignIn} />
-      <Stack.Screen name="SignUp" component={SignUp} />
       <Stack.Screen name="Search" component={Search} />
       <Stack.Screen name="DirectMessage" component={DirectMessage} />
       <Stack.Screen name="Freelancers" component={Freelancers} />
