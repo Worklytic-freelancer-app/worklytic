@@ -1,13 +1,14 @@
-import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, Image } from "react-native";
+import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, Image, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Search as SearchIcon, ArrowLeft, Star } from "lucide-react-native";
-import { useState, useEffect } from "react";
+import { Search as SearchIcon, X } from "lucide-react-native";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 import { useUser } from "@/hooks/useUser";
 import { baseUrl } from "@/constant/baseUrl";
 import { SecureStoreUtils } from "@/utils/SecureStore";
+import { debounce } from "lodash";
 
 // Update interfaces
 interface Project {
@@ -23,6 +24,7 @@ interface Project {
   image: string[];
   features: string[];
   progress: number;
+  clientId: string;
 }
 
 interface Freelancer {
@@ -47,21 +49,44 @@ export default function Search(): JSX.Element {
   const { user } = useUser();
   
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [allResults, setAllResults] = useState<SearchResult[]>([]);
+  const [filteredResults, setFilteredResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
+  // Fetch initial data when component mounts
   useEffect(() => {
-    fetchSearchResults();
-  }, [searchQuery]);
+    fetchInitialData();
+  }, [user]);
 
-  const fetchSearchResults = async () => {
+  // Filter results when search query changes
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredResults(allResults);
+      return;
+    }
+    
+    debouncedSearch(searchQuery);
+  }, [searchQuery, allResults]);
+
+  const fetchInitialData = async () => {
     try {
       setLoading(true);
+      setError(null);
       const token = await SecureStoreUtils.getToken();
       
-      // Ubah logika endpoint - jika freelancer, cari projects
-      // jika client, cari freelancers
-      const endpoint = user?.role === 'client' ? 'users?role=freelancer' : 'projects';
+      if (!token) {
+        setError("Sesi login tidak valid. Silakan login kembali.");
+        return;
+      }
+      
+      if (!user) {
+        setError("Data pengguna tidak tersedia.");
+        return;
+      }
+      
+      // Jika client, cari freelancers; jika freelancer, cari projects
+      const endpoint = user.role === 'client' ? 'users' : 'projects';
       
       const response = await fetch(`${baseUrl}/api/${endpoint}`, {
         headers: {
@@ -70,22 +95,87 @@ export default function Search(): JSX.Element {
       });
       
       const result = await response.json();
+      
       if (result.success) {
-        setSearchResults(result.data);
+        let data = result.data;
+        
+        // Jika client, filter hanya freelancer
+        if (user.role === 'client') {
+          data = data.filter((item: any) => item.role === 'freelancer');
+        }
+        
+        setAllResults(data);
+        setFilteredResults(data);
+      } else {
+        setError(result.message || "Gagal memuat data");
       }
     } catch (error) {
       console.error('Error fetching search results:', error);
+      setError("Terjadi kesalahan saat memuat data");
     } finally {
       setLoading(false);
     }
   };
 
+  // Fungsi pencarian dengan debounce
+  const filterResults = (query: string) => {
+    if (!query.trim()) {
+      setFilteredResults(allResults);
+      return;
+    }
+    
+    const lowerCaseQuery = query.toLowerCase();
+    
+    if (user?.role === 'client') {
+      // Filter freelancers
+      const filtered = allResults.filter((item) => {
+        // Type guard untuk memastikan item adalah Freelancer
+        if (!('fullName' in item)) return false;
+        
+        const freelancer = item as Freelancer;
+        return (
+          freelancer.fullName.toLowerCase().includes(lowerCaseQuery) ||
+          (freelancer.about && freelancer.about.toLowerCase().includes(lowerCaseQuery)) ||
+          (freelancer.location && freelancer.location.toLowerCase().includes(lowerCaseQuery)) ||
+          (freelancer.skills && freelancer.skills.some(skill => 
+            skill.toLowerCase().includes(lowerCaseQuery)
+          ))
+        );
+      });
+      setFilteredResults(filtered);
+    } else {
+      // Filter projects
+      const filtered = allResults.filter((item) => {
+        // Type guard untuk memastikan item adalah Project
+        if (!('title' in item)) return false;
+        
+        const project = item as Project;
+        return (
+          project.title.toLowerCase().includes(lowerCaseQuery) ||
+          (project.description && project.description.toLowerCase().includes(lowerCaseQuery)) ||
+          (project.category && project.category.toLowerCase().includes(lowerCaseQuery)) ||
+          (project.location && project.location.toLowerCase().includes(lowerCaseQuery))
+        );
+      });
+      setFilteredResults(filtered);
+    }
+  };
+
+  const debouncedSearch = useCallback(debounce(filterResults, 300), [allResults, user]);
+
+  const clearSearch = () => {
+    setSearchQuery("");
+  };
+
   const isProject = (item: SearchResult): item is Project => {
-    return 'budget' in item;
+    return 'title' in item;
   };
 
   const renderSearchItem = ({ item }: { item: SearchResult }) => {
     if (user?.role === 'client') {
+      // Pastikan item adalah Freelancer
+      if (!('fullName' in item)) return null;
+      
       const freelancer = item as Freelancer;
       return (
         <TouchableOpacity 
@@ -103,6 +193,11 @@ export default function Search(): JSX.Element {
             </Text>
             <Text style={styles.location}>📍 {freelancer.location || 'Remote'}</Text>
             <View style={styles.tagsContainer}>
+              {freelancer.rating > 0 && (
+                <View style={[styles.tag, styles.ratingTag]}>
+                  <Text style={[styles.tagText, styles.ratingTagText]}>⭐ {freelancer.rating.toFixed(1)}</Text>
+                </View>
+              )}
               {(freelancer.skills || []).slice(0, 2).map((skill, index) => (
                 <View key={index} style={styles.tag}>
                   <Text style={styles.tagText}>{skill}</Text>
@@ -113,25 +208,27 @@ export default function Search(): JSX.Element {
         </TouchableOpacity>
       );
     } else {
+      // Pastikan item adalah Project
+      if (!('title' in item)) return null;
+      
       const project = item as Project;
       return (
         <TouchableOpacity 
           style={styles.resultCard} 
-          onPress={() => navigation.navigate("ProjectDetails", { projectId: project._id })}
+          onPress={() => navigation.navigate("ProjectDetails", { projectId: project._id, clientId: project.clientId })}
         >
           <Image 
-            source={{ uri: project.image?.[0] || 'https://via.placeholder.com/80' }} 
+            source={{ uri: project.image && project.image.length > 0 ? project.image[0] : 'https://via.placeholder.com/80' }} 
             style={styles.resultImage} 
           />
           <View style={styles.resultContent}>
             <Text style={styles.resultTitle}>{project.title}</Text>
             <Text style={styles.resultDescription} numberOfLines={2}>
-              {project.description}
+              {project.description || 'Tidak ada deskripsi'}
             </Text>
+            <Text style={styles.budget}>Rp {project.budget.toLocaleString('id-ID')}</Text>
             <View style={styles.projectInfo}>
-              <Text style={styles.budget}>
-                Rp{project.budget?.toLocaleString('id-ID')}
-              </Text>
+              <Text style={styles.location}>📍 {project.location || 'Remote'}</Text>
               <Text style={styles.duration}>⏱️ {project.duration}</Text>
             </View>
             <View style={styles.tagsContainer}>
@@ -159,31 +256,69 @@ export default function Search(): JSX.Element {
     }
   };
 
+  const renderEmptyList = () => {
+    if (loading) {
+      return (
+        <View style={styles.emptyContainer}>
+          <ActivityIndicator size="large" color="#2563eb" />
+          <Text style={styles.emptyText}>Memuat data...</Text>
+        </View>
+      );
+    }
+    
+    if (error) {
+      return (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={fetchInitialData}>
+            <Text style={styles.retryButtonText}>Coba Lagi</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    
+    if (searchQuery && filteredResults.length === 0) {
+      return (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>Tidak ada hasil untuk "{searchQuery}"</Text>
+        </View>
+      );
+    }
+    
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>Tidak ada data tersedia</Text>
+      </View>
+    );
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <ArrowLeft size={24} color="#374151" />
-        </TouchableOpacity>
         <View style={styles.searchContainer}>
           <SearchIcon size={20} color="#6b7280" />
           <TextInput 
             style={styles.searchInput} 
-            placeholder="Search" 
+            placeholder={user?.role === 'client' ? "Cari freelancer..." : "Cari proyek..."}
             placeholderTextColor="#6b7280" 
             value={searchQuery} 
             onChangeText={setSearchQuery} 
-            autoFocus 
           />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={clearSearch}>
+              <X size={18} color="#6b7280" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
       <FlatList<SearchResult>
-        data={searchResults}
+        data={filteredResults}
         renderItem={renderSearchItem}
         keyExtractor={(item) => item._id}
         contentContainerStyle={styles.resultsList}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={renderEmptyList}
       />
     </View>
   );
@@ -201,10 +336,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#f0f0f0",
-  },
-  backButton: {
-    marginRight: 12,
-    padding: 4,
   },
   searchContainer: {
     flex: 1,
@@ -313,5 +444,41 @@ const styles = StyleSheet.create({
   },
   defaultStatus: {
     backgroundColor: '#F3F4F6',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    height: 300,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginTop: 12,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#ef4444',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: '#2563eb',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  ratingTag: {
+    backgroundColor: '#FEF3C7',
+  },
+  ratingTagText: {
+    color: '#D97706',
   },
 });

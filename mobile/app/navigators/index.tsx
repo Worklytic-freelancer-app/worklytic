@@ -15,6 +15,7 @@ import AddService from "@/screens/profile/addService";
 import Services from "@/screens/services";
 import ServiceDetails from "@/screens/services/serviceDetails";
 import Projects from "@/screens/projects";
+import EditProfile from "@/screens/profile/settings/editProfile";
 
 const Stack = createStackNavigator();
 
@@ -42,6 +43,7 @@ export type RootStackParamList = {
   FreelancerDetails: {
     freelancerId: string;
   };
+  EditProfile: undefined;
 };
 
 export default function AppNavigator() {
@@ -68,6 +70,7 @@ export default function AppNavigator() {
       <Stack.Screen name="AddService" component={AddService} />
       <Stack.Screen name="Services" component={Services} />
       <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
+      <Stack.Screen name="EditProfile" component={EditProfile} />
     </Stack.Navigator>
   );
 }

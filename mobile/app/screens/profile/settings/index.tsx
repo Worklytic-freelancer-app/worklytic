@@ -13,7 +13,12 @@ export default function Settings() {
   const navigation = useNavigation<SettingsScreenNavigationProp>();
 
   const settingsOptions = [
-    { icon: User, title: "Edit Profile", subtitle: "Change your profile information" },
+    { 
+        icon: User, 
+        title: "Edit Profile", 
+        subtitle: "Change your profile information",
+        onPress: () => navigation.navigate("EditProfile" as never)
+    },
     { icon: Bell, title: "Notifications", subtitle: "Manage your notifications" },
     { icon: Lock, title: "Privacy & Security", subtitle: "Control your privacy settings" },
     { icon: HelpCircle, title: "Help & Support", subtitle: "Get help or contact support" },
@@ -61,7 +66,11 @@ export default function Settings() {
 
       <ScrollView style={styles.content}>
         {settingsOptions.map((option, index) => (
-          <TouchableOpacity key={index} style={styles.settingItem}>
+          <TouchableOpacity 
+            key={index} 
+            style={styles.settingItem}
+            onPress={option.onPress}
+          >
             <View style={styles.settingIcon}>
               <option.icon size={22} color="#4b5563" />
             </View>
