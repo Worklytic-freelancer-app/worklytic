@@ -1,0 +1,14 @@
+{
+  "development": {
+    "url": "mongodb+srv://robbysugandaaa:UhrfaNFgXHAwOS6k@robbysuganda.8uxdc.mongodb.net/",
+    "database": "worklytic"
+  },
+  "test": {
+    "url": "mongodb+srv://robbysugandaaa:UhrfaNFgXHAwOS6k@robbysuganda.8uxdc.mongodb.net/",
+    "database": "worklytic_test"
+  },
+  "production": {
+    "url": "mongodb+srv://robbysugandaaa:UhrfaNFgXHAwOS6k@robbysuganda.8uxdc.mongodb.net/",
+    "database": "worklytic"
+  }
+}

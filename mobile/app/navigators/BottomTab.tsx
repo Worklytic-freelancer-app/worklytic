@@ -1,7 +1,7 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import Home from "@/screens/home";
-import Profile from "@/screens/profile/freelancer";
+import Profile from "@/screens/profile";
 import WorklyticAI from "@/screens/worklyticAI";
 import Workspace from "@/screens/workspace";
 import Search from "@/screens/search";

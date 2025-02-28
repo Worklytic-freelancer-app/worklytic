@@ -4,18 +4,28 @@ import { useNavigation } from "@react-navigation/native";
 import { ChevronLeft, UserCircle2, Building2 } from "lucide-react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
+import SignUpForm from "./SignUpForm";
 
 type SignUpScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
-export default function SignUp() {
-  const navigation = useNavigation<SignUpScreenNavigationProp>();
+type SignUpScreenProps = {
+  route?: {
+    params?: {
+      role?: "freelancer" | "client";
+    };
+  };
+};
 
-  const handleRoleSelection = (role: "freelancer" | "client") => {
-    if (role === "freelancer") {
-      navigation.navigate("SignUpFreelancer");
-    } else {
-      navigation.navigate("SignUpClient");
-    }
+export default function SignUp({ route }: SignUpScreenProps) {
+  const navigation = useNavigation<SignUpScreenNavigationProp>();
+  const role = route?.params?.role;
+
+  if (role) {
+    return <SignUpForm role={role} />;
+  }
+
+  const handleRoleSelection = (selectedRole: "freelancer" | "client") => {
+    navigation.navigate("SignUp", { role: selectedRole });
   };
 
   return (
@@ -91,11 +101,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E7EB",
     alignItems: "center",
-  },
-  choiceIcon: {
-    width: 48,
-    height: 48,
-    marginRight: 16,
   },
   choiceTextContainer: {
     flex: 1,

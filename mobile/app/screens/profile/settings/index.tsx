@@ -1,9 +1,10 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ChevronLeft, User, Bell, Lock, HelpCircle, LogOut } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
+import { SecureStoreUtils } from "@/utils/SecureStore";
 
 type SettingsScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -17,6 +18,36 @@ export default function Settings() {
     { icon: Lock, title: "Privacy & Security", subtitle: "Control your privacy settings" },
     { icon: HelpCircle, title: "Help & Support", subtitle: "Get help or contact support" },
   ];
+
+  const handleLogout = async () => {
+    Alert.alert(
+      "Konfirmasi Logout",
+      "Apakah Anda yakin ingin keluar?",
+      [
+        {
+          text: "Batal",
+          style: "cancel"
+        },
+        {
+          text: "Logout",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await SecureStoreUtils.clearAuthData();
+              //! Navigation reset ini untuk menghapus semua route yang ada di stack
+              navigation.reset({
+                index: 0,
+                routes: [{ name: "SignIn" }],
+              });
+            } catch (error) {
+              console.error("Error during logout:", error);
+              Alert.alert("Error", "Terjadi kesalahan saat proses logout");
+            }
+          }
+        }
+      ]
+    );
+  };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -42,7 +73,10 @@ export default function Settings() {
           </TouchableOpacity>
         ))}
 
-        <TouchableOpacity style={[styles.settingItem, styles.logoutButton]} onPress={() => navigation.navigate("SignIn")}>
+        <TouchableOpacity 
+          style={[styles.settingItem, styles.logoutButton]} 
+          onPress={handleLogout}
+        >
           <View style={[styles.settingIcon, { backgroundColor: "#fee2e2" }]}>
             <LogOut size={22} color="#ef4444" />
           </View>
