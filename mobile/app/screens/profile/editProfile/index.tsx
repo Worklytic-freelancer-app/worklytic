@@ -179,11 +179,16 @@ export default function EditProfile() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <TouchableOpacity 
+          style={styles.backButton} 
+          onPress={() => navigation.goBack()}
+        >
           <ChevronLeft size={24} color="#374151" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Edit Profile</Text>
-        <View style={{ width: 40 }} />
+        <TouchableOpacity onPress={handleSave}>
+          <Text style={styles.saveButton}>Simpan</Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content}>
@@ -318,12 +323,6 @@ export default function EditProfile() {
           )}
         </View>
       </ScrollView>
-
-      <View style={styles.bottomContainer}>
-        <TouchableOpacity style={styles.saveButtonContainer} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Simpan</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }
@@ -341,6 +340,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#f3f4f6",
+    backgroundColor: '#fff',
   },
   backButton: {
     width: 40,
@@ -354,6 +354,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     color: "#111827",
+  },
+  saveButton: {
+    fontSize: 16,
+    color: "#2563eb",
+    fontWeight: "500",
   },
   content: {
     flex: 1,
@@ -465,24 +470,5 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     borderWidth: 0,
     padding: 12,
-  },
-  bottomContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#f3f4f6',
-    backgroundColor: '#fff',
-  },
-  saveButtonContainer: {
-    backgroundColor: '#2563eb',
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  saveButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });
