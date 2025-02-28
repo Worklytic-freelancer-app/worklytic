@@ -4,62 +4,103 @@ import { Search, Filter } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
-
+import { useEffect, useState } from "react";
+import { baseUrl } from "@/constant/baseUrl";
+import { SecureStoreUtils } from "@/utils/SecureStore";
 type ProjectsScreenNavigationProp = StackNavigationProp<RootStackParamList>;
+
+interface AssignedFreelancer {
+  _id: string;
+  fullName: string;
+  profileImage: string;
+  email: string;
+  role: string;
+}
+
+interface Project {
+  _id: string;
+  clientId: string;
+  title: string;
+  description: string;
+  budget: number;
+  category: string;
+  location: string;
+  duration: string;
+  status: string;
+  requirements: string[];
+  image: string[];
+  assignedFreelancer: AssignedFreelancer[];
+  features: string[];
+  createdAt: string;
+  updatedAt: string;
+  progress: number;
+}
 
 export default function Projects() {
   const navigation = useNavigation<ProjectsScreenNavigationProp>();
   const insets = useSafeAreaInsets();
+  const [projects, setProjects] = useState<Project[]>([]);
 
-  interface Project {
-    id: string;
-    title: string;
-    budget: string;
-    category: string;
-    postedBy: string;
-    image: string;
-    description: string;
-    postedTime: string;
-  }
+  useEffect(() => {
+    fetchProjects();
+  }, []);
 
-  const projects: Project[] = [
-    {
-      id: "1",
-      title: "Mobile App Development",
-      budget: "Rp 37.500.000",
-      category: "Development",
-      postedBy: "Tech Solutions Inc.",
-      image: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&auto=format&fit=crop&q=60",
-      description: "Looking for an experienced mobile developer to create a modern, user-friendly application...",
-      postedTime: "2 hours ago",
-    },
-    {
-      id: "2",
-      title: "Website Redesign",
-      budget: "Rp 27.000.000",
-      category: "Design",
-      postedBy: "Creative Agency",
-      image: "https://images.unsplash.com/photo-1547658719-da2b51169166?w=800&auto=format&fit=crop&q=60",
-      description: "Need a talented designer to revamp our company website with modern aesthetics...",
-      postedTime: "5 hours ago",
-    },
-  ];
+  const fetchProjects = async () => {
+    try {
+      const token = await SecureStoreUtils.getToken();  
+      const response = await fetch(`${baseUrl}/api/projects`,{
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const result = await response.json();
+      if (result.success) {
+        setProjects(result.data);
+      }
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+    }
+  };
+
+  const formatBudget = (budget: number) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(budget);
+  };
 
   const renderProject = ({ item }: { item: Project }) => (
-    <TouchableOpacity style={styles.projectCard} onPress={() => navigation.navigate("ProjectDetails", { projectId: item.id })}>
-      <Image source={{ uri: item.image }} style={styles.projectImage} />
+    <TouchableOpacity 
+      style={styles.projectCard} 
+      onPress={() => navigation.navigate("ProjectDetails", { projectId: item._id })}
+    >
+      <Image 
+        source={{ uri: item.image[0] }} 
+        style={styles.projectImage} 
+      />
       <View style={styles.projectInfo}>
         <View style={styles.projectHeader}>
           <Text style={styles.projectTitle}>{item.title}</Text>
-          <Text style={styles.projectBudget}>{item.budget}</Text>
+          <Text style={styles.projectBudget}>{formatBudget(item.budget)}</Text>
         </View>
         <Text style={styles.projectCategory}>{item.category}</Text>
         <Text style={styles.projectDescription} numberOfLines={2}>
           {item.description}
         </Text>
         <View style={styles.projectFooter}>
-          <Text style={styles.projectPoster}>{item.postedBy}</Text>
-          <Text style={styles.projectTime}>{item.postedTime}</Text>
+          <View style={styles.statusContainer}>
+            <Text style={[
+              styles.statusText,
+              { color: item.status === "Open" ? "#059669" : "#9333EA" }
+            ]}>
+              {item.status}
+            </Text>
+            {item.progress > 0 && (
+              <Text style={styles.progressText}>{item.progress}% Complete</Text>
+            )}
+          </View>
+          <Text style={styles.projectLocation}>{item.location}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -79,7 +120,13 @@ export default function Projects() {
         <Text style={styles.searchPlaceholder}>Search projects</Text>
       </View>
 
-      <FlatList<Project> data={projects} renderItem={renderProject} keyExtractor={(item) => item.id.toString()} contentContainerStyle={styles.projectsList} showsVerticalScrollIndicator={false} />
+      <FlatList
+        data={projects}
+        renderItem={renderProject}
+        keyExtractor={(item) => item._id}
+        contentContainerStyle={styles.projectsList}
+        showsVerticalScrollIndicator={false}
+      />
     </View>
   );
 }
@@ -180,12 +227,21 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  projectPoster: {
+  statusContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  statusText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  progressText: {
     fontSize: 14,
     color: "#6b7280",
   },
-  projectTime: {
+  projectLocation: {
     fontSize: 14,
-    color: "#9ca3af",
+    color: "#6b7280",
   },
 });

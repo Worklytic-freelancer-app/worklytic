@@ -14,6 +14,7 @@ import PostProject from "@/screens/postProject";
 import AddService from "@/screens/profile/addService";
 import Services from "@/screens/services";
 import ServiceDetails from "@/screens/services/serviceDetails";
+import Projects from "@/screens/projects";
 
 const Stack = createStackNavigator();
 
@@ -54,6 +55,7 @@ export default function AppNavigator() {
       <Stack.Screen name="BottomTab" component={BottomTab} />
       <Stack.Screen name="Settings" component={Settings} />
       <Stack.Screen name="ProjectDetails" component={ProjectDetails} />
+      <Stack.Screen name="Projects" component={Projects} />
       <Stack.Screen name="SignIn" component={SignIn} />
       <Stack.Screen name="SignUp" component={SignUp} />
       <Stack.Screen name="Search" component={Search} />
