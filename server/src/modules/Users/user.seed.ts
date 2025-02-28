@@ -9,8 +9,8 @@ export async function seed() {
         
         // Transform data dari json ke format MongoDB
         const values = sampleData.map(data => ({
-            _id: new ObjectId(), // generate ObjectId baru
             ...data,
+            _id: new ObjectId(data._id), // generate ObjectId baru
             password: hashText(data.password),
             createdAt: new Date(),
             updatedAt: new Date()

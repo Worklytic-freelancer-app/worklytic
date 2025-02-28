@@ -45,13 +45,40 @@ export class ProjectRepository {
     findAll = async (): Promise<Result<Projects[]>> => {
         try {
             const collection = await this.getCollection();
-            const docs = await collection
-                .find({})
-                .toArray() as Projects[];
+            
+            // Ambil projects terlebih dahulu
+            const projects = await collection.find({}).toArray() as Projects[];
+            
+            // Kumpulkan semua clientId yang unik
+            const clientIds = [...new Set(projects.map(p => p.clientId.toString()))];
+            
+            // Ambil users berdasarkan clientIds
+            const userCollection = db.collection("Users");
+            const users = await userCollection.find({
+                _id: { $in: clientIds.map(id => new ObjectId(id)) }
+            }).toArray();
+            
+            // Buat map untuk lookup cepat
+            const userMap = new Map();
+            users.forEach(user => {
+                userMap.set(user._id.toString(), user);
+            });
+            
+            console.log(`Found ${users.length} users for ${clientIds.length} unique clientIds`);
+            
+            // Gabungkan project dengan user
+            const result = projects.map(project => {
+                const clientIdStr = project.clientId.toString();
+                const client = userMap.get(clientIdStr);
+                return {
+                    ...project,
+                    client: client || null
+                } as Projects;
+            });
                 
             return {
                 success: true,
-                data: docs.map(doc => new Project(doc) as Projects)
+                data: result
             };
         } catch (error) {
             console.log(error)
