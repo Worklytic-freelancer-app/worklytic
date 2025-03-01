@@ -8,14 +8,25 @@ import { RootStackParamList } from "@/navigators";
 import { baseUrl } from "@/constant/baseUrl";
 import { SecureStoreUtils } from "@/utils/SecureStore";
 
+interface ProjectResponse {
+    _id: string;
+    title: string;
+    budget: number;
+    assignedFreelancer: Array<{
+        _id: string;
+        fullName: string;
+        profileImage: string;
+        email: string;
+        role: string;
+    }>;
+}
+
 interface Applicant {
-    id: string;
-    name: string;
-    avatar: string;
-    rating: number;
-    location: string;
-    appliedDate: string;
-    coverLetter: string;
+    _id: string;
+    fullName: string;
+    profileImage: string;
+    email: string;
+    role: string;
 }
 
 export default function ChooseFreelancer() {
@@ -27,55 +38,37 @@ export default function ChooseFreelancer() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [applicants, setApplicants] = useState<Applicant[]>([]);
-    const [projectTitle, setProjectTitle] = useState("Project");
-    const [projectBudget, setProjectBudget] = useState(3500);
+    const [projectTitle, setProjectTitle] = useState("");
+    const [projectBudget, setProjectBudget] = useState(0);
 
     useEffect(() => {
-        fetchApplicants();
+        fetchProjectDetails();
     }, [projectId]);
 
-    const fetchApplicants = async () => {
+    const fetchProjectDetails = async () => {
         setLoading(true);
         setError(null);
         
         try {
-            // Simulasi fetch data dari API
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            const token = await SecureStoreUtils.getToken();
+            const response = await fetch(`${baseUrl}/api/projects/${projectId}`, {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
             
-            // Data dummy untuk demo
-            setProjectTitle("E-commerce Website Development");
-            setProjectBudget(3500);
-            setApplicants([
-                {
-                    id: "1",
-                    name: "John Developer",
-                    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800&auto=format&fit=crop&q=60",
-                    rating: 4.8,
-                    location: "Jakarta, Indonesia",
-                    appliedDate: "3 days ago",
-                    coverLetter: "I have 5 years of experience in e-commerce development with React and Node.js.",
-                },
-                {
-                    id: "2",
-                    name: "Sarah Designer",
-                    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&auto=format&fit=crop&q=60",
-                    rating: 4.9,
-                    location: "Bandung, Indonesia",
-                    appliedDate: "5 days ago",
-                    coverLetter: "I specialize in UI/UX design for e-commerce platforms with a focus on conversion optimization.",
-                },
-                {
-                    id: "3",
-                    name: "Michael Coder",
-                    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800&auto=format&fit=crop&q=60",
-                    rating: 4.7,
-                    location: "Surabaya, Indonesia",
-                    appliedDate: "1 week ago",
-                    coverLetter: "Full stack developer with experience in e-commerce solutions and payment gateway integration.",
-                },
-            ]);
+            const result = await response.json();
+            
+            if (result.success && result.data) {
+                const project = result.data as ProjectResponse;
+                setProjectTitle(project.title);
+                setProjectBudget(project.budget);
+                setApplicants(project.assignedFreelancer);
+            } else {
+                throw new Error("Failed to fetch project details");
+            }
         } catch (err) {
-            setError("Failed to load applicants. Please try again.");
+            setError("Gagal memuat data pelamar. Silakan coba lagi.");
             console.error(err);
         } finally {
             setLoading(false);
@@ -83,41 +76,24 @@ export default function ChooseFreelancer() {
     };
 
     const renderApplicant = ({ item }: { item: Applicant }) => (
-        <TouchableOpacity 
-            style={styles.applicantCard} 
-            onPress={() => navigation.navigate("WorkspaceDetails", { projectId, freelancerId: item.id })}
-        >
-            <View style={styles.applicantHeader}>
-                <Image source={{ uri: item.avatar }} style={styles.applicantAvatar} />
-                <View style={styles.applicantInfo}>
-                    <Text style={styles.applicantName}>{item.name}</Text>
-                    <View style={styles.ratingContainer}>
-                        <Star size={16} color="#F59E0B" fill="#F59E0B" />
-                        <Text style={styles.ratingText}>{item.rating.toFixed(1)}</Text>
-                    </View>
+        <View style={styles.applicantCard}>
+            <TouchableOpacity onPress={() => navigation.navigate("FreelancerDetails", { freelancerId: item._id })}>
+                <View style={styles.applicantHeader}>
+                    <Image source={{ uri: item.profileImage }} style={styles.applicantAvatar} />
+                    <View style={styles.applicantInfo}>
+                    <Text style={styles.applicantName}>{item.fullName}</Text>
+                    <Text style={styles.applicantEmail}>{item.email}</Text>
                 </View>
             </View>
-            
-            <View style={styles.applicantDetails}>
-                <View style={styles.detailItem}>
-                    <MapPin size={16} color="#6B7280" />
-                    <Text style={styles.detailText}>{item.location}</Text>
-                </View>
-                <View style={styles.detailItem}>
-                    <Calendar size={16} color="#6B7280" />
-                    <Text style={styles.detailText}>Applied {item.appliedDate}</Text>
-                </View>
-            </View>
-            
-            <Text style={styles.coverLetter}>{item.coverLetter}</Text>
+            </TouchableOpacity>
             
             <TouchableOpacity 
                 style={styles.viewButton}
-                onPress={() => navigation.navigate("WorkspaceDetails", { projectId, freelancerId: item.id })}
+                onPress={() => navigation.navigate("WorkspaceDetails", { projectId, freelancerId: item._id })}
             >
                 <Text style={styles.viewButtonText}>Pilih Freelancer</Text>
             </TouchableOpacity>
-        </TouchableOpacity>
+        </View>
     );
 
     if (loading) {
@@ -132,7 +108,7 @@ export default function ChooseFreelancer() {
         return (
             <View style={[styles.errorContainer, { paddingTop: insets.top }]}>
                 <Text style={styles.errorText}>{error}</Text>
-                <TouchableOpacity style={styles.retryButton} onPress={fetchApplicants}>
+                <TouchableOpacity style={styles.retryButton} onPress={fetchProjectDetails}>
                     <Text style={styles.retryButtonText}>Coba Lagi</Text>
                 </TouchableOpacity>
             </View>
@@ -153,7 +129,12 @@ export default function ChooseFreelancer() {
                 <Text style={styles.projectTitle}>{projectTitle}</Text>
                 <View style={styles.budgetContainer}>
                     <DollarSign size={18} color="#059669" />
-                    <Text style={styles.budgetText}>{projectBudget}</Text>
+                    <Text style={styles.budgetText}>
+                        {new Intl.NumberFormat('id-ID', {
+                            style: 'currency',
+                            currency: 'IDR'
+                        }).format(projectBudget)}
+                    </Text>
                 </View>
                 <Text style={styles.applicantsCount}>{applicants.length} Pelamar</Text>
             </View>
@@ -166,7 +147,7 @@ export default function ChooseFreelancer() {
                 <FlatList
                     data={applicants}
                     renderItem={renderApplicant}
-                    keyExtractor={(item) => item.id}
+                    keyExtractor={(item) => item._id}
                     contentContainerStyle={styles.listContainer}
                     showsVerticalScrollIndicator={false}
                 />
@@ -260,34 +241,9 @@ const styles = StyleSheet.create({
         color: "#111827",
         marginBottom: 4,
     },
-    ratingContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
-    ratingText: {
-        marginLeft: 4,
-        fontSize: 14,
-        color: "#4B5563",
-    },
-    applicantDetails: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        marginBottom: 12,
-    },
-    detailItem: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
-    detailText: {
-        marginLeft: 4,
+    applicantEmail: {
         fontSize: 14,
         color: "#6B7280",
-    },
-    coverLetter: {
-        fontSize: 14,
-        color: "#4B5563",
-        lineHeight: 20,
-        marginBottom: 16,
     },
     viewButton: {
         backgroundColor: "#2563EB",
