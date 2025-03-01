@@ -257,12 +257,12 @@ export default function Chat(): JSX.Element {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Pesan</Text>
-        <TouchableOpacity 
+        {/* <TouchableOpacity 
           style={styles.createChatButton}
           onPress={createTestChat}
         >
           <Text style={styles.createChatButtonText}>+ Buat Chat Test</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
       
       {chatItems.length === 0 ? (

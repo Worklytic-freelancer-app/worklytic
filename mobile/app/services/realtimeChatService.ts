@@ -168,12 +168,8 @@ class RealtimeChatService {
       );
       
       // Fungsi untuk memproses dan menggabungkan pesan
-      const processMessages = async () => {
+      const processMessages = async (senderData: any, receiverData: any) => {
         try {
-          // Ambil snapshot terbaru untuk kedua query
-          const senderSnapshot = await get(senderQuery);
-          const receiverSnapshot = await get(receiverQuery);
-          
           // Map untuk menyimpan chat yang unik berdasarkan chatId
           const chatMap: Record<string, {
             lastMessage: string;
@@ -183,11 +179,10 @@ class RealtimeChatService {
           }> = {};
           
           // Proses pesan di mana pengguna adalah pengirim
-          if (senderSnapshot.exists()) {
-            const senderMessages = senderSnapshot.val();
-            console.log(`Found ${Object.keys(senderMessages).length} messages where user is sender`);
+          if (senderData) {
+            console.log(`Processing ${Object.keys(senderData).length} messages where user is sender`);
             
-            Object.values(senderMessages).forEach((message: any) => {
+            Object.values(senderData).forEach((message: any) => {
               const chatId = message.chatId;
               const otherUserId = message.receiverId;
               
@@ -205,11 +200,10 @@ class RealtimeChatService {
           }
           
           // Proses pesan di mana pengguna adalah penerima
-          if (receiverSnapshot.exists()) {
-            const receiverMessages = receiverSnapshot.val();
-            console.log(`Found ${Object.keys(receiverMessages).length} messages where user is receiver`);
+          if (receiverData) {
+            console.log(`Processing ${Object.keys(receiverData).length} messages where user is receiver`);
             
-            Object.values(receiverMessages).forEach((message: any) => {
+            Object.values(receiverData).forEach((message: any) => {
               const chatId = message.chatId;
               const otherUserId = message.senderId;
               
@@ -246,16 +240,38 @@ class RealtimeChatService {
         }
       };
       
+      // Variabel untuk menyimpan data terbaru
+      let currentSenderData: any = null;
+      let currentReceiverData: any = null;
+      
       // Daftarkan listener untuk perubahan pada pesan yang dikirim
       console.log("Setting up sender messages listener");
-      onValue(senderQuery, () => {
-        processMessages();
+      onValue(senderQuery, (snapshot) => {
+        if (snapshot.exists()) {
+          currentSenderData = snapshot.val();
+          console.log(`Sender data updated with ${Object.keys(currentSenderData).length} messages`);
+        } else {
+          currentSenderData = null;
+          console.log("No sender data available");
+        }
+        
+        // Proses pesan setiap kali ada perubahan
+        processMessages(currentSenderData, currentReceiverData);
       });
       
       // Daftarkan listener untuk perubahan pada pesan yang diterima
       console.log("Setting up receiver messages listener");
-      onValue(receiverQuery, () => {
-        processMessages();
+      onValue(receiverQuery, (snapshot) => {
+        if (snapshot.exists()) {
+          currentReceiverData = snapshot.val();
+          console.log(`Receiver data updated with ${Object.keys(currentReceiverData).length} messages`);
+        } else {
+          currentReceiverData = null;
+          console.log("No receiver data available");
+        }
+        
+        // Proses pesan setiap kali ada perubahan
+        processMessages(currentSenderData, currentReceiverData);
       });
       
       // Return unsubscribe function untuk kedua listener

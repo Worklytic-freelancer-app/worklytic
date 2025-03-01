@@ -158,7 +158,7 @@ export default function Projects() {
             <View style={styles.freelancerImages}>
               {item.assignedFreelancer.slice(0, 3).map((freelancer, index) => (
                 <Image 
-                  key={`${item._id}-freelancer-${freelancer._id}`}
+                  key={`freelancer-${index}-${freelancer._id || index}`}
                   source={{ uri: freelancer.profileImage }} 
                   style={[
                     styles.freelancerImage,

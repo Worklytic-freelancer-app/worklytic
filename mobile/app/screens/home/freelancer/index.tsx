@@ -182,7 +182,7 @@ export default function Freelancer() {
             <FlatList<Project> 
               data={item.data as Project[]} 
               renderItem={renderProject} 
-              keyExtractor={(item) => item._id} 
+              keyExtractor={(item) => `project-${item._id}`}
               horizontal 
               showsHorizontalScrollIndicator={false} 
               contentContainerStyle={styles.projectsScroll} 
@@ -250,7 +250,7 @@ export default function Freelancer() {
       <FlatList<Section> 
         data={sections} 
         renderItem={renderSection} 
-        keyExtractor={(item) => item.id} 
+        keyExtractor={(item) => `section-${item.id}`}
         showsVerticalScrollIndicator={false} 
         style={styles.content} 
       />
