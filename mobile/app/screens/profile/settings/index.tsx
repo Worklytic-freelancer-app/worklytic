@@ -5,12 +5,15 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 import { SecureStoreUtils } from "@/utils/SecureStore";
+import { LoginContext } from "@/context/LoginContext";
+import { useContext } from "react";
 
 type SettingsScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
 export default function Settings() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<SettingsScreenNavigationProp>();
+  const { setIsLoggedIn } = useContext(LoginContext);
 
   const handleOptionPress = (title: string) => {
     switch (title) {
@@ -48,11 +51,7 @@ export default function Settings() {
           onPress: async () => {
             try {
               await SecureStoreUtils.clearAuthData();
-              //! Navigation reset ini untuk menghapus semua route yang ada di stack
-              navigation.reset({
-                index: 0,
-                routes: [{ name: "SignIn" }],
-              });
+              setIsLoggedIn(true);
             } catch (error) {
               console.error("Error during logout:", error);
               Alert.alert("Error", "Terjadi kesalahan saat proses logout");

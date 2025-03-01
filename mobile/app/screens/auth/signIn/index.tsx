@@ -1,13 +1,14 @@
 import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Eye, EyeOff } from "lucide-react-native";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 import { Alert } from "react-native";
 import { baseUrl } from "@/constant/baseUrl";
 import { SecureStoreUtils } from "@/utils/SecureStore";
+import { LoginContext } from "@/context/LoginContext";
 
 type SignInScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -19,6 +20,7 @@ export default function SignIn() {
     email: "",
     password: "",
   });
+  const { setIsLoggedIn, isLoggedIn } = useContext(LoginContext);
 
   async function handleSignIn() {
     try {
@@ -37,14 +39,14 @@ export default function SignIn() {
           user: result.data.user
         });
         
+        setIsLoggedIn(false);
+        console.log(isLoggedIn, "<<<<<<<");
         Alert.alert(
           "Sukses", 
           result.message, 
-          [{ 
-            text: "OK", 
-            onPress: () => navigation.navigate("BottomTab") 
-          }]
+          [{ text: "OK" }]
         );
+        
       } else {
         Alert.alert("Error", result.message || "Gagal melakukan login");
       }

@@ -1,3 +1,4 @@
+import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import BottomTab from "./BottomTab";
 import ProjectDetails from "@/screens/projects/projectDetails";
@@ -20,6 +21,10 @@ import EditProfile from "@/screens/profile/settings/editProfile";
 import ChooseFreelancer from "@/screens/workspace/chooseFreelancer";
 import Payment from "@/screens/payment";
 import ReviewPostProject from "@/screens/postProject/reviewPostProject";
+import { useContext, useEffect, useState } from "react";
+import { LoginContext } from "@/context/LoginContext";
+import * as SecureStore from "expo-secure-store";
+import { ActivityIndicator } from "react-native";
 
 const Stack = createStackNavigator();
 
@@ -63,34 +68,66 @@ export type RootStackParamList = {
 };
 
 export default function AppNavigator() {
+  const { isLoggedIn, setIsLoggedIn } = useContext(LoginContext);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    async function cekToken() {
+      try {
+        const token = await SecureStore.getItemAsync("token");
+        if (token) {
+          setIsLoggedIn(true);
+        }
+        console.log(isLoggedIn, "<<<<");
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    cekToken();
+  }, [setIsLoggedIn]);
+
+  if (loading) {
+    return <ActivityIndicator size="large" color="#2563eb" />;
+  }
+
   return (
     <Stack.Navigator
-      initialRouteName="SignIn"
       screenOptions={{
         headerShown: false,
       }}
     >
-      <Stack.Screen name="SignIn" component={SignIn} />
-      <Stack.Screen name="SignUp" component={SignUp} />
-      <Stack.Screen name="BottomTab" component={BottomTab} />
-      <Stack.Screen name="Settings" component={Settings} />
-      <Stack.Screen name="ProjectDetails" component={ProjectDetails} />
-      <Stack.Screen name="Projects" component={Projects} />
-      <Stack.Screen name="Search" component={Search} />
-      <Stack.Screen name="DirectMessage" component={DirectMessage} />
-      <Stack.Screen name="Freelancers" component={Freelancers} />
-      <Stack.Screen name="FreelancerDetails" component={FreelancerDetails} />
-      <Stack.Screen name="Workspace" component={Workspace} />
-      <Stack.Screen name="WorkspaceDetails" component={WorkspaceDetails} />
-      <Stack.Screen name="PostProject" component={PostProject} />
-      <Stack.Screen name="AddService" component={AddService} />
-      <Stack.Screen name="Services" component={Services} />
-      <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
-      <Stack.Screen name="EditProfile" component={EditProfile} />
-      <Stack.Screen name="Profile" component={Profile} />
-      <Stack.Screen name="ChooseFreelancer" component={ChooseFreelancer} />
-      <Stack.Screen name="Payment" component={Payment} />
-      <Stack.Screen name="ReviewPostProject" component={ReviewPostProject} />
+      {isLoggedIn ? (
+        // Auth stack
+        <>
+          <Stack.Screen name="SignIn" component={SignIn} />
+          <Stack.Screen name="SignUp" component={SignUp} />
+        </>
+      ) : (
+        // App stack
+        <>
+          <Stack.Screen name="BottomTab" component={BottomTab} />
+          <Stack.Screen name="Settings" component={Settings} />
+          <Stack.Screen name="ProjectDetails" component={ProjectDetails} />
+          <Stack.Screen name="Projects" component={Projects} />
+          <Stack.Screen name="Search" component={Search} />
+          <Stack.Screen name="DirectMessage" component={DirectMessage} />
+          <Stack.Screen name="Freelancers" component={Freelancers} />
+          <Stack.Screen name="FreelancerDetails" component={FreelancerDetails} />
+          <Stack.Screen name="Workspace" component={Workspace} />
+          <Stack.Screen name="WorkspaceDetails" component={WorkspaceDetails} />
+          <Stack.Screen name="PostProject" component={PostProject} />
+          <Stack.Screen name="AddService" component={AddService} />
+          <Stack.Screen name="Services" component={Services} />
+          <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
+          <Stack.Screen name="EditProfile" component={EditProfile} />
+          <Stack.Screen name="Profile" component={Profile} />
+          <Stack.Screen name="ChooseFreelancer" component={ChooseFreelancer} />
+          <Stack.Screen name="Payment" component={Payment} />
+          <Stack.Screen name="ReviewPostProject" component={ReviewPostProject} />
+        </>
+      )}
     </Stack.Navigator>
   );
 }
