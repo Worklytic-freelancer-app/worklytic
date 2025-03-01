@@ -1,4 +1,3 @@
-
 import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Mail, Lock, Eye, EyeOff, User } from "lucide-react-native";
@@ -51,14 +50,11 @@ export default function SignUpForm({ role }: SignUpFormProps) {
           user: result.data.user
         });
 
-        Alert.alert(
-          "Sukses", 
-          result.message, 
-          [{ 
-            text: "OK", 
-            onPress: () => navigation.navigate("BottomTab") 
-          }]
-        );
+        // Reset navigasi ke BottomTab agar tidak bisa kembali ke SignUp
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "BottomTab" }],
+        });
       } else {
         Alert.alert("Error", result.message || "Gagal melakukan registrasi");
       }

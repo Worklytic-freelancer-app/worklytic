@@ -37,14 +37,10 @@ export default function SignIn() {
           user: result.data.user
         });
         
-        Alert.alert(
-          "Sukses", 
-          result.message, 
-          [{ 
-            text: "OK", 
-            onPress: () => navigation.navigate("BottomTab") 
-          }]
-        );
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "BottomTab" }],
+        });
       } else {
         Alert.alert("Error", result.message || "Gagal melakukan login");
       }

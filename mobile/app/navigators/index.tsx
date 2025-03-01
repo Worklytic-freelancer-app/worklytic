@@ -17,6 +17,9 @@ import ServiceDetails from "@/screens/services/serviceDetails";
 import Projects from "@/screens/projects";
 import EditProfile from "@/screens/profile/settings/editProfile";
 import ChooseFreelancer from "@/screens/workspace/chooseFreelancer";
+import { useEffect, useState } from "react";
+import { View, ActivityIndicator } from "react-native";
+import { SecureStoreUtils } from "@/utils/SecureStore";
 
 const Stack = createStackNavigator();
 
@@ -49,16 +52,53 @@ export type RootStackParamList = {
 };
 
 export default function AppNavigator() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  
+  useEffect(() => {
+    // Memeriksa token saat aplikasi dimulai
+    checkAuthStatus();
+  }, []);
+  
+  const checkAuthStatus = async () => {
+    try {
+      const token = await SecureStoreUtils.getToken();
+      setIsAuthenticated(!!token);
+    } catch (error) {
+      console.error("Error checking auth status:", error);
+      setIsAuthenticated(false);
+    }
+  };
+  
+  // Menampilkan loading screen saat memeriksa status autentikasi
+  if (isAuthenticated === null) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
+    );
+  }
+
   return (
     <Stack.Navigator
-      initialRouteName="SignIn"
+      initialRouteName={isAuthenticated ? "BottomTab" : "SignIn"}
       screenOptions={{
         headerShown: false,
       }}
     >
-      <Stack.Screen name="SignIn" component={SignIn} />
-      <Stack.Screen name="SignUp" component={SignUp} />
-      <Stack.Screen name="BottomTab" component={BottomTab} />
+      <Stack.Screen 
+        name="SignIn" 
+        component={SignIn} 
+        options={{ gestureEnabled: false }} 
+      />
+      <Stack.Screen 
+        name="SignUp" 
+        component={SignUp} 
+      />
+      <Stack.Screen 
+        name="BottomTab" 
+        component={BottomTab} 
+        options={{ gestureEnabled: false }} 
+      />
       <Stack.Screen name="Settings" component={Settings} />
       <Stack.Screen name="ProjectDetails" component={ProjectDetails} />
       <Stack.Screen name="Projects" component={Projects} />
