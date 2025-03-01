@@ -1,7 +1,8 @@
 [
     {
-        "fullName": "Ahmad Rizki",
-        "email": "ahmad.rizki@gmail.com",
+        "_id": "66d064e5e913892a850e1234",
+        "fullName": "Henotic Labs",
+        "email": "support@henotic.id",
         "password": "123456",
         "role": "freelancer",
         "profileImage": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6",
@@ -16,12 +17,13 @@
         "successRate": 0,
         "companyName": "",
         "industry": "",
-        "website": "https://ahmadrizki.dev",
+        "website": "https://henotic.space",
         "totalPostedProjects": 0,
         "rating": 0,
         "totalReviews": 0
     },
-    {
+    {   
+        "_id": "66d064e5e913892a850e1235",
         "fullName": "PT Maju Teknologi Indonesia",
         "email": "hrd@majuteknologi.co.id",
         "password": "123456",
@@ -43,7 +45,9 @@
         "rating": 0,
         "totalReviews": 0
     },
+
     {
+        "_id": "66d064e5e913892a850e1236",
         "fullName": "Dewi Safitri",
         "email": "dewi.safitri@outlook.com",
         "password": "123456",
@@ -66,6 +70,7 @@
         "totalReviews": 0
     },
     {
+        "_id": "66d064e5e913892a850e1237",
         "fullName": "Budi Santoso",
         "email": "budi.santoso@gmail.com",
         "password": "123456",
@@ -110,6 +115,7 @@
         "totalReviews": 0
     },
     {
+        "_id": "66d064e5e913892a850e1238",
         "fullName": "Freelancer",
         "email": "freelancer@mail.com",
         "password": "123456",
@@ -132,6 +138,7 @@
         "totalReviews": 0
     },
     {
+        "_id": "66d064e5e913892a850e1239",
         "fullName": "Client",
         "email": "client@mail.com",
         "password": "123456",

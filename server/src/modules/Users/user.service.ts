@@ -7,6 +7,7 @@ import {
 import type { Result } from "./user.repository";
 import { hashText, compareText } from "../../utils/bcrypt";
 import { generateToken } from "../../utils/jwt";
+import cloudinary from "../../config/cloudinary";
 
 class UserService {
     async create(data: CreateUser): Promise<Result<Users>> {
@@ -99,9 +100,38 @@ class UserService {
         }
     }
 
-    updateProfileImage = async (id: string, imageData: string): Promise<Result<Users>> => {
-        return await User.updateProfileImage({ id }, imageData);
-    };
+    async updateProfileImage(id: string, imageData: string): Promise<Result<Users>> {
+        try {
+            // Upload gambar ke Cloudinary
+            const uploadResult = await cloudinary.uploader.upload(imageData, {
+                folder: 'freelancer-app',
+                use_filename: true,
+                unique_filename: true,
+                overwrite: true,
+            });
+            
+            const profileImageUrl = uploadResult.secure_url;
+            
+            // Update profil user dengan URL gambar baru
+            const result = await User.update({ id }, { profileImage: profileImageUrl });
+            
+            if (!result.data) {
+                throw new Error("Gagal memperbarui gambar profil");
+            }
+            
+            return {
+                success: true,
+                message: "Gambar profil berhasil diperbarui",
+                data: result.data
+            };
+        } catch (error) {
+            throw new Error(
+                error instanceof Error 
+                    ? error.message 
+                    : "Gagal memperbarui gambar profil"
+            );
+        }
+    }
 }
 
 export const Service = new UserService();
