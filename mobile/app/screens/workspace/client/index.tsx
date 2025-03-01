@@ -7,15 +7,40 @@ import { RootStackParamList } from "@/navigators";
 import { useState, useEffect } from "react";
 import { baseUrl } from "@/constant/baseUrl";
 import { SecureStoreUtils } from "@/utils/SecureStore";
+import { useUser } from "@/hooks/useUser";
+
+// Tambahkan interface untuk data project dari API
+interface ProjectResponse {
+    _id: string;
+    clientId: string;
+    title: string;
+    budget: number;
+    createdAt: string;
+    assignedFreelancer?: Array<{
+        _id: string;
+        fullName: string;
+        profileImage: string;
+        email: string;
+        role: string;
+    }>;
+    image: string[];
+    status: string;
+}
 
 interface PostedProject {
-    id: number;
+    _id: string;
     title: string;
-    budget: string;
-    postedDate: string;
-    applicants: number;
-    image: string;
-    status: "open" | "in-progress" | "completed";
+    budget: string; // Diubah ke string karena sudah diformat
+    createdAt: string;
+    assignedFreelancer?: Array<{
+        _id: string;
+        fullName: string;
+        profileImage: string;
+        email: string;
+        role: string;
+    }>;
+    image: string[];
+    status: "open" | "in-progress" | "completed"; // Definisikan status yang valid
 }
 
 export default function ClientWorkspace() {
@@ -24,40 +49,59 @@ export default function ClientWorkspace() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [postedProjects, setPostedProjects] = useState<PostedProject[]>([]);
+    const { user } = useUser();
 
     useEffect(() => {
-        // Untuk sementara menggunakan data dummy
-        // Nanti bisa diganti dengan fetch dari API
-        setPostedProjects([
-            {
-                id: 1,
-                title: "E-commerce Website Development",
-                budget: "$3,500",
-                postedDate: "3 days ago",
-                applicants: 8,
-                image: "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&auto=format&fit=crop&q=60",
-                status: "open",
-            },
-            {
-                id: 2,
-                title: "Mobile App UI/UX Design",
-                budget: "$1,200",
-                postedDate: "1 week ago",
-                applicants: 5,
-                image: "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?w=800&auto=format&fit=crop&q=60",
-                status: "in-progress",
-            },
-            {
-                id: 3,
-                title: "Content Writing for Blog",
-                budget: "$800",
-                postedDate: "2 weeks ago",
-                applicants: 12,
-                image: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&auto=format&fit=crop&q=60",
-                status: "completed",
-            },
-        ]);
-    }, []);
+        const fetchProjects = async () => {
+            try {
+                setLoading(true);
+                const token = await SecureStoreUtils.getToken();
+                
+                const response = await fetch(`${baseUrl}/api/projects`, {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    // Filter proyek berdasarkan clientId yang sama dengan user._id
+                    const filteredProjects = (result.data as ProjectResponse[]).filter((project) => 
+                        project.clientId === user?._id
+                    );
+                    
+                    // Transform data untuk menyesuaikan dengan interface PostedProject
+                    const transformedProjects: PostedProject[] = filteredProjects.map((project) => ({
+                        _id: project._id,
+                        title: project.title,
+                        budget: new Intl.NumberFormat('id-ID', {
+                            style: 'currency',
+                            currency: 'IDR'
+                        }).format(project.budget),
+                        createdAt: new Date(project.createdAt).toLocaleDateString('id-ID', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric'
+                        }),
+                        assignedFreelancer: project.assignedFreelancer,
+                        image: project.image,
+                        status: project.status.toLowerCase() as PostedProject["status"]
+                    }));
+                    
+                    setPostedProjects(transformedProjects);
+                }
+            } catch (error) {
+                setError(error instanceof Error ? error.message : "Gagal mengambil data proyek");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (user?._id) {
+            fetchProjects();
+        }
+    }, [user?._id]);
 
     const getStatusColor = (status: PostedProject["status"]) => {
         switch (status) {
@@ -75,9 +119,12 @@ export default function ClientWorkspace() {
     const renderProject = ({ item }: { item: PostedProject }) => (
         <TouchableOpacity 
             style={styles.projectCard} 
-            onPress={() => navigation.navigate("ChooseFreelancer", { projectId: item.id })}
+            onPress={() => navigation.navigate("ChooseFreelancer", { projectId: item._id })}
         >
-            <Image source={{ uri: item.image }} style={styles.projectImage} />
+            <Image 
+                source={{ uri: item.image[0] || 'https://via.placeholder.com/300' }} 
+                style={styles.projectImage} 
+            />
             <View style={styles.projectInfo}>
                 <View style={styles.projectHeader}>
                     <Text style={styles.projectTitle}>{item.title}</Text>
@@ -92,11 +139,13 @@ export default function ClientWorkspace() {
                 <View style={styles.projectMeta}>
                     <View style={styles.metaItem}>
                         <Clock size={16} color="#6b7280" />
-                        <Text style={styles.metaText}>Posted {item.postedDate}</Text>
+                        <Text style={styles.metaText}>Posted {item.createdAt}</Text>
                     </View>
                     <View style={styles.metaItem}>
                         <Users size={16} color="#6b7280" />
-                        <Text style={styles.metaText}>{item.applicants} Applicants</Text>
+                        <Text style={styles.metaText}>
+                            {item.assignedFreelancer?.length || 0} Applicants
+                        </Text>
                     </View>
                 </View>
             </View>
@@ -159,7 +208,7 @@ export default function ClientWorkspace() {
             <FlatList<PostedProject> 
                 data={postedProjects} 
                 renderItem={renderProject} 
-                keyExtractor={(item) => item.id.toString()} 
+                keyExtractor={(item) => item._id} 
                 contentContainerStyle={styles.projectsList} 
                 showsVerticalScrollIndicator={false}
                 ListEmptyComponent={

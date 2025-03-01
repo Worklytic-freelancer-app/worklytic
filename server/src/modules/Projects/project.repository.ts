@@ -160,17 +160,33 @@ export class ProjectRepository {
         try {
             const collection = await this.getCollection();
             
+            // Dapatkan informasi freelancer dari koleksi Users
+            const userCollection = db.collection("Users");
+            const freelancer = await userCollection.findOne({ _id: new ObjectId(freelancerId) });
+            
+            if (!freelancer) {
+                throw new Error("Freelancer not found");
+            }
+
             // Dapatkan dokumen project sebelum update
             const projectDoc = await collection.findOne({ _id: new ObjectId(projectId) }) as Projects;
             if (!projectDoc) {
                 throw new Error("Project not found");
             }
 
-            // Lakukan update dengan sintaks yang benar untuk MongoDB
+            // Update dengan informasi lengkap freelancer
             const result = await collection.findOneAndUpdate(
                 { _id: new ObjectId(projectId) },
                 { 
-                    $addToSet: { assignedFreelancer: freelancerId }
+                    $addToSet: { 
+                        assignedFreelancer: {
+                            _id: freelancer._id.toString(),
+                            fullName: freelancer.fullName,
+                            profileImage: freelancer.profileImage,
+                            email: freelancer.email,
+                            role: freelancer.role
+                        } 
+                    }
                 },
                 { returnDocument: 'after' }
             );

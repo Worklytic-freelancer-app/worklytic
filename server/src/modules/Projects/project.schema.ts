@@ -53,6 +53,36 @@ export const ProjectsValidate = ProjectSchema
 export const UpdateProjectValidate = ProjectSchema.partial()
 
 export type CreateProject = z.infer<typeof CreateProjectValidate>
-export type Projects = z.infer<typeof ProjectsValidate>
+
+// Tambahkan interface untuk assigned freelancer
+interface AssignedFreelancer {
+    _id: string;
+    fullName: string;
+    profileImage: string;
+    email: string;
+    role: string;
+}
+
+// Update interface Projects untuk menggunakan tipe baru
+export interface Projects {
+    _id: ObjectId;
+    clientId: ObjectId;
+    title: string;
+    description: string;
+    budget: number;
+    category: string;
+    location: string;
+    duration: string;
+    status: string;
+    requirements: string[];
+    image: string[];
+    assignedFreelancer?: AssignedFreelancer[];
+    chosenFreelancer?: AssignedFreelancer[];
+    features: string[];
+    createdAt: Date;
+    updatedAt: Date;
+    progress: number;
+}
+
 export type UpdateProject = z.infer<typeof UpdateProjectValidate>
 export type ProjectId = z.infer<typeof ProjectIdValidate>
