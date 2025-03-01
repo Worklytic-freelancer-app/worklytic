@@ -232,6 +232,20 @@ export default function ProjectDetails() {
               </View>
             )}
           </View>
+
+          {project.assignedFreelancer.length > 0 && (
+            <View style={styles.assignedFreelancerContainer}>
+              <View style={styles.freelancerImages}>
+                {project.assignedFreelancer.map((freelancer, index) => (
+                  <Image 
+                    key={freelancer._id || index}
+                    source={{ uri: freelancer.profileImage }} 
+                    style={styles.freelancerImage} 
+                  />
+                ))}
+              </View>
+            </View>
+          )}
         </View>
       </ScrollView>
 
@@ -491,5 +505,18 @@ const styles = StyleSheet.create({
   clientLocation: {
     fontSize: 14,
     color: '#6b7280',
+  },
+  assignedFreelancerContainer: {
+    marginTop: 20,
+  },
+  freelancerImages: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  freelancerImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 8,
   },
 });
