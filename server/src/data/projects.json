@@ -49,15 +49,7 @@
         "image": [
             "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8"
         ],
-        "assignedFreelancer": [
-            {
-                "_id": "67c09e7ea8bf2bcd8d03f7fd",
-                "fullName": "Dewi Safitri",
-                "profileImage": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
-                "email": "dewi.safitri@outlook.com",
-                "role": "freelancer"
-            }
-        ],
+        "assignedFreelancer": [],
         "features": [
             "Landing page redesign",
             "Mobile responsive design",

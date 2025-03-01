@@ -2,14 +2,14 @@
 import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Mail, Lock, Eye, EyeOff, User } from "lucide-react-native";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 import { baseUrl } from "@/constant/baseUrl";
 import { Alert } from "react-native";
 import { SecureStoreUtils } from "@/utils/SecureStore";
-
+import { LoginContext } from "@/context/LoginContext";
 type SignUpScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
 interface SignUpFormProps {
@@ -26,6 +26,7 @@ export default function SignUpForm({ role }: SignUpFormProps) {
     password: "",
     role: role,
   });
+  const { setIsLoggedIn } = useContext(LoginContext);
 
   async function signUp() {
     try {
@@ -56,7 +57,10 @@ export default function SignUpForm({ role }: SignUpFormProps) {
           result.message, 
           [{ 
             text: "OK", 
-            onPress: () => navigation.navigate("BottomTab") 
+            onPress: () => {
+              setIsLoggedIn(false);
+              // navigation.navigate("BottomTab") 
+            }
           }]
         );
       } else {
