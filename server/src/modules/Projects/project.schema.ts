@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { ObjectId } from "mongodb"
-import { Users } from "../Users/user.schema"
+import { UsersValidate } from "../Users/user.schema"
 
 export class Project {
     constructor(data: Partial<Projects>) {
@@ -8,7 +8,7 @@ export class Project {
     }
 }
 
-const ProjectSchema = z.object({
+export const ProjectSchema = z.object({
     clientId: z.instanceof(ObjectId),
     title: z.string(),
     description: z.string(),
@@ -19,11 +19,9 @@ const ProjectSchema = z.object({
     status: z.string(),
     requirements: z.array(z.string()),
     image: z.array(z.string()),
-    assignedFreelancer: z.array(Users),
-    chosenFreelancer: z.array(Users),
+    assignedFreelancer: z.array(UsersValidate),
+    chosenFreelancer: z.array(UsersValidate),
     features: z.array(z.string()),
-    createdAt: z.date(),
-    updatedAt: z.date(),
     progress: z.number()
 })
 
@@ -49,29 +47,6 @@ export const ProjectsValidate = ProjectSchema
 export const UpdateProjectValidate = ProjectSchema.partial()
 
 export type CreateProject = z.infer<typeof CreateProjectValidate>
-
-
-
-// Update interface Projects untuk menggunakan tipe baru
-export interface Projects {
-    _id: ObjectId;
-    clientId: ObjectId;
-    title: string;
-    description: string;
-    budget: number;
-    category: string;
-    location: string;
-    duration: string;
-    status: string;
-    requirements: string[];
-    image: string[];
-    assignedFreelancer?: Users[];
-    chosenFreelancer?: Users[];
-    features: string[];
-    createdAt: Date;
-    updatedAt: Date;
-    progress: number;
-}
-
+export type Projects = z.infer<typeof ProjectsValidate>
 export type UpdateProject = z.infer<typeof UpdateProjectValidate>
 export type ProjectId = z.infer<typeof ProjectIdValidate>
