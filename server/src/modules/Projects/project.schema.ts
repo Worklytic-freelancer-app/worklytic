@@ -26,8 +26,6 @@ const ProjectSchema = z.object({
         role: z.string(),
     })),
     features: z.array(z.string()),
-    createdAt: z.date(),
-    updatedAt: z.date(),
     progress: z.number()
 })
 
