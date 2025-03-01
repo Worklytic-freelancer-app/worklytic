@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import { db } from "../../config";
-import type { CreateUser, UpdateUser, Users, UserId } from "./user.schema";
+import type { CreateUser, Users, UserId } from "./user.schema";
 import { User } from "./user.schema";
 import { uploadImage } from '../../utils/cloudinary';
 
@@ -94,18 +94,13 @@ export class UserRepository {
     }
   };
 
-  update = async ({ id }: UserId, data: UpdateUser): Promise<Result<Users>> => {
+  update = async ({ id }: UserId, data: Partial<Users>): Promise<Result<Users>> => {
     try {
       const collection = await this.getCollection();
       const result = await collection.findOneAndUpdate(
         { _id: new ObjectId(id) },
-        {
-          $set: {
-            ...data,
-            updatedAt: new Date(),
-          },
-        },
-        { returnDocument: "after" }
+        { $set: { ...data, updatedAt: new Date() } },
+        { returnDocument: 'after' }
       );
 
       if (!result) {
@@ -118,6 +113,7 @@ export class UserRepository {
         data: new User(result) as Users,
       };
     } catch (error) {
+      console.error('Error in update:', error);
       throw new Error(error instanceof Error ? error.message : "Failed to update user");
     }
   };

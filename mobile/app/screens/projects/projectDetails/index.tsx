@@ -253,6 +253,7 @@ export default function ProjectDetails() {
       </View>
 
       <ProjectDiscussion
+        projectId={project._id}
         isVisible={showTerms}
         onClose={() => setShowTerms(false)}
         onAccept={() => {

@@ -1,17 +1,23 @@
 import React, { useState, useRef } from "react";
-import { View, Text, Modal, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from "react-native";
+import { View, Text, Modal, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { baseUrl } from "@/constant/baseUrl";
+import { useUser } from "@/hooks/useUser";
+import { SecureStoreUtils } from "@/utils/SecureStore";
 
 interface ProjectDiscussionProps {
   isVisible: boolean;
   onClose: () => void;
   onAccept: () => void;
+  projectId: string;
 }
 
-export default function ProjectDiscussion({ isVisible, onClose, onAccept }: ProjectDiscussionProps) {
+export default function ProjectDiscussion({ isVisible, onClose, onAccept, projectId }: ProjectDiscussionProps) {
   const [canAccept, setCanAccept] = useState(false);
+  const [loading, setLoading] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const insets = useSafeAreaInsets();
+  const { user } = useUser();
 
   const handleScroll = (event: any) => {
     const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
@@ -95,6 +101,53 @@ By accepting these terms, you agree to:
 - Comply with all legal requirements
   `;
 
+  const handleAccept = async () => {
+    try {
+      setLoading(true);
+      
+      const token = await SecureStoreUtils.getToken();
+      
+      if (!user?._id) {
+        throw new Error("User not authenticated");
+      }
+
+      const response = await fetch(`${baseUrl}/api/projects`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          projectId: projectId,
+          freelancerId: user._id
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        Alert.alert(
+          "Success",
+          "You have successfully applied to this project",
+          [{ text: "OK", onPress: () => {
+            onAccept();
+            onClose();
+          }}]
+        );
+      } else {
+        throw new Error(result.message || "Failed to apply to project");
+      }
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        error instanceof Error ? error.message : "Failed to apply to project",
+        [{ text: "OK" }]
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Modal animationType="slide" transparent={true} visible={isVisible} onRequestClose={onClose}>
       <View style={styles.modalContainer}>
@@ -111,16 +164,27 @@ By accepting these terms, you agree to:
           <View style={[styles.modalFooter, { paddingBottom: insets.bottom }]}>
             <View style={styles.buttonContainer}>
               <TouchableOpacity 
-                style={[styles.modalButton, styles.buttonFlex, !canAccept && styles.modalButtonDisabled]} 
-                disabled={!canAccept} 
-                onPress={onAccept}
+                style={[
+                  styles.modalButton, 
+                  styles.buttonFlex, 
+                  (!canAccept || loading) && styles.modalButtonDisabled
+                ]} 
+                disabled={!canAccept || loading} 
+                onPress={handleAccept}
               >
-                <Text style={[styles.modalButtonText, !canAccept && styles.modalButtonTextDisabled]}>
-                  {canAccept ? "Accept & Continue" : "Please read all terms"}
+                <Text style={[
+                  styles.modalButtonText, 
+                  (!canAccept || loading) && styles.modalButtonTextDisabled
+                ]}>
+                  {loading ? "Applying..." : canAccept ? "Accept & Continue" : "Please read all terms"}
                 </Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={[styles.modalButton, styles.cancelButton, styles.buttonFlex]} onPress={onClose}>
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.cancelButton, styles.buttonFlex]} 
+                onPress={onClose}
+                disabled={loading}
+              >
                 <Text style={[styles.modalButtonText, styles.cancelButtonText]}>Cancel</Text>
               </TouchableOpacity>
             </View>

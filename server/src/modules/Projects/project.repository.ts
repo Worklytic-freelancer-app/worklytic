@@ -155,6 +155,39 @@ export class ProjectRepository {
             throw new Error(error instanceof Error ? error.message : "Failed to delete project");
         }
     };
+    
+    applyProject = async (projectId: string, freelancerId: string): Promise<Result<Projects>> => {
+        try {
+            const collection = await this.getCollection();
+            
+            // Dapatkan dokumen project sebelum update
+            const projectDoc = await collection.findOne({ _id: new ObjectId(projectId) }) as Projects;
+            if (!projectDoc) {
+                throw new Error("Project not found");
+            }
+
+            // Lakukan update dengan sintaks yang benar untuk MongoDB
+            const result = await collection.findOneAndUpdate(
+                { _id: new ObjectId(projectId) },
+                { 
+                    $addToSet: { assignedFreelancer: freelancerId }
+                },
+                { returnDocument: 'after' }
+            );
+
+            if (!result) {
+                throw new Error("Failed to apply project");
+            }
+
+            return {
+                success: true,
+                message: "Project applied successfully",
+                data: new Project(result) as Projects
+            };
+        } catch (error) {
+            throw new Error(error instanceof Error ? error.message : "Failed to apply project");
+        }
+    }   
 }
 
 // ! -- CUSTOM METHODS --

@@ -15,7 +15,6 @@ import AddService from "@/screens/profile/addService";
 import Services from "@/screens/services";
 import ServiceDetails from "@/screens/services/serviceDetails";
 import Projects from "@/screens/projects";
-// import EditProfile from "@/screens/profile/editProfile";
 import Profile from "@/screens/profile";
 import EditProfile from "@/screens/profile/settings/editProfile";
 import ChooseFreelancer from "@/screens/workspace/chooseFreelancer";

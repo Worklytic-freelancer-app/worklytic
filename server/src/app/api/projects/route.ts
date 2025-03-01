@@ -25,3 +25,16 @@ export async function POST(req: Request) {
         );
     }
 }
+
+export async function PATCH(req: Request) {
+    try {
+        const body = await req.json();
+        const result = await Project.applyProject(body.projectId, body.freelancerId);
+        return NextResponse.json(result);
+    } catch (error) {
+        return NextResponse.json(
+            { message: error instanceof Error ? error.message : "Failed to apply project" },
+            { status: 500 }
+        );
+    }
+}

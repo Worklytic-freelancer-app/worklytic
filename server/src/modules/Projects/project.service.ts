@@ -59,6 +59,9 @@ class ProjectService {
             throw new Error(error instanceof Error ? error.message : "Failed to get project recommendations");
         }
     }
+    async applyProject(projectId: string, freelancerId: string): Promise<Result<Projects>> {
+        return await Project.applyProject(projectId, freelancerId);
+    }
 }
 
 export const Service = new ProjectService();
