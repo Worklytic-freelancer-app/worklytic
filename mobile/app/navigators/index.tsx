@@ -24,7 +24,8 @@ import ReviewPostProject from "@/screens/postProject/reviewPostProject";
 import { useContext, useEffect, useState } from "react";
 import { LoginContext } from "@/context/LoginContext";
 import * as SecureStore from "expo-secure-store";
-import { ActivityIndicator } from "react-native";
+import { ActivityIndicator, View } from "react-native";
+import { initializeFirebaseAuth } from "@/services/firebaseAuth";
 
 const Stack = createStackNavigator();
 
@@ -73,24 +74,31 @@ export default function AppNavigator() {
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    async function cekToken() {
+    async function initialize() {
       try {
+        // Initialize Firebase Auth
+        await initializeFirebaseAuth();
+        
+        // Check token
         const token = await SecureStore.getItemAsync("token");
         if (token) {
           setIsLoggedIn(true);
         }
-        // console.log(isLoggedIn, "<<<<");
       } catch (error) {
         console.error(error);
       } finally {
         setLoading(false);
       }
     }
-    cekToken();
+    initialize();
   }, [setIsLoggedIn]);
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#2563eb" />;
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
+    );
   }
 
   return (

@@ -20,7 +20,7 @@ export default function SignIn() {
     email: "",
     password: "",
   });
-  const { setIsLoggedIn, isLoggedIn } = useContext(LoginContext);
+  const { setIsLoggedIn } = useContext(LoginContext);
 
   async function handleSignIn() {
     try {
@@ -40,7 +40,7 @@ export default function SignIn() {
         });
         
         setIsLoggedIn(false);
-        console.log(isLoggedIn, "<<<<<<<");
+        // console.log(isLoggedIn, "<<<<<<<");
         Alert.alert(
           "Sukses", 
           result.message, 

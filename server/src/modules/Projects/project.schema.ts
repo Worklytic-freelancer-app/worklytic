@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { ObjectId } from "mongodb"
+import { Users } from "../Users/user.schema"
 
 export class Project {
     constructor(data: Partial<Projects>) {
@@ -18,13 +19,8 @@ const ProjectSchema = z.object({
     status: z.string(),
     requirements: z.array(z.string()),
     image: z.array(z.string()),
-    assignedFreelancer: z.array(z.object({
-        _id: z.instanceof(ObjectId),
-        fullName: z.string(),
-        profileImage: z.string(),
-        email: z.string(),
-        role: z.string(),
-    })),
+    assignedFreelancer: z.array(Users),
+    chosenFreelancer: z.array(Users),
     features: z.array(z.string()),
     createdAt: z.date(),
     updatedAt: z.date(),
@@ -54,14 +50,7 @@ export const UpdateProjectValidate = ProjectSchema.partial()
 
 export type CreateProject = z.infer<typeof CreateProjectValidate>
 
-// Tambahkan interface untuk assigned freelancer
-interface AssignedFreelancer {
-    _id: string;
-    fullName: string;
-    profileImage: string;
-    email: string;
-    role: string;
-}
+
 
 // Update interface Projects untuk menggunakan tipe baru
 export interface Projects {
@@ -76,8 +65,8 @@ export interface Projects {
     status: string;
     requirements: string[];
     image: string[];
-    assignedFreelancer?: AssignedFreelancer[];
-    chosenFreelancer?: AssignedFreelancer[];
+    assignedFreelancer?: Users[];
+    chosenFreelancer?: Users[];
     features: string[];
     createdAt: Date;
     updatedAt: Date;
