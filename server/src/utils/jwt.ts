@@ -15,7 +15,7 @@ if (!JWT_SECRET) {
 }
 
 export const generateToken = (payload: Payload) => {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: "1m" });
 };
 
 export const verifyToken = async (token: string) => {
