@@ -1,7 +1,7 @@
 [
     {
         "_id": "67c09e7ea8bf2bcd8d03f800",
-        "clientId": "66d064e5e913892a850e1234",
+        "clientId": "66d064e5e913892a850e1235",
         "title": "Pengembangan Sistem ERP Terintegrasi",
         "description": "Membutuhkan pengembangan sistem ERP yang dapat mengintegrasikan proses bisnis perusahaan meliputi inventory, accounting, HR, dan sales management. Sistem harus dapat diakses secara real-time dan memiliki dashboard analytics.",
         "budget": 75000000,
@@ -32,7 +32,7 @@
     },
     {
         "_id": "67c09e7ea8bf2bcd8d03f801",
-        "clientId": "66d064e5e913892a850e1234",
+        "clientId": "66d064e5e913892a850e1235",
         "title": "Redesign Website Perusahaan",
         "description": "Mencari UI/UX designer untuk melakukan redesign website perusahaan dengan fokus pada user experience dan konversi yang lebih baik. Website harus responsif dan modern.",
         "budget": 25000000,
@@ -70,7 +70,7 @@
     },
     {
         "_id": "67c09e7ea8bf2bcd8d03f802",
-        "clientId": "66d064e5e913892a850e1234",
+        "clientId": "66d064e5e913892a850e1235",
         "title": "Pengembangan Aplikasi Mobile Internal",
         "description": "Membutuhkan pengembangan aplikasi mobile untuk manajemen internal perusahaan. Aplikasi harus dapat digunakan di iOS dan Android.",
         "budget": 45000000,
@@ -96,6 +96,67 @@
         ],
         "createdAt": "2024-02-25T09:00:00.000Z",
         "updatedAt": "2024-02-25T09:00:00.000Z",
+        "progress": 0
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f803",
+        "clientId": "66d064e5e913892a850e1240",
+        "title": "Pengembangan Platform E-learning",
+        "description": "Membutuhkan pengembangan platform e-learning yang interaktif dengan fitur video conference, quiz online, dan tracking progress siswa.",
+        "budget": 85000000,
+        "category": "Web Development",
+        "location": "Jakarta, Indonesia",
+        "duration": "5 bulan",
+        "status": "Open",
+        "requirements": [
+            "Pengalaman dalam pengembangan LMS",
+            "Familiar dengan WebRTC",
+            "Kemampuan backend Node.js",
+            "Database MongoDB"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1501504905252-473c47e087f8",
+            "https://images.unsplash.com/photo-1517694712202-14dd9538aa97"
+        ],
+        "assignedFreelancer": [],
+        "features": [
+            "Live streaming kelas",
+            "Quiz interaktif",
+            "Progress tracking",
+            "Discussion forum"
+        ],
+        "createdAt": "2024-03-01T08:30:00.000Z",
+        "updatedAt": "2024-03-01T08:30:00.000Z",
+        "progress": 0
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f804",
+        "clientId": "66d064e5e913892a850e1241",
+        "title": "Aplikasi Manajemen Inventory IoT",
+        "description": "Pengembangan sistem manajemen inventory berbasis IoT dengan sensor RFID dan dashboard realtime.",
+        "budget": 120000000,
+        "category": "IoT Development",
+        "location": "Bandung, Indonesia",
+        "duration": "8 bulan",
+        "status": "Open",
+        "requirements": [
+            "Pengalaman IoT development",
+            "Familiar dengan RFID technology",
+            "Backend development dengan Python",
+            "Frontend React.js"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1518770660439-4636190af475"
+        ],
+        "assignedFreelancer": [],
+        "features": [
+            "RFID tracking",
+            "Real-time monitoring",
+            "Automated alerts",
+            "Analytics dashboard"
+        ],
+        "createdAt": "2024-03-05T09:15:00.000Z",
+        "updatedAt": "2024-03-05T09:15:00.000Z",
         "progress": 0
     }
 ]

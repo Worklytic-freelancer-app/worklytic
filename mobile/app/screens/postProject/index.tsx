@@ -1,12 +1,16 @@
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ChevronLeft } from "lucide-react-native";
+import { ChevronLeft, Camera, X } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RootStackParamList } from "@/navigators";
 import { useState } from "react";
+import * as ImagePicker from 'expo-image-picker';
 
 export default function PostProject() {
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const [images, setImages] = useState<string[]>([]);
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -17,9 +21,33 @@ export default function PostProject() {
     requirements: "",
   });
 
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [16, 9],
+      quality: 1,
+    });
+
+    if (!result.canceled && result.assets[0].uri) {
+      setImages([...images, result.assets[0].uri]);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setImages(images.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = () => {
-    // Handle form submission here
-    console.log(form);
+    if (!form.title || !form.description || !form.budget || !form.category || !form.location || !form.duration || !form.requirements) {
+      Alert.alert("Error", "Mohon lengkapi semua field");
+      return;
+    }
+    
+    navigation.navigate('ReviewPostProject', {
+      ...form,
+      images
+    });
   };
 
   return (
@@ -33,59 +61,117 @@ export default function PostProject() {
       </View>
 
       <ScrollView style={styles.formContainer} showsVerticalScrollIndicator={false}>
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Project Title</Text>
-          <TextInput style={styles.input} placeholder="Enter project title" placeholderTextColor="#9ca3af" value={form.title} onChangeText={(text) => setForm({ ...form, title: text })} />
+        <View style={styles.imageSection}>
+          {images.length > 0 ? (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {images.map((uri, index) => (
+                <View key={index} style={styles.imageWrapper}>
+                  <Image source={{ uri }} style={styles.projectImage} />
+                  <TouchableOpacity 
+                    style={styles.removeImageButton}
+                    onPress={() => removeImage(index)}
+                  >
+                    <X size={16} color="#FFF" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </ScrollView>
+          ) : (
+            <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
+              <Camera size={32} color="#6B7280" />
+              <Text style={styles.uploadText}>Upload Project Images</Text>
+              <Text style={styles.uploadSubtext}>Tap to browse files</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Description</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            placeholder="Describe your project in detail"
-            placeholderTextColor="#9ca3af"
-            multiline
-            numberOfLines={4}
-            value={form.description}
-            onChangeText={(text) => setForm({ ...form, description: text })}
-          />
-        </View>
+        <View style={styles.formSection}>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Project Title</Text>
+            <TextInput 
+              style={styles.input} 
+              placeholder="Enter a clear title for your project" 
+              placeholderTextColor="#9ca3af" 
+              value={form.title} 
+              onChangeText={(text) => setForm({ ...form, title: text })} 
+            />
+          </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Budget</Text>
-          <TextInput style={styles.input} placeholder="Enter project budget (e.g., Rp 37.500.000)" placeholderTextColor="#9ca3af" keyboardType="numeric" value={form.budget} onChangeText={(text) => setForm({ ...form, budget: text })} />
-        </View>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Category</Text>
+            <TextInput 
+              style={styles.input} 
+              placeholder="e.g., Web Development, Mobile App, UI/UX Design" 
+              placeholderTextColor="#9ca3af" 
+              value={form.category} 
+              onChangeText={(text) => setForm({ ...form, category: text })} 
+            />
+          </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Category</Text>
-          <TextInput style={styles.input} placeholder="Select project category (e.g., Development, Design)" placeholderTextColor="#9ca3af" value={form.category} onChangeText={(text) => setForm({ ...form, category: text })} />
-        </View>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Description</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Describe your project requirements in detail"
+              placeholderTextColor="#9ca3af"
+              multiline
+              numberOfLines={6}
+              value={form.description}
+              onChangeText={(text) => setForm({ ...form, description: text })}
+            />
+          </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Location</Text>
-          <TextInput style={styles.input} placeholder="Project location (e.g., Remote, On-site)" placeholderTextColor="#9ca3af" value={form.location} onChangeText={(text) => setForm({ ...form, location: text })} />
-        </View>
+          <View style={styles.row}>
+            <View style={[styles.inputGroup, styles.flex1, { marginRight: 8 }]}>
+              <Text style={styles.label}>Budget (Rp)</Text>
+              <TextInput 
+                style={styles.input} 
+                placeholder="e.g., 5000000" 
+                placeholderTextColor="#9ca3af" 
+                keyboardType="numeric"
+                value={form.budget} 
+                onChangeText={(text) => setForm({ ...form, budget: text })} 
+              />
+            </View>
+            <View style={[styles.inputGroup, styles.flex1]}>
+              <Text style={styles.label}>Duration</Text>
+              <TextInput 
+                style={styles.input} 
+                placeholder="e.g., 2 months" 
+                placeholderTextColor="#9ca3af" 
+                value={form.duration} 
+                onChangeText={(text) => setForm({ ...form, duration: text })} 
+              />
+            </View>
+          </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Duration</Text>
-          <TextInput style={styles.input} placeholder="Project duration (e.g., 3 months)" placeholderTextColor="#9ca3af" value={form.duration} onChangeText={(text) => setForm({ ...form, duration: text })} />
-        </View>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Location</Text>
+            <TextInput 
+              style={styles.input} 
+              placeholder="e.g., Remote, Jakarta, On-site" 
+              placeholderTextColor="#9ca3af" 
+              value={form.location} 
+              onChangeText={(text) => setForm({ ...form, location: text })} 
+            />
+          </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Requirements</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            placeholder="List project requirements (one per line)"
-            placeholderTextColor="#9ca3af"
-            multiline
-            numberOfLines={4}
-            value={form.requirements}
-            onChangeText={(text) => setForm({ ...form, requirements: text })}
-          />
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Requirements</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="List specific requirements or skills needed"
+              placeholderTextColor="#9ca3af"
+              multiline
+              numberOfLines={6}
+              value={form.requirements}
+              onChangeText={(text) => setForm({ ...form, requirements: text })}
+            />
+          </View>
         </View>
 
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitButtonText}>Post Project</Text>
+          <Text style={styles.submitButtonText}>Lanjutkan</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -98,6 +184,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: "#e5e7eb",
@@ -111,24 +200,72 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "600",
     color: "#111827",
   },
   formContainer: {
+    flex: 1,
+  },
+  imageSection: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e5e7eb",
+  },
+  uploadButton: {
+    height: 200,
+    backgroundColor: "#f9fafb",
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: "#e5e7eb",
+    borderStyle: "dashed",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  uploadText: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#374151",
+    marginTop: 12,
+  },
+  uploadSubtext: {
+    fontSize: 14,
+    color: "#6b7280",
+    marginTop: 4,
+  },
+  imageWrapper: {
+    position: 'relative',
+    marginRight: 12,
+  },
+  projectImage: {
+    width: 280,
+    height: 160,
+    borderRadius: 12,
+  },
+  removeImageButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 12,
+    padding: 4,
+  },
+  formSection: {
     padding: 16,
   },
   inputGroup: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   label: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "500",
     color: "#374151",
     marginBottom: 8,
   },
   input: {
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "#f9fafb",
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
@@ -138,13 +275,19 @@ const styles = StyleSheet.create({
     height: 120,
     textAlignVertical: "top",
   },
+  row: {
+    flexDirection: 'row',
+    marginBottom: 20,
+  },
+  flex1: {
+    flex: 1,
+  },
   submitButton: {
-    backgroundColor: "#3b82f6",
+    margin: 16,
+    backgroundColor: "#2563eb",
     borderRadius: 8,
     padding: 16,
     alignItems: "center",
-    marginTop: 24,
-    marginBottom: 32,
   },
   submitButtonText: {
     color: "#ffffff",
