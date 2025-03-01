@@ -48,6 +48,7 @@ export type RootStackParamList = {
     userId: string;
     userName: string;
     userImage: string;
+    chatId: string;
   };
   FreelancerDetails: {
     freelancerId: string;
@@ -78,7 +79,7 @@ export default function AppNavigator() {
         if (token) {
           setIsLoggedIn(true);
         }
-        console.log(isLoggedIn, "<<<<");
+        // console.log(isLoggedIn, "<<<<");
       } catch (error) {
         console.error(error);
       } finally {

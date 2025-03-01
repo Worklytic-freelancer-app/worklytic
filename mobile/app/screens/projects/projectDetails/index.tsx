@@ -252,7 +252,7 @@ export default function ProjectDetails() {
       <View style={[styles.footer, { paddingBottom: insets.bottom }]}>
         <TouchableOpacity
           style={styles.chatButton}
-          onPress={() => console.log("Chat Button Pressed")}
+          onPress={() => navigation.navigate("DirectMessage", { userId: client._id, userName: client.fullName, userImage: client.profileImage, chatId: "" })}
         >
           <MessageCircle size={24} color="#2563eb" />
         </TouchableOpacity>
