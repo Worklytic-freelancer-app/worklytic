@@ -156,17 +156,15 @@ export default function Projects() {
         {item.assignedFreelancer.length > 0 && (
           <View style={styles.assignedFreelancerContainer}>
             <View style={styles.freelancerImages}>
-              {item.assignedFreelancer.map((freelancer, index) => (
-                index < 3 && (
-                  <Image 
-                    key={freelancer._id}
-                    source={{ uri: freelancer.profileImage }} 
-                    style={[
-                      styles.freelancerImage,
-                      { marginLeft: index > 0 ? -12 : 0 }
-                    ]} 
-                  />
-                )
+              {item.assignedFreelancer.slice(0, 3).map((freelancer, index) => (
+                <Image 
+                  key={`${item._id}-freelancer-${freelancer._id}`}
+                  source={{ uri: freelancer.profileImage }} 
+                  style={[
+                    styles.freelancerImage,
+                    { marginLeft: index > 0 ? -12 : 0 }
+                  ]} 
+                />
               ))}
               {item.assignedFreelancer.length > 3 && (
                 <View style={styles.extraFreelancers}>

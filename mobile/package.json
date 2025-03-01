@@ -14,9 +14,11 @@
     "@react-navigation/stack": "^7.1.1",
     "@types/react-native-snap-carousel": "^3.8.11",
     "expo": "~52.0.37",
+    "expo-document-picker": "^13.0.3",
     "expo-image-picker": "^16.0.6",
     "expo-secure-store": "^14.0.1",
     "expo-status-bar": "~2.0.1",
+    "lodash": "^4.17.21",
     "lucide-react-native": "^0.475.0",
     "react": "18.3.1",
     "react-native": "0.76.7",
@@ -26,6 +28,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@types/lodash": "^4.17.15",
     "@types/react": "~18.3.12",
     "typescript": "^5.3.3"
   },

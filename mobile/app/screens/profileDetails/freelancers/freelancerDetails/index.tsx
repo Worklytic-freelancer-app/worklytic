@@ -1,10 +1,12 @@
-import React from "react";
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, FlatList } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, FlatList, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MapPin, Mail, Phone, Calendar, ChevronLeft } from "lucide-react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
+import { baseUrl } from "@/constant/baseUrl";
+import { SecureStoreUtils } from "@/utils/SecureStore";
 
 interface Project {
   id: number;
@@ -30,88 +32,94 @@ interface Service {
 }
 
 type FreelancerDetailsNavigationProp = StackNavigationProp<RootStackParamList>;
+type FreelancerDetailsRouteProp = RouteProp<RootStackParamList, 'FreelancerDetails'>;
+
+interface User {
+    _id: string;
+    fullName: string;
+    email: string;
+    role: string;
+    profileImage: string;
+    location: string;
+    balance: number;
+    about: string;
+    phone: string;
+    skills: string[];
+    totalProjects: number;
+    successRate: number;
+    website: string;
+    rating: number;
+    totalReviews: number;
+    createdAt: string;
+}
 
 export default function FreelancerDetails() {
   const navigation = useNavigation<FreelancerDetailsNavigationProp>();
+  const route = useRoute<FreelancerDetailsRouteProp>();
   const insets = useSafeAreaInsets();
+  const { freelancerId } = route.params;
   
-  const freelancer = {
-    id: 1,
-    name: "John Doe",
-    role: "Senior Mobile Developer",
-    totalProjects: 47,
-    successRate: "95%",
-    location: "Jakarta, Indonesia",
-    joinedDate: "January 2022",
-    about: "Experienced mobile developer with 5+ years of expertise in React Native and iOS development. Passionate about creating intuitive and performant mobile applications.",
-    email: "john.doe@example.com",
-    phone: "+62 812-3456-7890",
-    skills: ["React Native", "TypeScript", "iOS Development", "Android", "UI/UX Design", "API Integration"],
-    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800&auto=format&fit=crop&q=60",
+  const [freelancer, setFreelancer] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    fetchFreelancerData();
+  }, [freelancerId]);
+  
+  const fetchFreelancerData = async () => {
+    try {
+      setLoading(true);
+      const token = await SecureStoreUtils.getToken();
+      
+      const response = await fetch(`${baseUrl}/api/users/${freelancerId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setFreelancer(result.data);
+      } else {
+        throw new Error(result.message || 'Failed to fetch freelancer data');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
   };
-
-  const completedProjects: Project[] = [
-    {
-      id: 1,
-      title: "E-commerce Mobile App",
-      description: "Developed a full-featured e-commerce mobile application with payment integration",
-      completionDate: "Dec 2023",
-      clientName: "Tech Store Inc.",
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800&auto=format&fit=crop&q=60",
-      category: "Mobile Development",
-      budget: "Rp 75.000.000",
-      duration: "3 months",
-      status: "Completed",
-    },
-  ];
-
-  const renderProject = ({ item }: { item: Project }) => (
-    <TouchableOpacity style={styles.projectCard}>
-      <Image source={{ uri: item.image }} style={styles.projectImage} />
-      <View style={styles.projectInfo}>
-        <Text style={styles.projectTitle}>{item.title}</Text>
-        <Text style={styles.projectDescription}>{item.description}</Text>
-        <Text style={styles.projectMeta}>Client: {item.clientName}</Text>
-        <Text style={styles.projectMeta}>Completed: {item.completionDate}</Text>
+  
+  // Format joined date from ISO string
+  const formatJoinedDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+  
+  if (loading) {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top }, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color="#2563EB" />
+        <Text style={styles.loadingText}>Memuat data freelancer...</Text>
       </View>
-    </TouchableOpacity>
-  );
-
-  // Add services data
-  const services: Service[] = [
-    {
-      id: 1,
-      title: "Mobile App Development",
-      description: "Full-stack mobile app development with React Native",
-      price: "Rp5.000.000",
-      image: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&auto=format&fit=crop&q=60",
-      category: "Development",
-    },
-    {
-      id: 2,
-      title: "UI/UX Design",
-      description: "Modern and intuitive mobile app design",
-      price: "Rp3.000.000",
-      image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=60",
-      category: "Design",
-    },
-  ];
-
-  // Add render function for services
-  const renderService = (service: Service) => (
-    <TouchableOpacity 
-      key={service.id}
-      style={styles.serviceCard}
-      onPress={() => navigation.navigate("ServiceDetails", { serviceId: service.id })}
-    >
-      <Image source={{ uri: service.image }} style={styles.serviceImage} />
-      <View style={styles.serviceInfo}>
-        <Text style={styles.serviceTitle}>{service.title}</Text>
-        <Text style={styles.serviceDescription}>{service.description}</Text>
-        <Text style={styles.servicePrice}>{service.price}</Text>
+    );
+  }
+  
+  if (error || !freelancer) {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top }, styles.errorContainer]}>
+        <Text style={styles.errorText}>Gagal memuat data: {error}</Text>
+        <TouchableOpacity 
+          style={styles.retryButton} 
+          onPress={fetchFreelancerData}
+        >
+          <Text style={styles.retryButtonText}>Coba Lagi</Text>
+        </TouchableOpacity>
       </View>
-    </TouchableOpacity>
-  );
+    );
+  }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -125,19 +133,19 @@ export default function FreelancerDetails() {
 
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.profile}>
-          <Image source={{ uri: freelancer.image }} style={styles.profileImage} />
-          <Text style={styles.name}>{freelancer.name}</Text>
-          <Text style={styles.role}>{freelancer.role}</Text>
+          <Image source={{ uri: freelancer.profileImage || 'https://via.placeholder.com/150' }} style={styles.profileImage} />
+          <Text style={styles.name}>{freelancer.fullName}</Text>
+          <Text style={styles.role}>{freelancer.skills && freelancer.skills.length > 0 ? freelancer.skills[0] : "Freelancer"}</Text>
 
           <View style={styles.locationContainer}>
             <MapPin size={16} color="#6B7280" />
-            <Text style={styles.location}>{freelancer.location}</Text>
+            <Text style={styles.location}>{freelancer.location || "Lokasi tidak tersedia"}</Text>
           </View>
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>About</Text>
-          <Text style={styles.about}>{freelancer.about}</Text>
+          <Text style={styles.about}>{freelancer.about || "Tidak ada deskripsi tersedia."}</Text>
         </View>
 
         <View style={styles.section}>
@@ -149,11 +157,11 @@ export default function FreelancerDetails() {
             </View>
             <View style={styles.contactItem}>
               <Phone size={16} color="#6B7280" />
-              <Text style={styles.contactText}>{freelancer.phone}</Text>
+              <Text style={styles.contactText}>{freelancer.phone || "Nomor telepon tidak tersedia"}</Text>
             </View>
             <View style={styles.contactItem}>
               <Calendar size={16} color="#6B7280" />
-              <Text style={styles.contactText}>Joined {freelancer.joinedDate}</Text>
+              <Text style={styles.contactText}>Joined {freelancer.createdAt ? formatJoinedDate(freelancer.createdAt) : "Unknown"}</Text>
             </View>
           </View>
         </View>
@@ -161,47 +169,28 @@ export default function FreelancerDetails() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Skills</Text>
           <View style={styles.skillsContainer}>
-            {freelancer.skills.map((skill, index) => (
-              <View key={index} style={styles.skillBadge}>
-                <Text style={styles.skillText}>{skill}</Text>
-              </View>
-            ))}
+            {freelancer.skills && freelancer.skills.length > 0 ? (
+              freelancer.skills.map((skill, index) => (
+                <View key={index} style={styles.skillBadge}>
+                  <Text style={styles.skillText}>{skill}</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.noDataText}>Belum ada skill yang ditambahkan</Text>
+            )}
           </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Services</Text>
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.servicesContainer}
-          >
-            {services.map(renderService)}
-          </ScrollView>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Completed Projects</Text>
-          <FlatList 
-            data={completedProjects} 
-            renderItem={renderProject} 
-            keyExtractor={(item) => item.id.toString()} 
-            horizontal 
-            showsHorizontalScrollIndicator={false} 
-            contentContainerStyle={styles.projectsContainer} 
-          />
-        </View>
-
         <TouchableOpacity 
-              onPress={() => navigation.navigate("DirectMessage", {
-                userId: freelancer.id,
-                userName: freelancer.name,
-                userImage: freelancer.image,
-              })} 
-              style={[styles.hireButton, { backgroundColor: "#2563EB" }]}
-            >
-              <Text style={styles.hireButtonText}>Chat</Text>
-            </TouchableOpacity>
+          onPress={() => navigation.navigate("DirectMessage", {
+            userId: freelancer._id,
+            userName: freelancer.fullName,
+            userImage: freelancer.profileImage,
+          })} 
+          style={[styles.hireButton, { backgroundColor: "#2563EB" }]}
+        >
+          <Text style={styles.hireButtonText}>Chat</Text>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -308,42 +297,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#2563EB",
   },
-  projectsContainer: {
-    paddingRight: 20,
-  },
-  projectCard: {
-    width: 280,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    marginRight: 16,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-  },
-  projectImage: {
-    width: "100%",
-    height: 160,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-  },
-  projectInfo: {
-    padding: 16,
-  },
-  projectTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#111827",
-    marginBottom: 8,
-  },
-  projectDescription: {
-    fontSize: 14,
-    color: "#4B5563",
-    marginBottom: 12,
-  },
-  projectMeta: {
-    fontSize: 14,
-    color: "#6B7280",
-    marginBottom: 4,
-  },
   hireButton: {
     marginHorizontal: 20,
     marginBottom: 32,
@@ -356,40 +309,40 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#fff",
   },
-  servicesContainer: {
-    paddingRight: 20,
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  serviceCard: {
-    width: 280,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    marginRight: 16,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#6B7280',
   },
-  serviceImage: {
-    width: '100%',
-    height: 160,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
+  errorContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
-  serviceInfo: {
-    padding: 16,
+  errorText: {
+    fontSize: 16,
+    color: '#EF4444',
+    marginBottom: 16,
+    textAlign: 'center',
   },
-  serviceTitle: {
+  retryButton: {
+    backgroundColor: '#2563EB',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
-    color: '#111827',
-    marginBottom: 8,
   },
-  serviceDescription: {
+  noDataText: {
     fontSize: 14,
-    color: '#4B5563',
-    marginBottom: 12,
-  },
-  servicePrice: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#2563EB',
+    color: '#6B7280',
+    fontStyle: 'italic',
   },
 });

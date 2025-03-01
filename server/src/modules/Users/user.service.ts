@@ -7,6 +7,7 @@ import {
 import type { Result } from "./user.repository";
 import { hashText, compareText } from "../../utils/bcrypt";
 import { generateToken } from "../../utils/jwt";
+import cloudinary from "../../config/cloudinary";
 
 class UserService {
     async create(data: CreateUser): Promise<Result<Users>> {
@@ -68,6 +69,10 @@ class UserService {
 
     async signIn(email: string, password: string): Promise<Result<{ user: Users; token: string }>> {
         try {
+
+            console.log(email, password, "email, password");
+            
+
             const result = await User.findByEmail(email);
             
             if (!result.data) {
@@ -95,13 +100,61 @@ class UserService {
                 },
             };
         } catch (error) {
+            console.log(error);
+            
             throw new Error(error instanceof Error ? error.message : "Failed to login");
         }
     }
 
-    updateProfileImage = async (id: string, imageData: string): Promise<Result<Users>> => {
-        return await User.updateProfileImage({ id }, imageData);
-    };
+    async updateProfileImage(id: string, imageData: string): Promise<Result<Users>> {
+        try {
+            // Tambahkan logging untuk debug
+            console.log('Starting image upload to Cloudinary...');
+            
+            // Upload gambar ke Cloudinary dengan error handling yang lebih baik
+            let uploadResult;
+            try {
+                uploadResult = await cloudinary.uploader.upload(imageData, {
+                    folder: 'freelancer-app',
+                    use_filename: true,
+                    unique_filename: true,
+                    overwrite: true,
+                });
+            } catch (cloudinaryError) {
+                console.error('Cloudinary upload error:', cloudinaryError);
+                throw new Error('Gagal mengupload gambar ke cloud storage');
+            }
+
+            if (!uploadResult || !uploadResult.secure_url) {
+                throw new Error('Tidak mendapatkan URL gambar dari cloud storage');
+            }
+
+            console.log('Image uploaded successfully, updating user profile...');
+            
+            // Update profil user dengan URL gambar baru
+            const result = await User.update(
+                { id }, 
+                { profileImage: uploadResult.secure_url }
+            );
+            
+            if (!result.success || !result.data) {
+                throw new Error('Gagal memperbarui data user di database');
+            }
+            
+            return {
+                success: true,
+                message: "Gambar profil berhasil diperbarui",
+                data: result.data
+            };
+        } catch (error) {
+            console.error('Error in updateProfileImage:', error);
+            throw new Error(
+                error instanceof Error 
+                    ? error.message 
+                    : "Gagal memperbarui gambar profil"
+            );
+        }
+    }
 }
 
 export const Service = new UserService();

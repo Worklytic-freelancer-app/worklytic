@@ -1,24 +1,64 @@
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Search, Bell } from "lucide-react-native";
+import { Search, Bell, MapPin, Star, Briefcase, FileText, MessageSquare, Clock } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 import { baseUrl } from "@/constant/baseUrl";
 import { useEffect, useState } from "react";
 import { SecureStoreUtils } from "@/utils/SecureStore";
+import TopFreelancer from "../TopFreelancer";
 
 type FreelancerScreenNavigationProp = StackNavigationProp<RootStackParamList>;
+
+interface Project {
+  _id: string;
+  title: string;
+  description: string;
+  budget: number;
+  category: string;
+  location: string;
+  duration: string;
+  status: string;
+  image: string[];
+  clientId: string;
+}
+
+// Interface untuk freelancer dari API
+interface ApiFreelancer {
+  _id: string;
+  fullName: string;
+  profileImage: string;
+  skills: string[];
+  rating: number;
+  role: string;
+}
+
+interface Section {
+  id: string;
+  type: "search" | "balance" | "features" | "projects" | "freelancers";
+  title?: string;
+  data?: Project[] | ApiFreelancer[];
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  message?: string;
+  data: T;
+}
 
 export default function Freelancer() {
   const navigation = useNavigation<FreelancerScreenNavigationProp>();
   const insets = useSafeAreaInsets();
   const [recommendedProjects, setRecommendedProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [topFreelancers, setTopFreelancers] = useState<ApiFreelancer[]>([]);
+  const [freelancersLoading, setFreelancersLoading] = useState(true);
+  const [freelancersError, setFreelancersError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProjects();
-    console.log(recommendedProjects, "recommendedProjects");
+    fetchTopFreelancers();
   }, []);
 
   const fetchProjects = async () => {
@@ -29,7 +69,7 @@ export default function Freelancer() {
           'Authorization': `Bearer ${token}`
         }
       });
-      const result = await response.json();
+      const result = await response.json() as ApiResponse<Project[]>;
       
       if (result.success) {
         setRecommendedProjects(result.data);
@@ -41,57 +81,43 @@ export default function Freelancer() {
     }
   };
 
-  interface Project {
-    _id: string;
-    title: string;
-    description: string;
-    budget: number;
-    category: string;
-    location: string;
-    duration: string;
-    status: string;
-    image: string[];
-    clientId: string;
-  }
-
-  interface Freelancer {
-    id: number;
-    name: string;
-    role: string;
-    rating: number;
-    image: string;
-  }
-
-  interface Section {
-    id: string;
-    type: "search" | "balance" | "features" | "projects" | "freelancers";
-    title?: string;
-    data?: Project[] | Freelancer[];
-  }
-
-  const topFreelancers: Freelancer[] = [
-    {
-      id: 1,
-      name: "Sarah Chen",
-      role: "UI/UX Designer",
-      rating: 4.9,
-      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&auto=format&fit=crop&q=60",
-    },
-    {
-      id: 2,
-      name: "Michael Ross",
-      role: "Full Stack Developer",
-      rating: 4.8,
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800&auto=format&fit=crop&q=60",
-    },
-  ];
+  const fetchTopFreelancers = async () => {
+    try {
+      setFreelancersLoading(true);
+      const token = await SecureStoreUtils.getToken();
+      
+      const response = await fetch(`${baseUrl}/api/users`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      const result = await response.json() as ApiResponse<ApiFreelancer[]>;
+      
+      if (result.success) {
+        // Filter hanya freelancer dan urutkan berdasarkan rating tertinggi
+        const topFreelancers = result.data
+          .filter((user: ApiFreelancer) => user.role === 'freelancer')
+          .sort((a: ApiFreelancer, b: ApiFreelancer) => b.rating - a.rating)
+          .slice(0, 10); // Ambil 10 teratas
+        
+        setTopFreelancers(topFreelancers);
+      } else {
+        setFreelancersError(result.message || 'Failed to fetch freelancers');
+      }
+    } catch (err) {
+      setFreelancersError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('Error fetching freelancers:', err);
+    } finally {
+      setFreelancersLoading(false);
+    }
+  };
 
   const sections: Section[] = [
     {
       id: "search",
       type: "search",
     },
-    // ! Cari tau kenapa harus as const
     // Hanya tampilkan section rekomendasi jika ada projects yang sesuai
     ...(recommendedProjects.length > 0 ? [{
       id: "projects",
@@ -126,18 +152,10 @@ export default function Freelancer() {
         <Text style={styles.projectBudget}>
           Rp{item.budget.toLocaleString('id-ID')}
         </Text>
-        <Text style={styles.projectLocation}>📍 {item.location}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-
-  const renderFreelancer = ({ item }: { item: Freelancer }) => (
-      <TouchableOpacity style={styles.freelancerCard} onPress={() => console.log("Freelancer Card Pressed")}>
-      <Image source={{ uri: item.image }} style={styles.freelancerImage} />
-      <Text style={styles.freelancerName}>{item.name}</Text>
-      <Text style={styles.freelancerRole}>{item.role}</Text>
-      <View style={styles.ratingContainer}>
-        <Text style={styles.rating}>⭐️ {item.rating}</Text>
+        <View style={styles.locationContainer}>
+          <MapPin size={14} color="#6b7280" />
+          <Text style={styles.projectLocation}>{item.location}</Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -161,27 +179,55 @@ export default function Freelancer() {
                 <Text style={styles.seeAllButton}>See All</Text>
               </TouchableOpacity>
             </View>
-            <FlatList<Project> data={item.data as Project[]} renderItem={renderProject} keyExtractor={(item) => item._id} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.projectsScroll} />
+            <FlatList<Project> 
+              data={item.data as Project[]} 
+              renderItem={renderProject} 
+              keyExtractor={(item) => item._id} 
+              horizontal 
+              showsHorizontalScrollIndicator={false} 
+              contentContainerStyle={styles.projectsScroll} 
+            />
           </View>
         );
 
       case "freelancers":
         return (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>{item.title}</Text>
-              <TouchableOpacity onPress={() => navigation.navigate("Freelancers")}>
-                <Text style={styles.seeAllButton}>See All</Text>
-              </TouchableOpacity>
-            </View>
-            <FlatList<Freelancer>
-              data={item.data as Freelancer[]}
-              renderItem={renderFreelancer}
-              keyExtractor={(item) => item.id.toString()}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.freelancersScroll}
-            />
+          <TopFreelancer
+            freelancers={topFreelancers}
+            loading={freelancersLoading}
+            error={freelancersError}
+            onRetry={fetchTopFreelancers}
+            title={item.title || "Top Freelancers"}
+          />
+        );
+
+      case "features":
+        return (
+          <View style={styles.featuresContainer}>
+            <TouchableOpacity style={styles.featureItem} onPress={() => navigation.navigate("Projects")}>
+              <View style={[styles.featureIcon, { backgroundColor: "#dbeafe" }]}>
+                <Briefcase size={24} color="#2563eb" />
+              </View>
+              <Text style={styles.featureText}>Find Projects</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.featureItem} onPress={() => console.log("My Proposals")}>
+              <View style={[styles.featureIcon, { backgroundColor: "#dcfce7" }]}>
+                <FileText size={24} color="#059669" />
+              </View>
+              <Text style={styles.featureText}>My Proposals</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.featureItem} onPress={() => console.log("Messages")}>
+              <View style={[styles.featureIcon, { backgroundColor: "#fef3c7" }]}>
+                <MessageSquare size={24} color="#d97706" />
+              </View>
+              <Text style={styles.featureText}>Messages</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.featureItem} onPress={() => console.log("History")}>
+              <View style={[styles.featureIcon, { backgroundColor: "#f3e8ff" }]}>
+                <Clock size={24} color="#7c3aed" />
+              </View>
+              <Text style={styles.featureText}>History</Text>
+            </TouchableOpacity>
           </View>
         );
 
@@ -201,113 +247,21 @@ export default function Freelancer() {
         </TouchableOpacity>
       </View>
 
-      <FlatList<Section> data={sections} renderItem={renderSection} keyExtractor={(item) => item.id} showsVerticalScrollIndicator={false} style={styles.content} />
+      <FlatList<Section> 
+        data={sections} 
+        renderItem={renderSection} 
+        keyExtractor={(item) => item.id} 
+        showsVerticalScrollIndicator={false} 
+        style={styles.content} 
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  balanceContainer: {
-    backgroundColor: "#1a237e",
-    borderRadius: 16,
-    marginHorizontal: 20,
-    marginBottom: 24,
-    padding: 16,
-  },
-  balanceHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  balanceIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#ffd700",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-  balanceIcon: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#1a237e",
-  },
-  balanceTextContainer: {
-    flex: 1,
-  },
-  balanceLabel: {
-    fontSize: 14,
-    color: "#ffffff",
-    marginBottom: 4,
-  },
-  balanceAmount: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#ffffff",
-  },
-  balanceButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  balanceButtonText: {
-    fontSize: 18,
-    color: "#ffffff",
-  },
-  incomeContainer: {
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255, 255, 255, 0.1)",
-    paddingBottom: 16,
-    marginBottom: 16,
-  },
-  incomeItem: {
-    marginBottom: 8,
-  },
-  incomeLabel: {
-    fontSize: 14,
-    color: "#ffffff",
-    marginBottom: 4,
-  },
-  incomeAmount: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#ffffff",
-  },
-  statisticsTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#ffffff",
-    marginBottom: 12,
-  },
-  statisticsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  statisticItem: {
-    flex: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    borderRadius: 12,
-    padding: 12,
-    alignItems: "center",
-    marginHorizontal: 4,
-  },
-  statisticLabel: {
-    fontSize: 14,
-    color: "#ffffff",
-    marginBottom: 4,
-  },
-  statisticValue: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#ffffff",
-  },
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#f9fafb",
   },
   header: {
     flexDirection: "row",
@@ -320,10 +274,9 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "700",
     color: "#111827",
-    marginBottom: 4,
   },
-  subGreeting: {
-    fontSize: 15,
+  username: {
+    fontSize: 16,
     color: "#6b7280",
   },
   notificationButton: {
@@ -438,56 +391,28 @@ const styles = StyleSheet.create({
     color: "#059669",
     marginBottom: 4,
   },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   projectLocation: {
     fontSize: 14,
     color: "#6b7280",
+    marginLeft: 4,
   },
-  freelancersScroll: {
-    paddingLeft: 20,
-    paddingBottom: 8,
+  loadingContainer: {
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 200,
   },
-  freelancerCard: {
-    width: 160,
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 16,
-    marginRight: 16,
-    marginBottom: 8,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+  errorContainer: {
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  freelancerImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    marginBottom: 12,
-  },
-  freelancerName: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#111827",
-    marginBottom: 4,
-    textAlign: "center",
-  },
-  freelancerRole: {
+  errorText: {
     fontSize: 14,
-    color: "#6b7280",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  ratingContainer: {
-    backgroundColor: "#fef3c7",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  rating: {
-    fontSize: 13,
-    fontWeight: "500",
-    color: "#d97706",
+    color: '#ef4444',
   },
 });

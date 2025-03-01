@@ -15,8 +15,12 @@ import AddService from "@/screens/profile/addService";
 import Services from "@/screens/services";
 import ServiceDetails from "@/screens/services/serviceDetails";
 import Projects from "@/screens/projects";
-import EditProfile from "@/screens/profile/editProfile";
 import Profile from "@/screens/profile";
+import EditProfile from "@/screens/profile/settings/editProfile";
+import ChooseFreelancer from "@/screens/workspace/chooseFreelancer";
+import Payment from "@/screens/payment";
+import ReviewPostProject from "@/screens/postProject/reviewPostProject";
+
 const Stack = createStackNavigator();
 
 export type RootStackParamList = {
@@ -30,7 +34,7 @@ export type RootStackParamList = {
   Search: undefined;
   Freelancers: undefined;
   Workspace: undefined;
-  WorkspaceDetails: { projectId: string };
+  WorkspaceDetails: { projectId: string; freelancerId?: string };
   PostProject: undefined;
   AddService: undefined;
   Services: undefined;
@@ -44,6 +48,18 @@ export type RootStackParamList = {
     freelancerId: string;
   };
   EditProfile: undefined;
+  ChooseFreelancer: { projectId: string };
+  Payment: undefined;
+  ReviewPostProject: {
+    title: string;
+    description: string;
+    budget: string;
+    category: string;
+    location: string;
+    duration: string;
+    requirements: string;
+    images: string[];
+  };
 };
 
 export default function AppNavigator() {
@@ -72,6 +88,9 @@ export default function AppNavigator() {
       <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
       <Stack.Screen name="EditProfile" component={EditProfile} />
       <Stack.Screen name="Profile" component={Profile} />
+      <Stack.Screen name="ChooseFreelancer" component={ChooseFreelancer} />
+      <Stack.Screen name="Payment" component={Payment} />
+      <Stack.Screen name="ReviewPostProject" component={ReviewPostProject} />
     </Stack.Navigator>
   );
 }
