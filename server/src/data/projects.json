@@ -19,29 +19,6 @@
             "https://images.unsplash.com/photo-1460925895917-afdab827c52f",
             "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3"
         ],
-        "features": [
-            {
-                "projectId": "67c09e7ea8bf2bcd8d03f800",
-                "freelancerId": "67c09e7ea8bf2bcd8d03f7fd",
-                "status": "pending",
-                "content": [
-                    {
-                        "title": "Halaman Utama",
-                        "description": "Halaman utama adalah halaman pertama yang akan ditampilkan ketika user membuka aplikasi.",
-                        "images": [
-                            "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
-                            "https://images.unsplash.com/photo-1559028012-481c04fa702d",
-                            "https://images.unsplash.com/photo-1531403009284-440f080d1e12"
-                        ],
-                        "files": [
-                            "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
-                            "https://images.unsplash.com/photo-1559028012-481c04fa702d",
-                            "https://images.unsplash.com/photo-1531403009284-440f080d1e12"
-                        ]
-                    }
-                ]
-            }
-        ],
         "createdAt": "2024-02-27T17:18:54.570Z",
         "updatedAt": "2024-02-27T17:18:54.570Z"
     },
@@ -64,29 +41,6 @@
         "image": [
             "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8"
         ],
-        "features": [
-            {
-                "projectId": "67c09e7ea8bf2bcd8d03f801",
-                "freelancerId": "67c09e7ea8bf2bcd8d03f7fe",
-                "status": "in progress",
-                "content": [
-                    {
-                        "title": "Halaman Utama",
-                        "description": "Halaman utama adalah halaman pertama yang akan ditampilkan ketika user membuka aplikasi.",
-                        "images": [
-                            "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
-                            "https://images.unsplash.com/photo-1559028012-481c04fa702d",
-                            "https://images.unsplash.com/photo-1531403009284-440f080d1e12"
-                        ],
-                        "files": [
-                            "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
-                            "https://images.unsplash.com/photo-1559028012-481c04fa702d",
-                            "https://images.unsplash.com/photo-1531403009284-440f080d1e12"
-                        ]
-                    }
-                ]
-            }
-        ],
         "createdAt": "2024-01-15T10:30:00.000Z",
         "updatedAt": "2024-02-20T15:45:00.000Z"
     },
@@ -108,29 +62,6 @@
         ],
         "image": [
             "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c"
-        ],
-        "features": [
-            {
-                "projectId": "67c09e7ea8bf2bcd8d03f802",
-                "freelancerId": "67c09e7ea8bf2bcd8d03f7ff",
-                "status": "pending",
-                "content": [
-                    {
-                        "title": "Halaman Utama",
-                        "description": "Halaman utama adalah halaman pertama yang akan ditampilkan ketika user membuka aplikasi.",
-                        "images": [
-                            "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
-                            "https://images.unsplash.com/photo-1559028012-481c04fa702d",
-                            "https://images.unsplash.com/photo-1531403009284-440f080d1e12"
-                        ],
-                        "files": [
-                            "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
-                            "https://images.unsplash.com/photo-1559028012-481c04fa702d",
-                            "https://images.unsplash.com/photo-1531403009284-440f080d1e12"
-                        ]
-                    }
-                ]
-            }
         ],
         "createdAt": "2024-02-25T09:00:00.000Z",
         "updatedAt": "2024-02-25T09:00:00.000Z"

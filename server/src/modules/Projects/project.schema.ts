@@ -1,6 +1,5 @@
 import { z } from "zod"
 import { ObjectId } from "mongodb"
-import { ProjectFeaturesValidate } from "../ProjectFeatures/projectfeature.schema"
 
 export class Project {
     constructor(data: Partial<Projects>) {
@@ -19,7 +18,6 @@ const ProjectSchema = z.object({
     status: z.string(),
     requirements: z.array(z.string()),
     image: z.array(z.string()),
-    features: z.array(ProjectFeaturesValidate),
 })
 
 const WithIdSchema = z.object({

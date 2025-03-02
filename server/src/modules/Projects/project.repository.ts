@@ -46,42 +46,49 @@ export class ProjectRepository {
         try {
             const collection = await this.getCollection();
             
-            // Ambil projects terlebih dahulu
-            const projects = await collection.find({}).toArray() as Projects[];
+            // Gunakan MongoDB Aggregate untuk join collections
+            const projects = await collection.aggregate([
+                // Lookup untuk mendapatkan data client
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "clientId",
+                        foreignField: "_id",
+                        as: "client"
+                    }
+                },
+                // Unwind client array (mengubah array menjadi object)
+                {
+                    $unwind: {
+                        path: "$client",
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                // Lookup untuk mendapatkan project features
+                {
+                    $lookup: {
+                        from: "ProjectFeatures",
+                        localField: "_id",
+                        foreignField: "projectId",
+                        as: "features"
+                    }
+                },
+                // Tambahkan field untuk menghitung jumlah features
+                {
+                    $addFields: {
+                        featuresCount: { $size: "$features" }
+                    }
+                }
+            ]).toArray() as Projects[];
             
-            // Kumpulkan semua clientId yang unik
-            const clientIds = [...new Set(projects.map(p => p.clientId.toString()))];
-            
-            // Ambil users berdasarkan clientIds
-            const userCollection = db.collection("Users");
-            const users = await userCollection.find({
-                _id: { $in: clientIds.map(id => new ObjectId(id)) }
-            }).toArray();
-            
-            // Buat map untuk lookup cepat
-            const userMap = new Map();
-            users.forEach(user => {
-                userMap.set(user._id.toString(), user);
-            });
-            
-            console.log(`Found ${users.length} users for ${clientIds.length} unique clientIds`);
-            
-            // Gabungkan project dengan user
-            const result = projects.map(project => {
-                const clientIdStr = project.clientId.toString();
-                const client = userMap.get(clientIdStr);
-                return {
-                    ...project,
-                    client: client || null
-                } as Projects;
-            });
+            console.log(`Found ${projects.length} projects with features and client data`);
                 
             return {
                 success: true,
-                data: result
+                data: projects
             };
         } catch (error) {
-            console.log(error)
+            console.log(error);
             throw new Error("Failed to fetch projects");
         }
     };
