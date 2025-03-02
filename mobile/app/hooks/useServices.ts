@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { SecureStoreUtils } from '@/utils/SecureStore';
 import { baseUrl } from '@/constant/baseUrl';
+import { useFocusEffect } from '@react-navigation/native';
 
 export interface Service {
   _id: string;
@@ -24,9 +25,11 @@ export const useServices = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchServices();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchServices();
+    }, [])
+  );
 
   const fetchServices = async () => {
     try {
