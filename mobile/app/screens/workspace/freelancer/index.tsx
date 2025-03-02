@@ -7,104 +7,217 @@ import { RootStackParamList } from "@/navigators";
 import { useState, useEffect } from "react";
 import { baseUrl } from "@/constant/baseUrl";
 import { SecureStoreUtils } from "@/utils/SecureStore";
+import { useUser } from "@/hooks/useUser";
 
-interface MyProject {
-    id: number;
-    title: string;
-    budget: string;
-    status: "pending" | "accepted" | "rejected";
-    appliedDate: string;
-    company: {
-        name: string;
-        image: string;
+interface ProjectFeature {
+    _id: string;
+    projectId: string;
+    freelancerId: string;
+    status: "pending" | "in progress" | "completed";
+    content: Array<{
+        title: string;
+        description: string;
+        images: string[];
+        files: string[];
+    }>;
+    createdAt: string;
+    updatedAt: string;
+    project?: {
+        _id: string;
+        title: string;
+        budget: number;
+        image: string[];
+        client?: {
+            _id: string;
+            fullName: string;
+            profileImage: string;
+        };
     };
-    image: string;
 }
+
+// Definisikan tipe status yang valid
+type ProjectStatus = "pending" | "in progress" | "completed";
 
 export default function FreelancerWorkspace() {
     const insets = useSafeAreaInsets();
     const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [myProjects, setMyProjects] = useState<MyProject[]>([]);
+    const [myProjects, setMyProjects] = useState<ProjectFeature[]>([]);
+    const { user } = useUser();
 
     useEffect(() => {
-        // Untuk sementara menggunakan data dummy
-        // Nanti bisa diganti dengan fetch dari API
-        setMyProjects([
-            {
-                id: 1,
-                title: "Mobile App Development",
-                budget: "$2,500",
-                status: "pending",
-                appliedDate: "2 days ago",
-                company: {
-                    name: "Tech Solutions Inc.",
-                    image: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=800&auto=format&fit=crop&q=60",
-                },
-                image: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&auto=format&fit=crop&q=60",
-            },
-            {
-                id: 2,
-                title: "Website Redesign",
-                budget: "$1,800",
-                status: "accepted",
-                appliedDate: "1 week ago",
-                company: {
-                    name: "Creative Agency",
-                    image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&auto=format&fit=crop&q=60",
-                },
-                image: "https://images.unsplash.com/photo-1547658719-da2b51169166?w=800&auto=format&fit=crop&q=60",
-            },
-        ]);
-    }, []);
+        if (user?._id) {
+            fetchMyProjects();
+        }
+    }, [user]);
 
-    const getStatusColor = (status: MyProject["status"]) => {
+    const fetchMyProjects = async () => {
+        if (!user?._id) return;
+        
+        try {
+            setLoading(true);
+            const token = await SecureStoreUtils.getToken();
+            
+            if (!token) {
+                throw new Error('Token tidak ditemukan');
+            }
+            
+            // Ambil semua project features
+            const response = await fetch(`${baseUrl}/api/projectfeatures`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Error: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Filter project features yang dimiliki oleh freelancer yang sedang login
+                const freelancerProjects = result.data.filter(
+                    (feature: ProjectFeature) => feature.freelancerId === user._id
+                );
+                
+                // Ambil detail project untuk setiap project feature
+                const projectsWithDetails = await Promise.all(
+                    freelancerProjects.map(async (feature: ProjectFeature) => {
+                        try {
+                            const projectResponse = await fetch(`${baseUrl}/api/projects/${feature.projectId}`, {
+                                headers: {
+                                    'Authorization': `Bearer ${token}`
+                                }
+                            });
+                            
+                            if (projectResponse.ok) {
+                                const projectResult = await projectResponse.json();
+                                if (projectResult.success) {
+                                    return {
+                                        ...feature,
+                                        project: projectResult.data
+                                    };
+                                }
+                            }
+                            return feature;
+                        } catch (err) {
+                            console.error('Error fetching project details:', err);
+                            return feature;
+                        }
+                    })
+                );
+                
+                setMyProjects(projectsWithDetails);
+            } else {
+                throw new Error(result.message || 'Gagal mengambil data project features');
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Terjadi kesalahan saat mengambil data');
+            console.error('Error fetching project features:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffTime = Math.abs(now.getTime() - date.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 1) {
+            return 'yesterday';
+        } else if (diffDays < 7) {
+            return `${diffDays} days ago`;
+        } else if (diffDays < 30) {
+            const weeks = Math.floor(diffDays / 7);
+            return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`;
+        } else {
+            const months = Math.floor(diffDays / 30);
+            return `${months} ${months === 1 ? 'month' : 'months'} ago`;
+        }
+    };
+
+    const getStatusColor = (status: ProjectStatus) => {
         switch (status) {
             case "pending":
                 return "#f59e0b";
-            case "accepted":
+            case "in progress":
                 return "#10b981";
-            case "rejected":
-                return "#ef4444";
+            case "completed":
+                return "#6b7280";
             default:
                 return "#6b7280";
         }
     };
 
-    const getStatusIcon = (status: MyProject["status"]) => {
+    const getStatusIcon = (status: ProjectStatus) => {
         switch (status) {
             case "pending":
                 return <Clock size={16} color="#f59e0b" />;
-            case "accepted":
+            case "in progress":
                 return <CheckCircle2 size={16} color="#10b981" />;
-            case "rejected":
-                return <XCircle size={16} color="#ef4444" />;
+            case "completed":
+                return <CheckCircle2 size={16} color="#6b7280" />;
+            default:
+                return <Clock size={16} color="#6b7280" />;
         }
     };
 
-    const renderProject = ({ item }: { item: MyProject }) => (
+    const getStatusDisplay = (status: ProjectStatus) => {
+        switch (status) {
+            case "pending":
+                return "Pending";
+            case "in progress":
+                return "In Progress";
+            case "completed":
+                return "Completed";
+            default:
+                return "Unknown";
+        }
+    };
+
+    const renderProject = ({ item }: { item: ProjectFeature }) => (
         <TouchableOpacity 
             style={styles.projectCard} 
-            onPress={() => navigation.navigate("WorkspaceDetails", { projectId: item.id })}
+            onPress={() => navigation.navigate("WorkspaceDetails", { projectId: item._id })}
         >
-            <Image source={{ uri: item.image }} style={styles.projectImage} />
+            <Image 
+                source={{ 
+                    uri: item.project?.image && item.project.image.length > 0 
+                        ? item.project.image[0] 
+                        : "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&auto=format&fit=crop&q=60" 
+                }} 
+                style={styles.projectImage} 
+            />
             <View style={styles.projectInfo}>
                 <View style={styles.projectHeader}>
-                    <Text style={styles.projectTitle}>{item.title}</Text>
+                    <Text style={styles.projectTitle}>{item.project?.title || "Untitled Project"}</Text>
                     <View style={[styles.statusBadge, { backgroundColor: `${getStatusColor(item.status)}15` }]}>
                         {getStatusIcon(item.status)}
                         <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
-                            {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                            {getStatusDisplay(item.status)}
                         </Text>
                     </View>
                 </View>
-                <Text style={styles.projectBudget}>{item.budget}</Text>
+                <Text style={styles.projectBudget}>
+                    ${item.project?.budget ? item.project.budget.toLocaleString() : "N/A"}
+                </Text>
                 <View style={styles.companyInfo}>
-                    <Image source={{ uri: item.company.image }} style={styles.companyImage} />
+                    <Image 
+                        source={{ 
+                            uri: item.project?.client?.profileImage || 
+                                "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=800&auto=format&fit=crop&q=60" 
+                        }} 
+                        style={styles.companyImage} 
+                    />
                     <View>
-                        <Text style={styles.companyName}>{item.company.name}</Text>
-                        <Text style={styles.appliedDate}>Applied {item.appliedDate}</Text>
+                        <Text style={styles.companyName}>
+                            {item.project?.client?.fullName || "Unknown Client"}
+                        </Text>
+                        <Text style={styles.appliedDate}>Applied {formatDate(item.createdAt)}</Text>
                     </View>
                 </View>
             </View>
@@ -132,7 +245,7 @@ export default function FreelancerWorkspace() {
                 </View>
                 <View style={styles.errorContainer}>
                     <Text style={styles.errorText}>{error}</Text>
-                    <TouchableOpacity style={styles.retryButton} onPress={() => {}}>
+                    <TouchableOpacity style={styles.retryButton} onPress={fetchMyProjects}>
                         <Text style={styles.retryButtonText}>Coba Lagi</Text>
                     </TouchableOpacity>
                 </View>
@@ -146,12 +259,14 @@ export default function FreelancerWorkspace() {
                 <Text style={styles.headerTitle}>My Projects</Text>
             </View>
 
-            <FlatList<MyProject> 
+            <FlatList<ProjectFeature> 
                 data={myProjects} 
                 renderItem={renderProject} 
-                keyExtractor={(item) => item.id.toString()} 
+                keyExtractor={(item) => item._id.toString()} 
                 contentContainerStyle={styles.projectsList} 
                 showsVerticalScrollIndicator={false}
+                refreshing={loading}
+                onRefresh={fetchMyProjects}
                 ListEmptyComponent={
                     <View style={styles.emptyContainer}>
                         <Text style={styles.emptyText}>Kamu belum memiliki proyek</Text>

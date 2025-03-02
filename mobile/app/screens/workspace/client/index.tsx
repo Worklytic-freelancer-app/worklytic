@@ -7,63 +7,98 @@ import { RootStackParamList } from "@/navigators";
 import { useState, useEffect } from "react";
 import { baseUrl } from "@/constant/baseUrl";
 import { SecureStoreUtils } from "@/utils/SecureStore";
+import { useUser } from "@/hooks/useUser";
 
-interface PostedProject {
-    id: number;
+interface Project {
+    _id: string;
     title: string;
-    budget: string;
-    postedDate: string;
-    applicants: number;
-    image: string;
-    status: "open" | "in-progress" | "completed";
+    budget: number;
+    createdAt: string;
+    status: string;
+    image: string[];
+    featuresCount?: number;
+    client?: {
+        _id: string;
+        fullName: string;
+    };
 }
 
 export default function ClientWorkspace() {
     const insets = useSafeAreaInsets();
     const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [postedProjects, setPostedProjects] = useState<PostedProject[]>([]);
+    const [projects, setProjects] = useState<Project[]>([]);
+    const { user } = useUser();
 
     useEffect(() => {
-        // Untuk sementara menggunakan data dummy
-        // Nanti bisa diganti dengan fetch dari API
-        setPostedProjects([
-            {
-                id: 1,
-                title: "E-commerce Website Development",
-                budget: "$3,500",
-                postedDate: "3 days ago",
-                applicants: 8,
-                image: "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&auto=format&fit=crop&q=60",
-                status: "open",
-            },
-            {
-                id: 2,
-                title: "Mobile App UI/UX Design",
-                budget: "$1,200",
-                postedDate: "1 week ago",
-                applicants: 5,
-                image: "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?w=800&auto=format&fit=crop&q=60",
-                status: "in-progress",
-            },
-            {
-                id: 3,
-                title: "Content Writing for Blog",
-                budget: "$800",
-                postedDate: "2 weeks ago",
-                applicants: 12,
-                image: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&auto=format&fit=crop&q=60",
-                status: "completed",
-            },
-        ]);
-    }, []);
+        fetchProjects();
+    }, [user]);
 
-    const getStatusColor = (status: PostedProject["status"]) => {
-        switch (status) {
+    const fetchProjects = async () => {
+        if (!user?._id) return;
+        
+        try {
+            setLoading(true);
+            const token = await SecureStoreUtils.getToken();
+            
+            if (!token) {
+                throw new Error('Token tidak ditemukan');
+            }
+            
+            const response = await fetch(`${baseUrl}/api/projects`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Error: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Filter proyek yang dimiliki oleh client yang sedang login
+                const clientProjects = result.data.filter(
+                    (project: Project) => project.client?._id === user._id
+                );
+                setProjects(clientProjects);
+            } else {
+                throw new Error(result.message || 'Gagal mengambil data proyek');
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Terjadi kesalahan saat mengambil data');
+            console.error('Error fetching projects:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffTime = Math.abs(now.getTime() - date.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 1) {
+            return 'yesterday';
+        } else if (diffDays < 7) {
+            return `${diffDays} days ago`;
+        } else if (diffDays < 30) {
+            const weeks = Math.floor(diffDays / 7);
+            return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`;
+        } else {
+            const months = Math.floor(diffDays / 30);
+            return `${months} ${months === 1 ? 'month' : 'months'} ago`;
+        }
+    };
+
+    const getStatusColor = (status: string) => {
+        switch (status.toLowerCase()) {
             case "open":
                 return "#10b981";
-            case "in-progress":
+            case "in progress":
                 return "#f59e0b";
             case "completed":
                 return "#6b7280";
@@ -72,31 +107,38 @@ export default function ClientWorkspace() {
         }
     };
 
-    const renderProject = ({ item }: { item: PostedProject }) => (
+    const renderProject = ({ item }: { item: Project }) => (
         <TouchableOpacity 
             style={styles.projectCard} 
-            onPress={() => navigation.navigate("ChooseFreelancer", { projectId: item.id })}
+            onPress={() => navigation.navigate("ChooseFreelancer", { projectId: item._id })}
         >
-            <Image source={{ uri: item.image }} style={styles.projectImage} />
+            <Image 
+                source={{ 
+                    uri: item.image && item.image.length > 0 
+                        ? item.image[0] 
+                        : "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&auto=format&fit=crop&q=60" 
+                }} 
+                style={styles.projectImage} 
+            />
             <View style={styles.projectInfo}>
                 <View style={styles.projectHeader}>
                     <Text style={styles.projectTitle}>{item.title}</Text>
                     <View style={[styles.statusBadge, { backgroundColor: `${getStatusColor(item.status)}15` }]}>
                         <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
-                            {item.status === "in-progress" ? "In Progress" : 
+                            {item.status === "in progress" ? "In Progress" : 
                              item.status.charAt(0).toUpperCase() + item.status.slice(1)}
                         </Text>
                     </View>
                 </View>
-                <Text style={styles.projectBudget}>{item.budget}</Text>
+                <Text style={styles.projectBudget}>${item.budget.toLocaleString()}</Text>
                 <View style={styles.projectMeta}>
                     <View style={styles.metaItem}>
                         <Clock size={16} color="#6b7280" />
-                        <Text style={styles.metaText}>Posted {item.postedDate}</Text>
+                        <Text style={styles.metaText}>Posted {formatDate(item.createdAt)}</Text>
                     </View>
                     <View style={styles.metaItem}>
                         <Users size={16} color="#6b7280" />
-                        <Text style={styles.metaText}>{item.applicants} Applicants</Text>
+                        <Text style={styles.metaText}>{item.featuresCount || 0} Applicants</Text>
                     </View>
                 </View>
             </View>
@@ -136,7 +178,7 @@ export default function ClientWorkspace() {
                 </View>
                 <View style={styles.errorContainer}>
                     <Text style={styles.errorText}>{error}</Text>
-                    <TouchableOpacity style={styles.retryButton} onPress={() => {}}>
+                    <TouchableOpacity style={styles.retryButton} onPress={fetchProjects}>
                         <Text style={styles.retryButtonText}>Coba Lagi</Text>
                     </TouchableOpacity>
                 </View>
@@ -156,12 +198,14 @@ export default function ClientWorkspace() {
                 </TouchableOpacity>
             </View>
 
-            <FlatList<PostedProject> 
-                data={postedProjects} 
+            <FlatList<Project> 
+                data={projects} 
                 renderItem={renderProject} 
-                keyExtractor={(item) => item.id.toString()} 
+                keyExtractor={(item) => item._id.toString()} 
                 contentContainerStyle={styles.projectsList} 
                 showsVerticalScrollIndicator={false}
+                refreshing={loading}
+                onRefresh={fetchProjects}
                 ListEmptyComponent={
                     <View style={styles.emptyContainer}>
                         <Text style={styles.emptyText}>Kamu belum memposting proyek</Text>

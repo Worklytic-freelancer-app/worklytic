@@ -1,21 +1,43 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndicator, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ChevronLeft, Star, Calendar, MapPin, DollarSign } from "lucide-react-native";
+import { ChevronLeft, Star, Calendar, MapPin, DollarSign, CheckCircle, XCircle } from "lucide-react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 import { baseUrl } from "@/constant/baseUrl";
 import { SecureStoreUtils } from "@/utils/SecureStore";
 
-interface Applicant {
-    id: string;
-    name: string;
-    avatar: string;
-    rating: number;
+interface User {
+    _id: string;
+    fullName: string;
+    profileImage: string;
     location: string;
-    appliedDate: string;
-    coverLetter: string;
+    rating: number;
+    skills: string[];
+}
+
+interface ProjectFeature {
+    _id: string;
+    projectId: string;
+    freelancerId: string;
+    status: "pending" | "in progress" | "completed";
+    content: Array<{
+        title: string;
+        description: string;
+        images: string[];
+        files: string[];
+    }>;
+    createdAt: string;
+    updatedAt: string;
+    freelancer?: User;
+}
+
+interface Project {
+    _id: string;
+    title: string;
+    budget: number;
+    image: string[];
 }
 
 export default function ChooseFreelancer() {
@@ -26,99 +48,281 @@ export default function ChooseFreelancer() {
     
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [applicants, setApplicants] = useState<Applicant[]>([]);
-    const [projectTitle, setProjectTitle] = useState("Project");
-    const [projectBudget, setProjectBudget] = useState(3500);
+    const [applicants, setApplicants] = useState<ProjectFeature[]>([]);
+    const [project, setProject] = useState<Project | null>(null);
+    const [actionLoading, setActionLoading] = useState<string | null>(null);
 
     useEffect(() => {
-        fetchApplicants();
+        fetchProjectAndApplicants();
     }, [projectId]);
 
-    const fetchApplicants = async () => {
+    const fetchProjectAndApplicants = async () => {
         setLoading(true);
         setError(null);
         
         try {
-            // Simulasi fetch data dari API
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            const token = await SecureStoreUtils.getToken();
             
-            // Data dummy untuk demo
-            setProjectTitle("E-commerce Website Development");
-            setProjectBudget(3500);
-            setApplicants([
-                {
-                    id: "1",
-                    name: "John Developer",
-                    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800&auto=format&fit=crop&q=60",
-                    rating: 4.8,
-                    location: "Jakarta, Indonesia",
-                    appliedDate: "3 days ago",
-                    coverLetter: "I have 5 years of experience in e-commerce development with React and Node.js.",
-                },
-                {
-                    id: "2",
-                    name: "Sarah Designer",
-                    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&auto=format&fit=crop&q=60",
-                    rating: 4.9,
-                    location: "Bandung, Indonesia",
-                    appliedDate: "5 days ago",
-                    coverLetter: "I specialize in UI/UX design for e-commerce platforms with a focus on conversion optimization.",
-                },
-                {
-                    id: "3",
-                    name: "Michael Coder",
-                    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800&auto=format&fit=crop&q=60",
-                    rating: 4.7,
-                    location: "Surabaya, Indonesia",
-                    appliedDate: "1 week ago",
-                    coverLetter: "Full stack developer with experience in e-commerce solutions and payment gateway integration.",
-                },
-            ]);
+            if (!token) {
+                throw new Error('Token tidak ditemukan');
+            }
+            
+            // Fetch project details
+            const projectResponse = await fetch(`${baseUrl}/api/projects/${projectId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (!projectResponse.ok) {
+                throw new Error(`Error: ${projectResponse.status}`);
+            }
+            
+            const projectResult = await projectResponse.json();
+            
+            if (!projectResult.success) {
+                throw new Error(projectResult.message || 'Gagal mengambil data proyek');
+            }
+            
+            setProject(projectResult.data);
+            
+            // Fetch project features (applicants)
+            const featuresResponse = await fetch(`${baseUrl}/api/projectfeatures`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (!featuresResponse.ok) {
+                throw new Error(`Error: ${featuresResponse.status}`);
+            }
+            
+            const featuresResult = await featuresResponse.json();
+            
+            if (!featuresResult.success) {
+                throw new Error(featuresResult.message || 'Gagal mengambil data pelamar');
+            }
+            
+            // Filter features for this project
+            const projectFeatures = featuresResult.data.filter(
+                (feature: ProjectFeature) => feature.projectId === projectId
+            );
+            
+            // Fetch freelancer details for each feature
+            const featuresWithFreelancers = await Promise.all(
+                projectFeatures.map(async (feature: ProjectFeature) => {
+                    try {
+                        const userResponse = await fetch(`${baseUrl}/api/users/${feature.freelancerId}`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+                        
+                        if (userResponse.ok) {
+                            const userResult = await userResponse.json();
+                            if (userResult.success) {
+                                return {
+                                    ...feature,
+                                    freelancer: userResult.data
+                                };
+                            }
+                        }
+                        return feature;
+                    } catch (err) {
+                        console.error('Error fetching freelancer details:', err);
+                        return feature;
+                    }
+                })
+            );
+            
+            setApplicants(featuresWithFreelancers);
         } catch (err) {
-            setError("Failed to load applicants. Please try again.");
-            console.error(err);
+            setError(err instanceof Error ? err.message : 'Terjadi kesalahan saat mengambil data');
+            console.error('Error fetching data:', err);
         } finally {
             setLoading(false);
         }
     };
 
-    const renderApplicant = ({ item }: { item: Applicant }) => (
-        <TouchableOpacity 
-            style={styles.applicantCard} 
-            onPress={() => navigation.navigate("WorkspaceDetails", { projectId, freelancerId: item.id })}
-        >
-            <View style={styles.applicantHeader}>
-                <Image source={{ uri: item.avatar }} style={styles.applicantAvatar} />
-                <View style={styles.applicantInfo}>
-                    <Text style={styles.applicantName}>{item.name}</Text>
-                    <View style={styles.ratingContainer}>
-                        <Star size={16} color="#F59E0B" fill="#F59E0B" />
-                        <Text style={styles.ratingText}>{item.rating.toFixed(1)}</Text>
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffTime = Math.abs(now.getTime() - date.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 1) {
+            return 'yesterday';
+        } else if (diffDays < 7) {
+            return `${diffDays} days ago`;
+        } else if (diffDays < 30) {
+            const weeks = Math.floor(diffDays / 7);
+            return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`;
+        } else {
+            const months = Math.floor(diffDays / 30);
+            return `${months} ${months === 1 ? 'month' : 'months'} ago`;
+        }
+    };
+
+    const handleAcceptFreelancer = async (featureId: string) => {
+        try {
+            setActionLoading(featureId);
+            const token = await SecureStoreUtils.getToken();
+            
+            if (!token) {
+                throw new Error('Token tidak ditemukan');
+            }
+            
+            const response = await fetch(`${baseUrl}/api/projectfeatures/${featureId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: 'in progress' })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Error: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (!result.success) {
+                throw new Error(result.message || 'Gagal menerima freelancer');
+            }
+            
+            // Refresh data
+            fetchProjectAndApplicants();
+            Alert.alert('Sukses', 'Freelancer berhasil diterima');
+        } catch (err) {
+            Alert.alert('Error', err instanceof Error ? err.message : 'Gagal menerima freelancer');
+            console.error('Error accepting freelancer:', err);
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
+    const handleRejectFreelancer = async (featureId: string) => {
+        try {
+            setActionLoading(featureId);
+            const token = await SecureStoreUtils.getToken();
+            
+            if (!token) {
+                throw new Error('Token tidak ditemukan');
+            }
+            
+            const response = await fetch(`${baseUrl}/api/projectfeatures/${featureId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Error: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (!result.success) {
+                throw new Error(result.message || 'Gagal menolak freelancer');
+            }
+            
+            // Refresh data
+            fetchProjectAndApplicants();
+            Alert.alert('Sukses', 'Freelancer berhasil ditolak');
+        } catch (err) {
+            Alert.alert('Error', err instanceof Error ? err.message : 'Gagal menolak freelancer');
+            console.error('Error rejecting freelancer:', err);
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
+    const renderApplicant = ({ item }: { item: ProjectFeature }) => {
+        const freelancer = item.freelancer;
+        if (!freelancer) return null;
+        
+        return (
+            <View style={styles.applicantCard}>
+                <View style={styles.applicantHeader}>
+                    <Image 
+                        source={{ 
+                            uri: freelancer.profileImage || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(freelancer.fullName) 
+                        }} 
+                        style={styles.applicantAvatar} 
+                    />
+                    <View style={styles.applicantInfo}>
+                        <Text style={styles.applicantName}>{freelancer.fullName}</Text>
+                        <View style={styles.ratingContainer}>
+                            <Star size={16} color="#F59E0B" fill="#F59E0B" />
+                            <Text style={styles.ratingText}>
+                                {freelancer.rating ? freelancer.rating.toFixed(1) : '0.0'}
+                            </Text>
+                        </View>
                     </View>
                 </View>
-            </View>
-            
-            <View style={styles.applicantDetails}>
-                <View style={styles.detailItem}>
-                    <MapPin size={16} color="#6B7280" />
-                    <Text style={styles.detailText}>{item.location}</Text>
+                
+                <View style={styles.applicantDetails}>
+                    <View style={styles.detailItem}>
+                        <MapPin size={16} color="#6B7280" />
+                        <Text style={styles.detailText}>{freelancer.location || 'Lokasi tidak tersedia'}</Text>
+                    </View>
+                    <View style={styles.detailItem}>
+                        <Calendar size={16} color="#6B7280" />
+                        <Text style={styles.detailText}>Applied {formatDate(item.createdAt)}</Text>
+                    </View>
                 </View>
-                <View style={styles.detailItem}>
-                    <Calendar size={16} color="#6B7280" />
-                    <Text style={styles.detailText}>Applied {item.appliedDate}</Text>
-                </View>
+                
+                {item.content && item.content.length > 0 && (
+                    <Text style={styles.coverLetter}>
+                        {item.content[0].description || 'Tidak ada deskripsi'}
+                    </Text>
+                )}
+                
+                {item.status === 'pending' ? (
+                    <View style={styles.actionButtons}>
+                        <TouchableOpacity 
+                            style={[styles.actionButton, styles.rejectButton]}
+                            onPress={() => handleRejectFreelancer(item._id)}
+                            disabled={actionLoading === item._id}
+                        >
+                            {actionLoading === item._id ? (
+                                <ActivityIndicator size="small" color="#FFFFFF" />
+                            ) : (
+                                <>
+                                    <XCircle size={20} color="#FFFFFF" />
+                                    <Text style={styles.actionButtonText}>Tolak</Text>
+                                </>
+                            )}
+                        </TouchableOpacity>
+                        
+                        <TouchableOpacity 
+                            style={[styles.actionButton, styles.acceptButton]}
+                            onPress={() => handleAcceptFreelancer(item._id)}
+                            disabled={actionLoading === item._id}
+                        >
+                            {actionLoading === item._id ? (
+                                <ActivityIndicator size="small" color="#FFFFFF" />
+                            ) : (
+                                <>
+                                    <CheckCircle size={20} color="#FFFFFF" />
+                                    <Text style={styles.actionButtonText}>Terima</Text>
+                                </>
+                            )}
+                        </TouchableOpacity>
+                    </View>
+                ) : (
+                    <TouchableOpacity 
+                        style={styles.viewButton}
+                        onPress={() => navigation.navigate("WorkspaceDetails", { projectId, freelancerId: freelancer._id })}
+                    >
+                        <Text style={styles.viewButtonText}>Lihat Detail</Text>
+                    </TouchableOpacity>
+                )}
             </View>
-            
-            <Text style={styles.coverLetter}>{item.coverLetter}</Text>
-            
-            <TouchableOpacity 
-                style={styles.viewButton}
-                onPress={() => navigation.navigate("WorkspaceDetails", { projectId, freelancerId: item.id })}
-            >
-                <Text style={styles.viewButtonText}>Pilih Freelancer</Text>
-            </TouchableOpacity>
-        </TouchableOpacity>
-    );
+        );
+    };
 
     if (loading) {
         return (
@@ -132,7 +336,7 @@ export default function ChooseFreelancer() {
         return (
             <View style={[styles.errorContainer, { paddingTop: insets.top }]}>
                 <Text style={styles.errorText}>{error}</Text>
-                <TouchableOpacity style={styles.retryButton} onPress={fetchApplicants}>
+                <TouchableOpacity style={styles.retryButton} onPress={fetchProjectAndApplicants}>
                     <Text style={styles.retryButtonText}>Coba Lagi</Text>
                 </TouchableOpacity>
             </View>
@@ -150,10 +354,10 @@ export default function ChooseFreelancer() {
             </View>
             
             <View style={styles.projectInfoContainer}>
-                <Text style={styles.projectTitle}>{projectTitle}</Text>
+                <Text style={styles.projectTitle}>{project?.title || 'Project'}</Text>
                 <View style={styles.budgetContainer}>
                     <DollarSign size={18} color="#059669" />
-                    <Text style={styles.budgetText}>{projectBudget}</Text>
+                    <Text style={styles.budgetText}>${project?.budget || 0}</Text>
                 </View>
                 <Text style={styles.applicantsCount}>{applicants.length} Pelamar</Text>
             </View>
@@ -166,9 +370,11 @@ export default function ChooseFreelancer() {
                 <FlatList
                     data={applicants}
                     renderItem={renderApplicant}
-                    keyExtractor={(item) => item.id}
+                    keyExtractor={(item) => item._id}
                     contentContainerStyle={styles.listContainer}
                     showsVerticalScrollIndicator={false}
+                    refreshing={loading}
+                    onRefresh={fetchProjectAndApplicants}
                 />
             )}
         </View>
@@ -288,6 +494,30 @@ const styles = StyleSheet.create({
         color: "#4B5563",
         lineHeight: 20,
         marginBottom: 16,
+    },
+    actionButtons: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+    },
+    actionButton: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        paddingVertical: 10,
+        borderRadius: 8,
+        flex: 0.48,
+    },
+    acceptButton: {
+        backgroundColor: "#10B981",
+    },
+    rejectButton: {
+        backgroundColor: "#EF4444",
+    },
+    actionButtonText: {
+        color: "#FFFFFF",
+        fontSize: 14,
+        fontWeight: "500",
+        marginLeft: 8,
     },
     viewButton: {
         backgroundColor: "#2563EB",
