@@ -19,11 +19,16 @@ export class ServiceRepository {
     
     create = async (data: CreateService): Promise<Result<Services>> => {
         try {
+            console.log("Creating service with data:", JSON.stringify(data, null, 2));
+            
+            // Pastikan field yang diperlukan ada
             const doc = {
                 ...data,
                 createdAt: new Date(),
                 updatedAt: new Date()
             } as const;
+            
+            console.log("Final document to insert:", JSON.stringify(doc, null, 2));
             
             const collection = await this.getCollection();
             const result = await collection.insertOne(doc);
@@ -38,6 +43,7 @@ export class ServiceRepository {
                 data: new Service({ ...doc, _id: result.insertedId }) as Services
             };
         } catch (error) {
+            console.error("Error in repository create:", error);
             throw new Error(error instanceof Error ? error.message : "Failed to create service");
         }
     };

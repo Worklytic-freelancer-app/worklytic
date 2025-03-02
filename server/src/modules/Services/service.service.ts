@@ -5,11 +5,32 @@ import {
     UpdateServiceValidate 
 } from "./service.schema";
 import type { Result } from "./service.repository";
+import { ZodError } from "zod";
 
 class ServiceService {
     async create(data: CreateService): Promise<Result<Services>> {
-        const validated = CreateServiceValidate.parse(data);
-        return await ServiceRepository.create(validated);
+        try {
+            console.log("Validating service data:", JSON.stringify(data, null, 2));
+            
+            // Validasi data
+            try {
+                const validated = CreateServiceValidate.parse(data);
+                console.log("Validation successful");
+                return await ServiceRepository.create(validated);
+            } catch (validationError) {
+                if (validationError instanceof ZodError) {
+                    console.error("Validation error:", validationError.errors);
+                    const errorMessage = validationError.errors.map(err => 
+                        `${err.path.join('.')}: ${err.message}`
+                    ).join(', ');
+                    throw new Error(`Validation error: ${errorMessage}`);
+                }
+                throw validationError;
+            }
+        } catch (error) {
+            console.error("Service creation error:", error);
+            throw error;
+        }
     }
     
     async getAll(): Promise<Result<Services[]>> {
@@ -21,8 +42,18 @@ class ServiceService {
     }
     
     async update(id: string, data: UpdateService): Promise<Result<Services>> {
-        const validated = UpdateServiceValidate.parse(data);
-        return await ServiceRepository.update({ id }, validated);
+        try {
+            const validated = UpdateServiceValidate.parse(data);
+            return await ServiceRepository.update({ id }, validated);
+        } catch (error) {
+            if (error instanceof ZodError) {
+                const errorMessage = error.errors.map(err => 
+                    `${err.path.join('.')}: ${err.message}`
+                ).join(', ');
+                throw new Error(`Validation error: ${errorMessage}`);
+            }
+            throw error;
+        }
     }
     
     async delete(id: string): Promise<Result<Services>> {

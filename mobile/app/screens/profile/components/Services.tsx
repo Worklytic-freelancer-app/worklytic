@@ -107,7 +107,6 @@ export default function Services() {
             <TouchableOpacity 
               key={service._id} 
               style={styles.serviceCard}
-              onPress={() => navigation.navigate("ServiceDetails", { serviceId: service._id })}
             >
               <Image 
                 source={{ uri: service.images[0] }} 
