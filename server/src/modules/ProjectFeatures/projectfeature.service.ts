@@ -28,6 +28,10 @@ class ProjectFeatureService {
     async delete(id: string): Promise<Result<ProjectFeatures>> {
         return await ProjectFeature.delete({ id });
     }
+
+    async updateStatus(id: string, status: "pending" | "in progress" | "completed"): Promise<Result<ProjectFeatures>> {
+        return await ProjectFeature.update({ id }, { status });
+    }
 }
 
 export const Service = new ProjectFeatureService();

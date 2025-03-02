@@ -7,7 +7,7 @@
         "budget": 75000000,
         "category": "Web Development",
         "location": "Surabaya, Indonesia",
-        "duration": "6 bulan",
+        "completedDate": "2026-02-27T17:18:54.570Z",
         "status": "Open",
         "requirements": [
             "Pengalaman minimal 5 tahun dalam pengembangan ERP",
@@ -19,16 +19,31 @@
             "https://images.unsplash.com/photo-1460925895917-afdab827c52f",
             "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3"
         ],
-        "assignedFreelancer": [],
-        "features": [   
-            "Multi-user access control",
-            "Real-time reporting",
-            "Mobile responsive",
-            "API Integration"
+        "features": [
+            {
+                "projectId": "67c09e7ea8bf2bcd8d03f800",
+                "freelancerId": "67c09e7ea8bf2bcd8d03f7fd",
+                "status": "pending",
+                "content": [
+                    {
+                        "title": "Halaman Utama",
+                        "description": "Halaman utama adalah halaman pertama yang akan ditampilkan ketika user membuka aplikasi.",
+                        "images": [
+                            "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
+                            "https://images.unsplash.com/photo-1559028012-481c04fa702d",
+                            "https://images.unsplash.com/photo-1531403009284-440f080d1e12"
+                        ],
+                        "files": [
+                            "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
+                            "https://images.unsplash.com/photo-1559028012-481c04fa702d",
+                            "https://images.unsplash.com/photo-1531403009284-440f080d1e12"
+                        ]
+                    }
+                ]
+            }
         ],
         "createdAt": "2024-02-27T17:18:54.570Z",
-        "updatedAt": "2024-02-27T17:18:54.570Z",
-        "progress": 0
+        "updatedAt": "2024-02-27T17:18:54.570Z"
     },
     {
         "_id": "67c09e7ea8bf2bcd8d03f801",
@@ -38,7 +53,7 @@
         "budget": 25000000,
         "category": "UI/UX Design",
         "location": "Remote",
-        "duration": "2 bulan",
+        "completedDate": "2026-02-27T17:18:54.570Z",
         "status": "In Progress",
         "requirements": [
             "Portfolio desain website B2B",
@@ -49,24 +64,31 @@
         "image": [
             "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8"
         ],
-        "assignedFreelancer": [
+        "features": [
             {
-                "_id": "67c09e7ea8bf2bcd8d03f7fd",
-                "fullName": "Dewi Safitri",
-                "profileImage": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
-                "email": "dewi.safitri@outlook.com",
-                "role": "freelancer"
+                "projectId": "67c09e7ea8bf2bcd8d03f801",
+                "freelancerId": "67c09e7ea8bf2bcd8d03f7fe",
+                "status": "in progress",
+                "content": [
+                    {
+                        "title": "Halaman Utama",
+                        "description": "Halaman utama adalah halaman pertama yang akan ditampilkan ketika user membuka aplikasi.",
+                        "images": [
+                            "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
+                            "https://images.unsplash.com/photo-1559028012-481c04fa702d",
+                            "https://images.unsplash.com/photo-1531403009284-440f080d1e12"
+                        ],
+                        "files": [
+                            "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
+                            "https://images.unsplash.com/photo-1559028012-481c04fa702d",
+                            "https://images.unsplash.com/photo-1531403009284-440f080d1e12"
+                        ]
+                    }
+                ]
             }
         ],
-        "features": [
-            "Landing page redesign",
-            "Mobile responsive design",
-            "Design system documentation",
-            "Interactive prototypes"
-        ],
         "createdAt": "2024-01-15T10:30:00.000Z",
-        "updatedAt": "2024-02-20T15:45:00.000Z",
-        "progress": 60
+        "updatedAt": "2024-02-20T15:45:00.000Z"
     },
     {
         "_id": "67c09e7ea8bf2bcd8d03f802",
@@ -76,7 +98,7 @@
         "budget": 45000000,
         "category": "Mobile Development",
         "location": "Surabaya, Indonesia",
-        "duration": "4 bulan",
+        "completedDate": "2026-02-27T17:18:54.570Z",
         "status": "Open",
         "requirements": [
             "Pengalaman React Native/Flutter",
@@ -87,15 +109,30 @@
         "image": [
             "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c"
         ],
-        "assignedFreelancer": [],
         "features": [
-            "Cross-platform compatibility",
-            "Offline functionality",
-            "Push notifications",
-            "Secure authentication"
+            {
+                "projectId": "67c09e7ea8bf2bcd8d03f802",
+                "freelancerId": "67c09e7ea8bf2bcd8d03f7ff",
+                "status": "pending",
+                "content": [
+                    {
+                        "title": "Halaman Utama",
+                        "description": "Halaman utama adalah halaman pertama yang akan ditampilkan ketika user membuka aplikasi.",
+                        "images": [
+                            "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
+                            "https://images.unsplash.com/photo-1559028012-481c04fa702d",
+                            "https://images.unsplash.com/photo-1531403009284-440f080d1e12"
+                        ],
+                        "files": [
+                            "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
+                            "https://images.unsplash.com/photo-1559028012-481c04fa702d",
+                            "https://images.unsplash.com/photo-1531403009284-440f080d1e12"
+                        ]
+                    }
+                ]
+            }
         ],
         "createdAt": "2024-02-25T09:00:00.000Z",
-        "updatedAt": "2024-02-25T09:00:00.000Z",
-        "progress": 0
+        "updatedAt": "2024-02-25T09:00:00.000Z"
     }
 ]

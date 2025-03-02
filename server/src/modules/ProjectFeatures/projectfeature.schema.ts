@@ -8,10 +8,15 @@ export class ProjectFeature {
 }
 
 const ProjectFeatureSchema = z.object({
-    title: z.string(),
-    description: z.string(),
-    completedDate: z.date(),
-    image: z.string()
+    projectId: z.instanceof(ObjectId),
+    freelancerId: z.instanceof(ObjectId),
+    status: z.enum(["pending", "in progress", "completed"]),
+    content: z.array(z.object({
+        title: z.string(),
+        description: z.string(),
+        images: z.array(z.string()),
+        files: z.array(z.string()),
+    })),
 })
 
 const WithIdSchema = z.object({

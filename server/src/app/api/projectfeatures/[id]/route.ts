@@ -40,3 +40,17 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
         );
     }
 }
+
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    try {
+        const { id } = await params;
+        const body = await req.json();
+        const result = await ProjectFeature.updateStatus(id, body.status);
+        return NextResponse.json(result);
+    } catch (error) {
+        return NextResponse.json(
+            { message: error instanceof Error ? error.message : "Failed to update projectfeature status" },
+            { status: 500 }
+        );
+    }
+}
