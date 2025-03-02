@@ -1,85 +1,156 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from "react-native";
+import React, { useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, ActivityIndicator, Alert } from "react-native";
 import { Plus } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 import { Pencil, Trash2 } from "lucide-react-native";
+import { useServices } from "@/hooks/useServices";
+import { baseUrl } from "@/constant/baseUrl";
+import { SecureStoreUtils } from "@/utils/SecureStore";
 
 type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
 export default function Services() {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
+  const { services, loading, error, refetch } = useServices();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const services = [
-    {
-      id: 1,
-      title: "Mobile App Development",
-      description: "Create custom mobile applications for iOS and Android",
-      price: "Rp5.000.000",
-      image: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=500&auto=format&fit=crop&q=60",
-    },
-    {
-      id: 2,
-      title: "Web Development",
-      description: "Build responsive and modern web applications",
-      price: "Rp4.000.000",
-      image: "https://images.unsplash.com/photo-1547658719-da2b51169166?w=500&auto=format&fit=crop&q=60",
-    },
-  ];
+  const handleDeleteService = async (serviceId: string) => {
+    try {
+      setDeletingId(serviceId);
+      const token = await SecureStoreUtils.getToken();
+      
+      const response = await fetch(`${baseUrl}/api/services/${serviceId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        Alert.alert("Sukses", "Layanan berhasil dihapus");
+        refetch(); // Refresh data setelah menghapus
+      } else {
+        Alert.alert("Error", result.message || "Gagal menghapus layanan");
+      }
+    } catch (err) {
+      Alert.alert("Error", "Terjadi kesalahan saat menghapus layanan");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const confirmDelete = (serviceId: string) => {
+    Alert.alert(
+      "Konfirmasi Hapus",
+      "Apakah Anda yakin ingin menghapus layanan ini?",
+      [
+        { text: "Batal", style: "cancel" },
+        { text: "Hapus", style: "destructive", onPress: () => handleDeleteService(serviceId) }
+      ]
+    );
+  };
+
+  // Format harga ke format Rupiah
+  const formatPrice = (price: number) => {
+    return `Rp${price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.section, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.section, styles.errorContainer]}>
+        <Text style={styles.errorText}>Gagal memuat layanan: {error}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={refetch}>
+          <Text style={styles.retryButtonText}>Coba Lagi</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Services</Text>
+        <Text style={styles.sectionTitle}>Layanan Saya</Text>
         <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate("AddService")}>
           <Plus size={20} color="#ffffff" />
         </TouchableOpacity>
       </View>
       
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.servicesContainer}
-      >
-        {services.map((service) => (
+      {services.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>Anda belum memiliki layanan</Text>
           <TouchableOpacity 
-            key={service.id} 
-            style={styles.serviceCard}
+            style={styles.addServiceButton} 
+            onPress={() => navigation.navigate("AddService")}
           >
-            <Image 
-              source={{ uri: service.image }} 
-              style={styles.serviceImage}
-            />
-            <Text style={styles.serviceTitle}>{service.title}</Text>
-            <Text style={styles.serviceDescription}>{service.description}</Text>
-            <Text style={styles.servicePrice}>{service.price}</Text>
-            
-            <View style={styles.actionButtons}>
-              <TouchableOpacity 
-                style={[styles.actionButton, styles.editButton]}
-                onPress={(e) => {
-                  e.stopPropagation();
-                  navigation.navigate("EditService", { serviceId: service.id.toString() });
-                }}
-              >
-                <Pencil size={16} color="#ffffff" />
-                <Text style={styles.actionButtonText}>Edit</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={[styles.actionButton, styles.deleteButton]}
-                onPress={(e) => {
-                  e.stopPropagation();
-                  // Add delete handler here
-                }}
-              >
-                <Trash2 size={16} color="#ffffff" />
-                <Text style={styles.actionButtonText}>Delete</Text>
-              </TouchableOpacity>
-            </View>
+            <Text style={styles.addServiceButtonText}>Tambah Layanan</Text>
           </TouchableOpacity>
-        ))}
-      </ScrollView>
+        </View>
+      ) : (
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.servicesContainer}
+        >
+          {services.map((service) => (
+            <TouchableOpacity 
+              key={service._id} 
+              style={styles.serviceCard}
+              onPress={() => navigation.navigate("ServiceDetails", { serviceId: service._id })}
+            >
+              <Image 
+                source={{ uri: service.images[0] }} 
+                style={styles.serviceImage}
+              />
+              <Text style={styles.serviceTitle}>{service.title}</Text>
+              <Text style={styles.serviceDescription}>{service.description}</Text>
+              <Text style={styles.servicePrice}>{formatPrice(service.price)}</Text>
+              
+              <View style={styles.actionButtons}>
+                <TouchableOpacity 
+                  style={[styles.actionButton, styles.editButton]}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    navigation.navigate("EditService", { serviceId: service._id });
+                  }}
+                >
+                  <Pencil size={16} color="#ffffff" />
+                  <Text style={styles.actionButtonText}>Edit</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={[styles.actionButton, styles.deleteButton]}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    confirmDelete(service._id);
+                  }}
+                  disabled={deletingId === service._id}
+                >
+                  {deletingId === service._id ? (
+                    <ActivityIndicator size="small" color="#ffffff" />
+                  ) : (
+                    <>
+                      <Trash2 size={16} color="#ffffff" />
+                      <Text style={styles.actionButtonText}>Hapus</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
     </View>
   );
 }
@@ -172,5 +243,55 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     backgroundColor: '#dc2626',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  errorContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  errorText: {
+    color: '#dc2626',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  retryButton: {
+    backgroundColor: '#2563eb',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#ffffff',
+    fontWeight: '500',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#f3f4f6',
+    marginHorizontal: 12,
+  },
+  emptyText: {
+    color: '#6b7280',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  addServiceButton: {
+    backgroundColor: '#2563eb',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  addServiceButtonText: {
+    color: '#ffffff',
+    fontWeight: '500',
   },
 });
