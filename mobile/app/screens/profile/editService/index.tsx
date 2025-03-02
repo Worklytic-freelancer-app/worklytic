@@ -1,10 +1,12 @@
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Image } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Image, Alert, ActivityIndicator } from "react-native";
 import { useRoute, RouteProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/navigators";
 import { useState, useEffect } from "react";
 import { ChevronLeft, Plus, X } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as ImagePicker from 'expo-image-picker';
+import { baseUrl } from "@/constant/baseUrl";
+import { SecureStoreUtils } from "@/utils/SecureStore";
 
 type EditServiceRouteProp = RouteProp<RootStackParamList, 'EditService'>;
 
@@ -13,44 +15,76 @@ export default function EditService() {
   const route = useRoute<EditServiceRouteProp>();
   const navigation = useNavigation();
   const [images, setImages] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     price: "",
-    duration: "",
+    deliveryTime: "",
     category: "",
     requirements: "",
-    deliverables: "",
-    revisions: "",
+    includes: "",
   });
 
   // Fetch service data based on ID
   useEffect(() => {
-    // TODO: Implement API call to fetch service data
-    const mockService = {
-      title: "UI/UX Design untuk Website dan Mobile Apps",
-      description: "Jasa desain UI/UX profesional untuk website dan aplikasi mobile.",
-      price: "750000",
-      duration: "7",
-      category: "UI/UX Design",
-      requirements: "Brief project lengkap\nTarget audience",
-      deliverables: "User research\nWireframe\nPrototype",
-      revisions: "3",
-      images: [
-        "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
-      ],
-    };
-
-    setFormData(mockService);
-    setImages(mockService.images);
+    fetchServiceData();
   }, [route.params?.serviceId]);
+
+  const fetchServiceData = async () => {
+    try {
+      setIsFetching(true);
+      const token = await SecureStoreUtils.getToken();
+      
+      if (!route.params?.serviceId) {
+        throw new Error('ID layanan tidak ditemukan');
+      }
+      
+      const response = await fetch(`${baseUrl}/api/services/${route.params.serviceId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      const result = await response.json();
+      
+      if (result.success && result.data) {
+        const serviceData = result.data;
+        
+        // Konversi array ke string dengan koma
+        const requirementsString = serviceData.requirements.join(', ');
+        const includesString = serviceData.includes.join(', ');
+        
+        setFormData({
+          title: serviceData.title,
+          description: serviceData.description,
+          price: serviceData.price.toString(),
+          deliveryTime: serviceData.deliveryTime,
+          category: serviceData.category,
+          requirements: requirementsString,
+          includes: includesString,
+        });
+        
+        setImages(serviceData.images);
+      } else {
+        throw new Error(result.message || 'Gagal mengambil data layanan');
+      }
+    } catch (error) {
+      console.error('Error fetching service:', error);
+      Alert.alert("Error", "Gagal mengambil data layanan");
+    } finally {
+      setIsFetching(false);
+    }
+  };
 
   const handleImagePick = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [16, 9],
-      quality: 1,
+      quality: 0.8,
+      base64: true,
     });
 
     if (!result.canceled && result.assets[0].uri) {
@@ -62,19 +96,178 @@ export default function EditService() {
     setImages(images.filter((_, i) => i !== index));
   };
 
+  // Fungsi untuk mengupload gambar ke Cloudinary
+  const uploadImageToCloudinary = async (uri: string) => {
+    // Jika URI sudah berupa URL (gambar yang sudah ada di server), kembalikan saja
+    if (uri.startsWith('http')) {
+      return uri;
+    }
+    
+    try {
+      // Konversi URI gambar ke base64
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      
+      const reader = new FileReader();
+      return new Promise((resolve, reject) => {
+        reader.onload = async () => {
+          try {
+            const base64data = reader.result as string;
+            const base64Content = base64data.split(',')[1];
+            
+            // Kirim ke endpoint upload di server
+            const token = await SecureStoreUtils.getToken();
+            const uploadResponse = await fetch(`${baseUrl}/api/upload`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({ image: `data:image/jpeg;base64,${base64Content}` })
+            });
+            
+            const uploadResult = await uploadResponse.json();
+            if (uploadResult.success) {
+              resolve(uploadResult.data);
+            } else {
+              reject(new Error(uploadResult.message || 'Gagal mengupload gambar'));
+            }
+          } catch (error) {
+            reject(error);
+          }
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      throw new Error('Gagal mengupload gambar');
+    }
+  };
+
+  const handleSubmit = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Validasi form
+      if (!formData.title) {
+        Alert.alert("Error", "Judul layanan tidak boleh kosong");
+        setIsLoading(false);
+        return;
+      }
+      
+      if (!formData.description) {
+        Alert.alert("Error", "Deskripsi layanan tidak boleh kosong");
+        setIsLoading(false);
+        return;
+      }
+      
+      if (!formData.price) {
+        Alert.alert("Error", "Harga layanan tidak boleh kosong");
+        setIsLoading(false);
+        return;
+      }
+      
+      if (!formData.category) {
+        Alert.alert("Error", "Kategori layanan tidak boleh kosong");
+        setIsLoading(false);
+        return;
+      }
+      
+      if (!formData.deliveryTime) {
+        Alert.alert("Error", "Waktu pengerjaan tidak boleh kosong");
+        setIsLoading(false);
+        return;
+      }
+      
+      if (images.length === 0) {
+        Alert.alert("Error", "Mohon tambahkan minimal 1 gambar");
+        setIsLoading(false);
+        return;
+      }
+      
+      // Upload semua gambar ke Cloudinary (jika belum di-upload)
+      try {
+        const uploadPromises = images.map(image => uploadImageToCloudinary(image));
+        const uploadedImageUrls = await Promise.all(uploadPromises);
+        
+        // Dapatkan token
+        const token = await SecureStoreUtils.getToken();
+        
+        // Siapkan data untuk dikirim ke API
+        const serviceData = {
+          title: formData.title,
+          description: formData.description,
+          price: parseInt(formData.price),
+          deliveryTime: formData.deliveryTime,
+          category: formData.category,
+          images: uploadedImageUrls,
+          includes: formData.includes ? formData.includes.split(',').map(item => item.trim()) : [],
+          requirements: formData.requirements ? formData.requirements.split(',').map(item => item.trim()) : [],
+        };
+        
+        console.log("Sending update data:", JSON.stringify(serviceData, null, 2));
+        
+        // Kirim data ke API
+        const response = await fetch(`${baseUrl}/api/services/${route.params?.serviceId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(serviceData)
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("API error response:", errorText);
+          throw new Error(`API error: ${response.status} ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log("API response:", JSON.stringify(result, null, 2));
+        
+        if (result.success) {
+          Alert.alert("Sukses", "Layanan berhasil diperbarui", [
+            { text: "OK", onPress: () => navigation.goBack() }
+          ]);
+        } else {
+          Alert.alert("Error", result.message || "Gagal memperbarui layanan");
+        }
+      } catch (uploadError) {
+        console.error('Error during upload or API call:', uploadError);
+        Alert.alert("Error", "Terjadi kesalahan saat mengupload gambar atau mengirim data");
+      }
+    } catch (error) {
+      console.error('Error updating service:', error);
+      Alert.alert("Error", "Terjadi kesalahan saat memperbarui layanan");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isFetching) {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top }, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color="#2563eb" />
+        <Text style={styles.loadingText}>Memuat data layanan...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <ChevronLeft size={24} color="#374151" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Edit Service</Text>
+        <Text style={styles.headerTitle}>Edit Layanan</Text>
         <View style={{ width: 24 }} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.imageSection}>
-          <Text style={styles.sectionTitle}>Service Images</Text>
+          <Text style={styles.sectionTitle}>Gambar Layanan</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imageList}>
             {images.map((uri, index) => (
               <View key={index} style={styles.imageContainer}>
@@ -92,30 +285,30 @@ export default function EditService() {
 
         <View style={styles.formSection}>
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Service Title</Text>
+            <Text style={styles.label}>Judul Layanan</Text>
             <TextInput
               style={styles.input}
-              placeholder="e.g., Mobile App Development"
+              placeholder="Contoh: Pengembangan Aplikasi Mobile"
               value={formData.title}
               onChangeText={(text) => setFormData({ ...formData, title: text })}
             />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Category</Text>
+            <Text style={styles.label}>Kategori</Text>
             <TextInput
               style={styles.input}
-              placeholder="e.g., Development & IT"
+              placeholder="Contoh: Pengembangan & IT"
               value={formData.category}
               onChangeText={(text) => setFormData({ ...formData, category: text })}
             />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Description</Text>
+            <Text style={styles.label}>Deskripsi</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
-              placeholder="Describe your service in detail"
+              placeholder="Jelaskan layanan Anda secara detail"
               multiline
               numberOfLines={4}
               value={formData.description}
@@ -124,10 +317,10 @@ export default function EditService() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Price (Rp)</Text>
+            <Text style={styles.label}>Harga (Rp)</Text>
             <TextInput
               style={styles.input}
-              placeholder="e.g., 5000000"
+              placeholder="Contoh: 5000000"
               keyboardType="numeric"
               value={formData.price}
               onChangeText={(text) => setFormData({ ...formData, price: text })}
@@ -135,21 +328,20 @@ export default function EditService() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Delivery Time (Days)</Text>
+            <Text style={styles.label}>Waktu Pengerjaan</Text>
             <TextInput
               style={styles.input}
-              placeholder="e.g., 14"
-              keyboardType="numeric"
-              value={formData.duration}
-              onChangeText={(text) => setFormData({ ...formData, duration: text })}
+              placeholder="Contoh: 14 hari"
+              value={formData.deliveryTime}
+              onChangeText={(text) => setFormData({ ...formData, deliveryTime: text })}
             />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Requirements</Text>
+            <Text style={styles.label}>Persyaratan (pisahkan dengan koma)</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
-              placeholder="What do you need from the client?"
+              placeholder="Apa yang Anda butuhkan dari klien?"
               multiline
               numberOfLines={4}
               value={formData.requirements}
@@ -158,33 +350,30 @@ export default function EditService() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Deliverables</Text>
+            <Text style={styles.label}>Yang Termasuk (pisahkan dengan koma)</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
-              placeholder="What will the client receive?"
+              placeholder="Apa yang akan klien terima?"
               multiline
               numberOfLines={4}
-              value={formData.deliverables}
-              onChangeText={(text) => setFormData({ ...formData, deliverables: text })}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Number of Revisions</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="e.g., 3"
-              keyboardType="numeric"
-              value={formData.revisions}
-              onChangeText={(text) => setFormData({ ...formData, revisions: text })}
+              value={formData.includes}
+              onChangeText={(text) => setFormData({ ...formData, includes: text })}
             />
           </View>
         </View>
       </ScrollView>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.saveButton} onPress={() => navigation.goBack()}>
-          <Text style={styles.saveButtonText}>Save Changes</Text>
+        <TouchableOpacity 
+          style={[styles.saveButton, isLoading && styles.disabledButton]} 
+          onPress={handleSubmit}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator color="#ffffff" size="small" />
+          ) : (
+            <Text style={styles.saveButtonText}>Simpan Perubahan</Text>
+          )}
         </TouchableOpacity>
       </View>
     </View>
@@ -287,9 +476,21 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
   },
+  disabledButton: {
+    backgroundColor: '#93c5fd',
+  },
   saveButtonText: {
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#6b7280',
   },
 });
