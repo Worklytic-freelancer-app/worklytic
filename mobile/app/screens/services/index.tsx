@@ -48,7 +48,7 @@ export default function Services() {
   const renderService = ({ item }: { item: Service }) => (
     <TouchableOpacity 
       style={styles.serviceCard}
-      onPress={() => navigation.navigate('ServiceDetails', { serviceId: item.id })}
+      onPress={() => navigation.navigate('ServiceDetails', { serviceId: item.id.toString() })}
     >
       <Image source={{ uri: item.image }} style={styles.serviceImage} />
       <View style={styles.serviceInfo}>

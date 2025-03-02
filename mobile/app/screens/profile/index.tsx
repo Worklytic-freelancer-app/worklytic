@@ -74,7 +74,8 @@ export default function Profile() {
               {user.skills && user.skills.length > 0 && <Skills skills={user.skills} />}
             </View>
           )}
-          <Services />
+          
+          {user.role === 'freelancer' && <Services />}
         </View>
       </ScrollView>
     </SafeAreaView>

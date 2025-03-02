@@ -271,12 +271,12 @@ export default function Chat(): JSX.Element {
           <Text style={styles.emptyText}>
             Pesan yang Anda kirim dan terima akan muncul di sini
           </Text>
-          <TouchableOpacity 
+          {/* <TouchableOpacity 
             style={styles.createChatButtonLarge}
             onPress={createTestChat}
           >
             <Text style={styles.createChatButtonText}>Buat Chat Test</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       ) : (
         <FlatList<ChatItemUI>

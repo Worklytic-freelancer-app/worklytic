@@ -3,6 +3,7 @@ import { Plus } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
+import { Pencil, Trash2 } from "lucide-react-native";
 
 type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -41,7 +42,11 @@ export default function Services() {
         contentContainerStyle={styles.servicesContainer}
       >
         {services.map((service) => (
-          <View key={service.id} style={styles.serviceCard}>
+          <TouchableOpacity 
+            key={service.id} 
+            style={styles.serviceCard}
+            onPress={() => navigation.navigate("ServiceDetails", { serviceId: service.id.toString() })}
+          >
             <Image 
               source={{ uri: service.image }} 
               style={styles.serviceImage}
@@ -49,7 +54,31 @@ export default function Services() {
             <Text style={styles.serviceTitle}>{service.title}</Text>
             <Text style={styles.serviceDescription}>{service.description}</Text>
             <Text style={styles.servicePrice}>{service.price}</Text>
-          </View>
+            
+            <View style={styles.actionButtons}>
+              <TouchableOpacity 
+                style={[styles.actionButton, styles.editButton]}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  navigation.navigate("EditService", { serviceId: service.id.toString() });
+                }}
+              >
+                <Pencil size={16} color="#ffffff" />
+                <Text style={styles.actionButtonText}>Edit</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.actionButton, styles.deleteButton]}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  // Add delete handler here
+                }}
+              >
+                <Trash2 size={16} color="#ffffff" />
+                <Text style={styles.actionButtonText}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
         ))}
       </ScrollView>
     </View>
@@ -119,4 +148,30 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#2563eb',
   },
-}); 
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginTop: 12,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 8,
+    borderRadius: 8,
+    gap: 6,
+  },
+  actionButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  editButton: {
+    backgroundColor: '#2563eb',
+  },
+  deleteButton: {
+    backgroundColor: '#dc2626',
+  },
+});

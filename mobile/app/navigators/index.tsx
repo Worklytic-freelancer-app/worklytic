@@ -26,6 +26,7 @@ import { LoginContext } from "@/context/LoginContext";
 import * as SecureStore from "expo-secure-store";
 import { ActivityIndicator, View } from "react-native";
 import { initializeFirebaseAuth } from "@/services/firebaseAuth";
+import EditService from "@/screens/profile/editService";
 
 const Stack = createStackNavigator();
 
@@ -67,18 +68,21 @@ export type RootStackParamList = {
     requirements: string;
     images: string[];
   };
+  EditService: {
+    serviceId: string;
+  };
 };
 
 export default function AppNavigator() {
   const { isLoggedIn, setIsLoggedIn } = useContext(LoginContext);
   const [loading, setLoading] = useState(true);
-  
+
   useEffect(() => {
     async function initialize() {
       try {
         // Initialize Firebase Auth
         await initializeFirebaseAuth();
-        
+
         // Check token
         const token = await SecureStore.getItemAsync("token");
         if (token) {
@@ -95,7 +99,7 @@ export default function AppNavigator() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" color="#2563eb" />
       </View>
     );
@@ -127,7 +131,6 @@ export default function AppNavigator() {
           <Stack.Screen name="Workspace" component={Workspace} />
           <Stack.Screen name="WorkspaceDetails" component={WorkspaceDetails} />
           <Stack.Screen name="PostProject" component={PostProject} />
-          <Stack.Screen name="AddService" component={AddService} />
           <Stack.Screen name="Services" component={Services} />
           <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
           <Stack.Screen name="EditProfile" component={EditProfile} />
@@ -135,6 +138,8 @@ export default function AppNavigator() {
           <Stack.Screen name="ChooseFreelancer" component={ChooseFreelancer} />
           <Stack.Screen name="Payment" component={Payment} />
           <Stack.Screen name="ReviewPostProject" component={ReviewPostProject} />
+          <Stack.Screen name="AddService" component={AddService} />
+          <Stack.Screen name="EditServices" component={EditService} />
         </>
       )}
     </Stack.Navigator>
