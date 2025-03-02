@@ -139,7 +139,7 @@ export default function AppNavigator() {
           <Stack.Screen name="Payment" component={Payment} />
           <Stack.Screen name="ReviewPostProject" component={ReviewPostProject} />
           <Stack.Screen name="AddService" component={AddService} />
-          <Stack.Screen name="EditServices" component={EditService} />
+          <Stack.Screen name="EditService" component={EditService} />
         </>
       )}
     </Stack.Navigator>
