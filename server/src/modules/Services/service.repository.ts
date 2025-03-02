@@ -46,7 +46,16 @@ export class ServiceRepository {
         try {
             const collection = await this.getCollection();
             const docs = await collection
-                .find({})
+                .aggregate([
+                    {
+                        $lookup: {
+                            from: "Users",
+                            localField: "freelancerId",
+                            foreignField: "_id",
+                            as: "freelancer"
+                        }
+                    },
+                ])
                 .toArray() as Services[];
                 
             return {
