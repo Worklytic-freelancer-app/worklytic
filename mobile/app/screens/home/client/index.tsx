@@ -198,7 +198,10 @@ export default function Client() {
     ];
 
     const renderService = ({ item }: { item: Service }) => (
-        <TouchableOpacity style={styles.serviceCard} onPress={() => console.log("service", item)}>
+        <TouchableOpacity 
+            style={styles.serviceCard} 
+            onPress={() => navigation.navigate("ServiceDetails", { serviceId: item.id })}
+        >
             <Image source={{ uri: item.image }} style={styles.serviceImage} />
             <View style={styles.serviceInfo}>
                 <View style={styles.freelancerInfo}>
