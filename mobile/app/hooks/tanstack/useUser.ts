@@ -1,10 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { baseUrl } from '@/constant/baseUrl';
 import { SecureStoreUtils } from '@/utils/SecureStore';
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '@/navigators';
-import { handleAuthError } from '@/utils/handleAuthError';
 
 interface User {
     _id: string;
@@ -22,11 +18,11 @@ interface User {
     website: string;
     rating: number;
     totalReviews: number;
+    companyName?: string;
+    industry?: string;
 }
 
 export const useUser = () => {
-    const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-    
     return useQuery({
         queryKey: ['user'],
         queryFn: async () => {
@@ -60,12 +56,11 @@ export const useUser = () => {
                 } else {
                     throw new Error(result.message || 'Failed to fetch user data');
                 }
-            } catch (err) {
-                // Handle auth error dan auto logout jika perlu
-                await handleAuthError(err, navigation);
-                throw err;
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+                throw error;
             }
         },
-        staleTime: 5 * 60 * 1000, // Data dianggap fresh selama 5 menit
+        staleTime: 5 * 60 * 1000, // 5 menit
     });
-}; 
+};

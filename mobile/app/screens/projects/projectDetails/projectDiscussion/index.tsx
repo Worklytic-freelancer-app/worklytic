@@ -1,93 +1,88 @@
 import React, { useState, useRef } from "react";
-import { View, Text, Modal, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator } from "react-native";
+import { View, Text, Modal, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { SecureStoreUtils } from "@/utils/SecureStore";
-import { baseUrl } from "@/constant/baseUrl";
+import { useMutation } from "@/hooks/tanstack/useMutation";
+import { useUser } from "@/hooks/tanstack/useUser";
 
 interface ProjectDiscussionProps {
-  isVisible: boolean;
-  onClose: () => void;
-  onAccept: () => void;
-  projectId: string;
+    isVisible: boolean;
+    onClose: () => void;
+    onAccept: () => void;
+    projectId: string;
+}
+
+interface ProjectFeatureResponse {
+    _id: string;
+    projectId: string;
+    freelancerId: string;
+    status: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export default function ProjectDiscussion({ isVisible, onClose, onAccept, projectId }: ProjectDiscussionProps) {
-  const [canAccept, setCanAccept] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const scrollViewRef = useRef<ScrollView>(null);
-  const insets = useSafeAreaInsets();
-
-  const handleScroll = (event: any) => {
-    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
-    const paddingToBottom = 20;
-    const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
-
-    if (isCloseToBottom) {
-      setCanAccept(true);
-    }
-  };
-
-  const handleAccept = async () => {
-    if (!canAccept || isSubmitting) return;
+    const [canAccept, setCanAccept] = useState(false);
+    const scrollViewRef = useRef<ScrollView>(null);
+    const insets = useSafeAreaInsets();
     
-    setIsSubmitting(true);
-    try {
-      const userData = await SecureStoreUtils.getUserData();
-      const token = await SecureStoreUtils.getToken();
-      
-      if (!userData?._id) {
-        throw new Error('User ID tidak ditemukan');
-      }
-      
-      if (!token) {
-        throw new Error('Token tidak ditemukan');
-      }
-      
-      // Buat project feature baru
-      const response = await fetch(`${baseUrl}/api/projectfeatures`, {
+    // Gunakan useUser untuk mendapatkan data user
+    const { data: userData } = useUser();
+    
+    // Gunakan useMutation untuk membuat project feature
+    const createProjectFeatureMutation = useMutation<ProjectFeatureResponse, {
+        projectId: string;
+        freelancerId: string;
+        status: string;
+    }>({
+        endpoint: 'projectfeatures',
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+        requiresAuth: true,
+        onSuccess: () => {
+            // Panggil onAccept callback untuk navigasi
+            onAccept();
         },
-        body: JSON.stringify({
-          projectId: projectId,
-          freelancerId: userData._id,
-          status: 'pending'
-        })
-      });
-      
-      // Cek status response
-      if (response.status === 409) {
-        // Jika freelancer sudah apply
-        const errorData = await response.json();
-        alert(errorData.message || 'Kamu sudah melamar untuk proyek ini');
-        onClose(); // Tutup modal
-        return;
-      }
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `Error: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      
-      if (!result.success) {
-        throw new Error(result.message || 'Gagal mengajukan lamaran');
-      }
-      
-      // Panggil onAccept callback untuk navigasi
-      onAccept();
-    } catch (error) {
-      console.error('Error applying to project:', error);
-      alert(error instanceof Error ? error.message : 'Terjadi kesalahan saat mengajukan lamaran');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    });
 
-  const termsAndConditions = `
+    const handleScroll = (event: any) => {
+        const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+        const paddingToBottom = 20;
+        const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
+
+        if (isCloseToBottom) {
+            setCanAccept(true);
+        }
+    };
+
+    const handleAccept = async () => {
+        if (!canAccept || createProjectFeatureMutation.isPending) return;
+        
+        try {
+            if (!userData?._id) {
+                throw new Error('User ID tidak ditemukan');
+            }
+            
+            // Buat project feature baru menggunakan mutation
+            await createProjectFeatureMutation.mutateAsync({
+                projectId: projectId,
+                freelancerId: userData._id,
+                status: 'pending'
+            });
+            
+        } catch (error) {
+            console.error('Error applying to project:', error);
+            
+            // Cek apakah error adalah conflict (sudah apply)
+            if (error instanceof Error && error.message.includes('already applied')) {
+                alert('Kamu sudah melamar untuk proyek ini');
+                onClose(); // Tutup modal
+                return;
+            }
+            
+            alert(error instanceof Error ? error.message : 'Terjadi kesalahan saat mengajukan lamaran');
+        }
+    };
+
+    const termsAndConditions = `
 1. Project Terms and Agreement
 
 1.1 Project Scope
@@ -159,48 +154,52 @@ By accepting these terms, you agree to:
 - Comply with all legal requirements
   `;
 
-  return (
-    <Modal animationType="slide" transparent={true} visible={isVisible} onRequestClose={onClose}>
-      <View style={styles.modalContainer}>
-        <View style={[styles.modalContent, { paddingTop: insets.top }]}>
-          <View style={styles.modalHeader}>
-            <View style={styles.pullBar} />
-          </View>
-          <Text style={styles.modalTitle}>Terms & Conditions</Text>
+    return (
+        <Modal animationType="slide" transparent={true} visible={isVisible} onRequestClose={onClose}>
+            <View style={styles.modalContainer}>
+                <View style={[styles.modalContent, { paddingTop: insets.top }]}>
+                    <View style={styles.modalHeader}>
+                        <View style={styles.pullBar} />
+                    </View>
+                    <Text style={styles.modalTitle}>Terms & Conditions</Text>
 
-          <ScrollView ref={scrollViewRef} style={styles.termsScroll} onScroll={handleScroll} scrollEventThrottle={400}>
-            <Text style={styles.termsText}>{termsAndConditions}</Text>
-          </ScrollView>
+                    <ScrollView ref={scrollViewRef} style={styles.termsScroll} onScroll={handleScroll} scrollEventThrottle={400}>
+                        <Text style={styles.termsText}>{termsAndConditions}</Text>
+                    </ScrollView>
 
-          <View style={[styles.modalFooter, { paddingBottom: insets.bottom }]}>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity 
-                style={[styles.modalButton, styles.buttonFlex, (!canAccept || isSubmitting) && styles.modalButtonDisabled]} 
-                disabled={!canAccept || isSubmitting} 
-                onPress={handleAccept}
-              >
-                {isSubmitting ? (
-                  <ActivityIndicator size="small" color="#FFFFFF" />
-                ) : (
-                  <Text style={[styles.modalButtonText, !canAccept && styles.modalButtonTextDisabled]}>
-                    {canAccept ? "Accept & Continue" : "Please read all terms"}
-                  </Text>
-                )}
-              </TouchableOpacity>
+                    <View style={[styles.modalFooter, { paddingBottom: insets.bottom }]}>
+                        <View style={styles.buttonContainer}>
+                            <TouchableOpacity 
+                                style={[
+                                    styles.modalButton, 
+                                    styles.buttonFlex, 
+                                    (!canAccept || createProjectFeatureMutation.isPending) && styles.modalButtonDisabled
+                                ]} 
+                                disabled={!canAccept || createProjectFeatureMutation.isPending} 
+                                onPress={handleAccept}
+                            >
+                                {createProjectFeatureMutation.isPending ? (
+                                    <ActivityIndicator size="small" color="#FFFFFF" />
+                                ) : (
+                                    <Text style={[styles.modalButtonText, !canAccept && styles.modalButtonTextDisabled]}>
+                                        {canAccept ? "Accept & Continue" : "Please read all terms"}
+                                    </Text>
+                                )}
+                            </TouchableOpacity>
 
-              <TouchableOpacity 
-                style={[styles.modalButton, styles.cancelButton, styles.buttonFlex]} 
-                onPress={onClose}
-                disabled={isSubmitting}
-              >
-                <Text style={[styles.modalButtonText, styles.cancelButtonText]}>Cancel</Text>
-              </TouchableOpacity>
+                            <TouchableOpacity 
+                                style={[styles.modalButton, styles.cancelButton, styles.buttonFlex]} 
+                                onPress={onClose}
+                                disabled={createProjectFeatureMutation.isPending}
+                            >
+                                <Text style={[styles.modalButtonText, styles.cancelButtonText]}>Cancel</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
             </View>
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
+        </Modal>
+    );
 }
 
 const styles = StyleSheet.create({

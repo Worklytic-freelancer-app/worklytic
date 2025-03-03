@@ -6,8 +6,6 @@ import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 import { useUser } from "@/hooks/tanstack/useUser";
-import { baseUrl } from "@/constant/baseUrl";
-import { SecureStoreUtils } from "@/utils/SecureStore";
 import Input, { Attachment } from "./Input";
 import { useFetch } from "@/hooks/tanstack/useFetch";
 import { useMutation } from "@/hooks/tanstack/useMutation";
@@ -74,7 +72,9 @@ export default function WorkspaceDetails() {
     const navigation = useNavigation<WorkspaceDetailsNavigationProp>();
     const route = useRoute<WorkspaceDetailsRouteProp>();
     const { projectId, freelancerId } = route.params;
-    const { data: user } = useUser();
+    
+    // Gunakan useUser hook untuk mendapatkan data user
+    const { data: user, isLoading: userLoading } = useUser();
     
     const [featureId, setFeatureId] = useState<string | null>(null);
     const [sendingUpdate, setSendingUpdate] = useState(false);
@@ -198,7 +198,8 @@ export default function WorkspaceDetails() {
         );
     };
 
-    const isLoading = featuresLoading || (!!featureId && detailLoading);
+    // Tambahkan userLoading ke kondisi loading
+    const isLoading = featuresLoading || (!!featureId && detailLoading) || userLoading;
     const error = detailError;
 
     if (isLoading && !projectFeature) {

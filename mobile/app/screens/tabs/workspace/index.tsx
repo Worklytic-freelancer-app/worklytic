@@ -1,11 +1,11 @@
 import React from "react";
 import Client from "./client";
 import Freelancer from "./freelancer";
-import { useUser } from "@/hooks/useUser";
+import { useUser } from "@/hooks/tanstack/useUser";
 import { View, ActivityIndicator } from "react-native";
 
 export default function Workspace() {
-    const { user, loading } = useUser();
+    const { data: user, isLoading: loading } = useUser();
 
     if (loading) {
         return (

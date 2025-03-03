@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
-import { useUser } from "@/hooks/useUser";
+import { useUser } from "@/hooks/tanstack/useUser";
 import { debounce } from "lodash";
 import { useFetch } from "@/hooks/tanstack/useFetch";
 
@@ -45,7 +45,7 @@ type SearchResult = Project | Freelancer;
 export default function Search(): JSX.Element {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const { user } = useUser();
+  const { data: user, isLoading: userLoading } = useUser();
   
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredResults, setFilteredResults] = useState<SearchResult[]>([]);
@@ -56,7 +56,8 @@ export default function Search(): JSX.Element {
   // Gunakan hook useFetch untuk mendapatkan data
   const { data, isLoading, error, refetch } = useFetch<SearchResult[]>({
     endpoint,
-    requiresAuth: true
+    requiresAuth: true,
+    enabled: !!user
   });
 
   // Filter results when search query or data changes
@@ -211,7 +212,7 @@ export default function Search(): JSX.Element {
   };
 
   const renderEmptyList = () => {
-    if (isLoading) {
+    if (isLoading || userLoading) {
       return (
         <View style={styles.emptyContainer}>
           <ActivityIndicator size="large" color="#2563eb" />

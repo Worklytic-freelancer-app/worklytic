@@ -1,14 +1,14 @@
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, ActivityIndicator, Image, KeyboardAvoidingView, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ChevronLeft, Upload, X, DollarSign, MapPin, Clock, Tag, FileText, Calendar } from "lucide-react-native";
+import { ChevronLeft, Upload, X, DollarSign, MapPin, Tag, Calendar } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useState } from "react";
-import { baseUrl } from "@/constant/baseUrl";
-import { SecureStoreUtils } from "@/utils/SecureStore";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
+import { useMutation } from "@/hooks/tanstack/useMutation";
+import { useUser } from "@/hooks/tanstack/useUser";
 
 // Kategori proyek
 const PROJECT_CATEGORIES = [
@@ -38,6 +38,36 @@ const PROJECT_STATUS = [
     "Cancelled"
 ];
 
+// Definisikan interface untuk response data
+interface ProjectResponse {
+    _id: string;
+    title: string;
+    description: string;
+    budget: number;
+    category: string;
+    location: string;
+    completedDate: Date;
+    status: string;
+    requirements: string[];
+    image: string[];
+    clientId: string;
+    // tambahkan properti lain sesuai kebutuhan
+}
+
+// Definisikan interface untuk request data
+interface CreateProjectRequest {
+    clientId: string;
+    title: string;
+    description: string;
+    budget: number;
+    category: string;
+    location: string;
+    completedDate: Date;
+    status: string;
+    requirements: string[];
+    image: string[];
+}
+
 export default function PostProject() {
     const insets = useSafeAreaInsets();
     const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
@@ -45,6 +75,9 @@ export default function PostProject() {
     const [images, setImages] = useState<string[]>([]);
     const [showCategoryPicker, setShowCategoryPicker] = useState(false);
     const [showLocationPicker, setShowLocationPicker] = useState(false);
+    
+    // Gunakan useUser untuk mendapatkan data user
+    const { data: userData, isLoading: isLoadingUser } = useUser();
     
     const [form, setForm] = useState({
         title: "",
@@ -55,6 +88,13 @@ export default function PostProject() {
         requirements: "",
         completedDate: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0], // Default 1 bulan dari sekarang
         status: "Open" // Default status adalah Open
+    });
+
+    // Gunakan hook useMutation dengan tipe data yang spesifik
+    const createProjectMutation = useMutation<ProjectResponse, CreateProjectRequest>({
+        endpoint: 'projects',
+        method: 'POST',
+        requiresAuth: true,
     });
 
     const pickImage = async () => {
@@ -127,16 +167,7 @@ export default function PostProject() {
                 return;
             }
             
-            // Ambil token
-            const token = await SecureStoreUtils.getToken();
-            if (!token) {
-                Alert.alert("Error", "Kamu perlu login terlebih dahulu");
-                setLoading(false);
-                return;
-            }
-            
-            // Ambil user data
-            const userData = await SecureStoreUtils.getUserData();
+            // Cek apakah userData tersedia
             if (!userData?._id) {
                 Alert.alert("Error", "Data user tidak ditemukan");
                 setLoading(false);
@@ -148,39 +179,25 @@ export default function PostProject() {
                 ? form.requirements.split('\n').filter(item => item.trim() !== '')
                 : [];
             
-            // Buat project
-            const response = await fetch(`${baseUrl}/api/projects`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    clientId: userData._id,
-                    title: form.title,
-                    description: form.description,
-                    budget: budget,
-                    category: form.category,
-                    location: form.location,
-                    completedDate: new Date(form.completedDate),
-                    status: form.status,
-                    requirements: requirementsArray,
-                    image: images
-                })
+            // Buat project menggunakan mutation
+            const result = await createProjectMutation.mutateAsync({
+                clientId: userData._id,
+                title: form.title,
+                description: form.description,
+                budget: budget,
+                category: form.category,
+                location: form.location,
+                completedDate: new Date(form.completedDate),
+                status: form.status,
+                requirements: requirementsArray,
+                image: images
             });
             
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || `Error: ${response.status}`);
-            }
-            
-            const result = await response.json();
-            
-            if (result.success && result.data?._id) {
+            if (result?._id) {
                 // Navigasi ke halaman pembayaran dengan ID proyek
-                navigation.navigate('Payment', { projectId: result.data._id });
+                navigation.navigate('Payment', { projectId: result._id });
             } else {
-                throw new Error(result.message || 'Failed to create project');
+                throw new Error('Failed to create project');
             }
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'An error occurred';

@@ -5,8 +5,7 @@ import { Search, Star, MapPin, Filter, ArrowLeft } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
-import { baseUrl } from "@/constant/baseUrl";
-import { SecureStoreUtils } from "@/utils/SecureStore";
+import { useFetch } from "@/hooks/tanstack/useFetch";
 
 interface ApiFreelancer {
     _id: string;
@@ -19,32 +18,40 @@ interface ApiFreelancer {
     hourlyRate?: number;
 }
 
-interface ApiResponse<T> {
-    success: boolean;
-    message?: string;
-    data: T;
-}
-
 type FreelancersScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
 export default function Freelancers() {
     const navigation = useNavigation<FreelancersScreenNavigationProp>();
     const insets = useSafeAreaInsets();
     const [searchQuery, setSearchQuery] = useState("");
-    const [freelancers, setFreelancers] = useState<ApiFreelancer[]>([]);
     const [filteredFreelancers, setFilteredFreelancers] = useState<ApiFreelancer[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
+    
+    // Gunakan useFetch untuk mendapatkan data freelancer
+    const { data: freelancers, isLoading, error, refetch } = useFetch<ApiFreelancer[]>({
+        endpoint: 'users',
+        requiresAuth: true,
+    });
+    
+    // Filter freelancer berdasarkan role dan urutkan berdasarkan rating
+    const sortedFreelancers = React.useMemo(() => {
+        if (!freelancers) return [];
+        
+        return freelancers
+            .filter(user => user.role === 'freelancer')
+            .sort((a, b) => b.rating - a.rating);
+    }, [freelancers]);
+    
+    // Update filtered freelancers saat data berubah atau search query berubah
     useEffect(() => {
-        fetchFreelancers();
-    }, []);
-
-    useEffect(() => {
+        if (!sortedFreelancers) {
+            setFilteredFreelancers([]);
+            return;
+        }
+        
         if (searchQuery.trim() === "") {
-            setFilteredFreelancers(freelancers);
+            setFilteredFreelancers(sortedFreelancers);
         } else {
-            const filtered = freelancers.filter(
+            const filtered = sortedFreelancers.filter(
                 (freelancer) =>
                     freelancer.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                     (freelancer.skills && 
@@ -54,39 +61,7 @@ export default function Freelancers() {
             );
             setFilteredFreelancers(filtered);
         }
-    }, [searchQuery, freelancers]);
-
-    const fetchFreelancers = async () => {
-        try {
-            setLoading(true);
-            const token = await SecureStoreUtils.getToken();
-            
-            const response = await fetch(`${baseUrl}/api/users`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            
-            const result = await response.json() as ApiResponse<ApiFreelancer[]>;
-            
-            if (result.success) {
-                // Filter hanya freelancer dan urutkan berdasarkan rating tertinggi
-                const allFreelancers = result.data
-                    .filter((user: ApiFreelancer) => user.role === 'freelancer')
-                    .sort((a: ApiFreelancer, b: ApiFreelancer) => b.rating - a.rating);
-                
-                setFreelancers(allFreelancers);
-                setFilteredFreelancers(allFreelancers);
-            } else {
-                setError(result.message || 'Failed to fetch freelancers');
-            }
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'An error occurred');
-            console.error('Error fetching freelancers:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
+    }, [searchQuery, sortedFreelancers]);
 
     const renderFreelancer = ({ item }: { item: ApiFreelancer }) => (
         <TouchableOpacity 
@@ -128,7 +103,7 @@ export default function Freelancers() {
         </TouchableOpacity>
     );
 
-    if (loading) {
+    if (isLoading) {
         return (
             <View style={[styles.container, { paddingTop: insets.top }]}>
                 <View style={styles.header}>
@@ -159,7 +134,7 @@ export default function Freelancers() {
                     <Text style={styles.errorText}>Tidak dapat memuat data freelancer</Text>
                     <TouchableOpacity 
                         style={styles.retryButton}
-                        onPress={fetchFreelancers}
+                        onPress={() => refetch()}
                     >
                         <Text style={styles.retryText}>Coba Lagi</Text>
                     </TouchableOpacity>

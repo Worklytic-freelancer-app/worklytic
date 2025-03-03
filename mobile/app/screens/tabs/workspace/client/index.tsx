@@ -4,10 +4,7 @@ import { Clock, Users, Plus } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
-import { useState, useEffect } from "react";
-import { baseUrl } from "@/constant/baseUrl";
-import { SecureStoreUtils } from "@/utils/SecureStore";
-import { useUser } from "@/hooks/useUser";
+import { useUser } from "@/hooks/tanstack/useUser";
 import { useFetch } from "@/hooks/tanstack/useFetch";
 
 interface ProjectFeature {
@@ -38,7 +35,7 @@ interface Project {
 export default function ClientWorkspace() {
     const insets = useSafeAreaInsets();
     const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-    const { user } = useUser();
+    const { data: user, isLoading: userLoading } = useUser();
 
     // Gunakan useFetch untuk mendapatkan data proyek
     const { 

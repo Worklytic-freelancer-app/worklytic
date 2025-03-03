@@ -4,8 +4,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ChevronLeft, Camera, X, Globe, Briefcase, Mail, Phone } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from 'expo-image-picker';
-import { SecureStoreUtils } from "@/utils/SecureStore";
 import { useMutation } from "@/hooks/tanstack/useMutation";
+import { useUser } from "@/hooks/tanstack/useUser";
 
 const DEFAULT_IMAGE = "https://via.placeholder.com/150";
 
@@ -47,6 +47,9 @@ export default function EditProfile() {
     const navigation = useNavigation();
     const [imageLoading, setImageLoading] = useState(false);
     
+    // Gunakan useUser hook untuk mendapatkan data user
+    const { data: userData, isLoading: userLoading, refetch: refetchUser } = useUser();
+    
     const [formData, setFormData] = useState({
         _id: "",
         fullName: "",
@@ -70,17 +73,8 @@ export default function EditProfile() {
         method: 'PUT',
         requiresAuth: true,
         onSuccess: async (data) => {
-            // Update data user di SecureStore
-            const token = await SecureStoreUtils.getToken();
-            const userData = await SecureStoreUtils.getUserData();
-            
-            await SecureStoreUtils.setAuthData({
-                token: token || "",
-                user: {
-                    ...userData,
-                    ...formData
-                }
-            });
+            // Refresh data user
+            refetchUser();
             
             Alert.alert("Sukses", "Profil berhasil diperbarui", [
                 { text: "OK", onPress: () => navigation.goBack() }
@@ -101,50 +95,33 @@ export default function EditProfile() {
                 profileImage: data.profileImage,
             }));
             
-            // Update data user di SecureStore
-            const token = await SecureStoreUtils.getToken();
-            const currentUserData = await SecureStoreUtils.getUserData();
-            await SecureStoreUtils.setAuthData({
-                token: token || "",
-                user: {
-                    ...currentUserData,
-                    profileImage: data.profileImage
-                }
-            });
+            // Refresh data user
+            refetchUser();
             
             Alert.alert("Sukses", "Foto profil berhasil diperbarui");
         },
         invalidateQueries: ['user']
     });
 
+    // Gunakan useEffect untuk mengisi formData saat userData tersedia
     useEffect(() => {
-        loadUserData();
-    }, []);
-
-    const loadUserData = async () => {
-        try {
-            const userData = await SecureStoreUtils.getUserData();
-            if (userData) {
-                setFormData({
-                    ...userData,
-                    fullName: userData.fullName || "",
-                    email: userData.email || "",
-                    profileImage: userData.profileImage || DEFAULT_IMAGE,
-                    location: userData.location || "",
-                    about: userData.about || "",
-                    phone: userData.phone || "",
-                    website: userData.website || "",
-                    skills: userData.skills || [],
-                    companyName: userData.companyName || "",
-                    industry: userData.industry || "",
-                });
-                setUserRole(userData.role || "freelancer");
-            }
-        } catch (error) {
-            console.error("Error loading user data:", error);
-            Alert.alert("Error", "Gagal memuat data pengguna");
+        if (userData) {
+            setFormData({
+                _id: userData._id || "",
+                fullName: userData.fullName || "",
+                email: userData.email || "",
+                profileImage: userData.profileImage || DEFAULT_IMAGE,
+                location: userData.location || "",
+                about: userData.about || "",
+                phone: userData.phone || "",
+                website: userData.website || "",
+                skills: userData.skills || [],
+                companyName: userData.companyName || "",
+                industry: userData.industry || "",
+            });
+            setUserRole(userData.role || "freelancer");
         }
-    };
+    }, [userData]);
 
     const handleAddSkill = () => {
         if (newSkill.trim()) {
@@ -175,7 +152,6 @@ export default function EditProfile() {
 
             if (!result.canceled && result.assets && result.assets.length > 0 && result.assets[0].base64) {
                 setImageLoading(true);
-                const userData = await SecureStoreUtils.getUserData();
                 
                 // Tampilkan gambar yang dipilih sementara
                 setFormData(prev => ({
@@ -191,7 +167,14 @@ export default function EditProfile() {
                 } catch (error) {
                     console.error("Error uploading image:", error);
                     Alert.alert("Error", "Gagal mengupload foto profil");
-                    loadUserData();
+                    
+                    // Reset ke data user asli jika gagal
+                    if (userData) {
+                        setFormData(prev => ({
+                            ...prev,
+                            profileImage: userData.profileImage || DEFAULT_IMAGE
+                        }));
+                    }
                 }
             }
         } catch (error) {
@@ -214,6 +197,15 @@ export default function EditProfile() {
             industry: formData.industry,
         });
     };
+
+    // Tampilkan loading jika data user masih dimuat
+    if (userLoading) {
+        return (
+            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <ActivityIndicator size="large" color="#2563eb" />
+            </View>
+        );
+    }
 
     return (
         <View style={[styles.container, { paddingTop: insets.top }]}>

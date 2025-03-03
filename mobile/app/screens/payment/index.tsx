@@ -8,7 +8,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '@/navigators';
 import { baseUrl } from '@/constant/baseUrl';
 import { SecureStoreUtils } from '@/utils/SecureStore';
-import { useUser } from '@/hooks/useUser';
+import { useUser } from '@/hooks/tanstack/useUser';
 
 type PaymentRouteProps = RouteProp<RootStackParamList, 'Payment'>;
 type PaymentNavigationProps = StackNavigationProp<RootStackParamList>;
@@ -18,7 +18,7 @@ export default function Payment() {
     const navigation = useNavigation<PaymentNavigationProps>();
     const route = useRoute<PaymentRouteProps>();
     const { projectId } = route.params;
-    const { user, loading: userLoading } = useUser();
+    const { data: user, isLoading: userLoading } = useUser();
     
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);

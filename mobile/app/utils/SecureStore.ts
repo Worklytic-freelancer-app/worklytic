@@ -40,6 +40,16 @@ export const SecureStoreUtils = {
     }
   },
 
+  // Menyimpan data user
+  async setUserData(userData: any): Promise<void> {
+    try {
+      await SecureStore.setItemAsync('user_data', JSON.stringify(userData));
+    } catch (error) {
+      console.error('Error saving user data:', error);
+      throw error;
+    }
+  },
+
   // Menghapus data autentikasi (untuk logout)
   async clearAuthData() {
     try {

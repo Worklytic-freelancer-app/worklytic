@@ -4,8 +4,9 @@ import { Clock, CheckCircle2, XCircle } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
-import { useFetch } from "@/hooks/tanstack/useFetch";
+import { useState, useEffect } from "react";
 import { useUser } from "@/hooks/tanstack/useUser";
+import { useFetch } from "@/hooks/tanstack/useFetch";
 
 interface ProjectFeature {
     _id: string;
@@ -40,10 +41,13 @@ export default function FreelancerWorkspace() {
     const insets = useSafeAreaInsets();
     const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
     const { data: user, isLoading: userLoading } = useUser();
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [myProjects, setMyProjects] = useState<ProjectFeature[]>([]);
 
-    // Fetch project features
+    // Gunakan useFetch untuk mendapatkan project features
     const { 
-        data: allFeatures = [], 
+        data: projectFeatures = [], 
         isLoading: featuresLoading, 
         error: featuresError,
         refetch: refetchFeatures
@@ -53,8 +57,18 @@ export default function FreelancerWorkspace() {
         enabled: !!user?._id
     });
 
-    // Filter project features yang dimiliki oleh freelancer yang sedang login
-    const myProjects = allFeatures.filter(feature => feature.freelancerId === user?._id);
+    useEffect(() => {
+        if (!featuresLoading && projectFeatures.length > 0 && user?._id) {
+            // Filter project features yang dimiliki oleh freelancer yang sedang login
+            const freelancerProjects = projectFeatures.filter(
+                feature => feature.freelancerId === user._id
+            );
+            setMyProjects(freelancerProjects);
+            setLoading(false);
+        } else if (!featuresLoading) {
+            setLoading(false);
+        }
+    }, [featuresLoading, projectFeatures, user]);
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
@@ -120,8 +134,8 @@ export default function FreelancerWorkspace() {
         <TouchableOpacity 
             style={styles.projectCard} 
             onPress={() => navigation.navigate("WorkspaceDetails", { 
-                projectId: item.projectId,  // Gunakan projectId, bukan _id
-                freelancerId: user?._id     // Tambahkan freelancerId
+                projectId: item.projectId,
+                freelancerId: user?._id
             })}
         >
             <Image 
@@ -166,10 +180,7 @@ export default function FreelancerWorkspace() {
         </TouchableOpacity>
     );
 
-    const isLoading = userLoading || featuresLoading;
-    const error = featuresError;
-
-    if (isLoading) {
+    if (loading || userLoading || featuresLoading) {
         return (
             <View style={[styles.container, { paddingTop: insets.top }]}>
                 <View style={styles.header}>
@@ -182,15 +193,18 @@ export default function FreelancerWorkspace() {
         );
     }
 
-    if (error) {
+    if (error || featuresError) {
         return (
             <View style={[styles.container, { paddingTop: insets.top }]}>
                 <View style={styles.header}>
                     <Text style={styles.headerTitle}>My Projects</Text>
                 </View>
                 <View style={styles.errorContainer}>
-                    <Text style={styles.errorText}>{(error as Error).message || "Terjadi kesalahan"}</Text>
-                    <TouchableOpacity style={styles.retryButton} onPress={() => refetchFeatures()}>
+                    <Text style={styles.errorText}>{error || (featuresError as Error)?.message}</Text>
+                    <TouchableOpacity 
+                        style={styles.retryButton} 
+                        onPress={() => refetchFeatures()}
+                    >
                         <Text style={styles.retryButtonText}>Coba Lagi</Text>
                     </TouchableOpacity>
                 </View>
@@ -210,8 +224,8 @@ export default function FreelancerWorkspace() {
                 keyExtractor={(item) => item._id.toString()} 
                 contentContainerStyle={styles.projectsList} 
                 showsVerticalScrollIndicator={false}
-                refreshing={isLoading}
-                onRefresh={() => refetchFeatures()}
+                refreshing={featuresLoading}
+                onRefresh={refetchFeatures}
                 ListEmptyComponent={
                     <View style={styles.emptyContainer}>
                         <Text style={styles.emptyText}>Kamu belum memiliki proyek</Text>
