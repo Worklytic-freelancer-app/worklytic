@@ -10,10 +10,9 @@ export class ProjectDiscussion {
 const ProjectDiscussionSchema = z.object({
     projectFeatureId: z.instanceof(ObjectId),
     senderId: z.instanceof(ObjectId),
-    title: z.string(),
     description: z.string(),
-    images: z.array(z.string()),
-    files: z.array(z.string())
+    images: z.array(z.string()).optional(),
+    files: z.array(z.string()).optional()
 })
 
 const WithIdSchema = z.object({
