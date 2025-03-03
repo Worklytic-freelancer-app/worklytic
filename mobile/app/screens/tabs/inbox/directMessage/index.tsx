@@ -1,68 +1,117 @@
-import { View, Text, StyleSheet, Image, TextInput, FlatList, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, StyleSheet, Image, TextInput, FlatList, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ChevronLeft, Send } from "lucide-react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { useState } from "react";
-
-interface Message {
-  id: string;
-  text: string;
-  sender: "user" | "other";
-  timestamp: string;
-}
+import { useState, useEffect } from "react";
+import { useRealtimeChat } from "@/hooks/useRealtimeChat";
+import { useUser } from "@/hooks/tanstack/useUser";
+import { format } from "date-fns";
 
 interface RouteParams {
-  userId: number;
+  userId: string;
   userName: string;
   userImage: string;
+  chatId?: string;
 }
 
 export default function DirectMessage() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const route = useRoute();
-  const { userName, userImage } = route.params as RouteParams;
+  const { userId, userName, userImage, chatId: routeChatId } = route.params as RouteParams;
   const [message, setMessage] = useState("");
-
-  const messages: Message[] = [
-    {
-      id: "1",
-      text: "Hi, I'm interested in your Mobile App Development project",
-      sender: "user",
-      timestamp: "10:30 AM",
-    },
-    {
-      id: "2",
-      text: "Hello! Thanks for reaching out. Do you have experience with React Native?",
-      sender: "other",
-      timestamp: "10:32 AM",
-    },
-    {
-      id: "3",
-      text: "Yes, I have 3 years of experience with React Native and have built several apps",
-      sender: "user",
-      timestamp: "10:33 AM",
-    },
-  ];
-
-  const renderMessage = ({ item }: { item: Message }) => (
-    <View style={[styles.messageContainer, item.sender === "user" ? styles.userMessage : styles.otherMessage]}>
-      <Text style={[styles.messageText, item.sender === "user" ? styles.userMessageText : styles.otherMessageText]}>{item.text}</Text>
-      <Text style={[styles.timestamp, item.sender === "user" ? styles.userTimestamp : styles.otherTimestamp]}>{item.timestamp}</Text>
-    </View>
+  const [localChatId, setLocalChatId] = useState<string | undefined>(routeChatId);
+  const { data: user } = useUser();
+  
+  // Menggunakan custom hook realtime chat
+  const { messages, loading, error, sendMessage, markAsRead, getChatId } = useRealtimeChat(
+    user?._id, 
+    localChatId
   );
 
-  const handleSend = () => {
-    if (message.trim()) {
-      // Handle sending message here
-      setMessage("");
+  // Memastikan kita punya chat ID
+  useEffect(() => {
+    async function ensureChatId() {
+      if (!localChatId && user?._id) {
+        try {
+          const newChatId = await getChatId(userId);
+          setLocalChatId(newChatId);
+        } catch (err) {
+          console.error('Error getting chat ID:', err);
+        }
+      }
     }
+    
+    ensureChatId();
+  }, [localChatId, user, userId, getChatId]);
+  
+  // Menandai pesan sudah dibaca saat masuk ke layar chat
+  useEffect(() => {
+    if (localChatId) {
+      markAsRead(userId);
+    }
+  }, [localChatId, userId, markAsRead]);
+
+  const handleSend = async () => {
+    if (message.trim() && user?._id) {
+      try {
+        await sendMessage(message.trim(), userId);
+        setMessage("");
+        console.log("Message sent, inbox should update automatically");
+      } catch (error) {
+        console.error('Error sending message:', error);
+      }
+    }
+  };
+  
+  // Format tanggal pesan
+  const formatMessageTime = (timestamp: number) => {
+    if (!timestamp) return '';
+    
+    const date = new Date(timestamp);
+    return format(date, 'HH:mm');
+  };
+  
+  const renderMessage = ({ item }: { item: any }) => {
+    const isUser = item.senderId === user?._id;
+    
+    return (
+      <View 
+        style={[
+          styles.messageContainer, 
+          isUser ? styles.userMessage : styles.otherMessage
+        ]}
+      >
+        <Text 
+          style={[
+            styles.messageText, 
+            isUser ? styles.userMessageText : styles.otherMessageText
+          ]}
+        >
+          {item.text}
+        </Text>
+        <Text 
+          style={[
+            styles.timestamp, 
+            isUser ? styles.userTimestamp : styles.otherTimestamp
+          ]}
+        >
+          {item.createdAt ? formatMessageTime(item.createdAt) : ''}
+        </Text>
+      </View>
+    )
   };
 
   return (
-    <KeyboardAvoidingView style={[styles.container, { paddingTop: insets.top }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView 
+      style={[styles.container, { paddingTop: insets.top }]} 
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <TouchableOpacity 
+          style={styles.backButton} 
+          onPress={() => navigation.goBack()}
+        >
           <ChevronLeft size={24} color="#374151" />
         </TouchableOpacity>
         <View style={styles.headerProfile}>
@@ -72,11 +121,42 @@ export default function DirectMessage() {
         <View style={{ width: 40 }} />
       </View>
 
-      <FlatList data={messages} renderItem={renderMessage} keyExtractor={(item) => item.id} contentContainerStyle={styles.messagesList} inverted />
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#2563eb" />
+          <Text style={styles.loadingText}>Memuat pesan...</Text>
+        </View>
+      ) : error ? (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Terjadi kesalahan saat memuat pesan</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={messages}
+          renderItem={renderMessage}
+          keyExtractor={(item) => item.id || Math.random().toString()}
+          contentContainerStyle={styles.messagesList}
+          inverted={false}
+        />
+      )}
 
       <View style={[styles.inputContainer, { paddingBottom: insets.bottom || 20 }]}>
-        <TextInput style={styles.input} placeholder="Type a message..." value={message} onChangeText={setMessage} multiline maxLength={500} />
-        <TouchableOpacity style={[styles.sendButton, !message.trim() && styles.sendButtonDisabled]} onPress={handleSend} disabled={!message.trim()}>
+        <TextInput
+          style={styles.input}
+          placeholder="Ketik pesan..."
+          value={message}
+          onChangeText={setMessage}
+          multiline
+          maxLength={500}
+        />
+        <TouchableOpacity
+          style={[
+            styles.sendButton,
+            !message.trim() && styles.sendButtonDisabled
+          ]}
+          onPress={handleSend}
+          disabled={!message.trim()}
+        >
           <Send size={20} color={message.trim() ? "#2563eb" : "#94a3b8"} />
         </TouchableOpacity>
       </View>
@@ -194,5 +274,24 @@ const styles = StyleSheet.create({
   sendButtonDisabled: {
     borderColor: "#e2e8f0",
     backgroundColor: "#f8fafc",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    color: '#6b7280',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  errorText: {
+    color: '#ef4444',
+    textAlign: 'center',
   },
 });

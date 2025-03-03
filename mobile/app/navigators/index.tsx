@@ -44,6 +44,7 @@ export type RootStackParamList = {
     userId: string;
     userName: string;
     userImage: string;
+    chatId: string;
   };
   FreelancerDetails: {
     freelancerId: string;

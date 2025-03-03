@@ -186,6 +186,7 @@ export default function FreelancerDetails() {
             userId: freelancer._id,
             userName: freelancer.fullName,
             userImage: freelancer.profileImage,
+            chatId: freelancer._id,
           })} 
           style={[styles.hireButton, { backgroundColor: "#2563EB" }]}
         >
