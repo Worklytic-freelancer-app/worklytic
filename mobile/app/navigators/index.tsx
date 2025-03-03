@@ -27,7 +27,7 @@ export type RootStackParamList = {
   BottomTab: undefined;
   Settings: undefined;
   Projects: undefined;
-  ProjectDetails: { projectId: string; clientId: string };
+  ProjectDetails: { projectId: string; clientId?: string };
   SignIn: undefined;
   SignUp: { role: "freelancer" | "client" } | undefined;
   ForgotPassword: undefined;

@@ -40,7 +40,6 @@ export default function ProjectDetails() {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const route = useRoute<ProjectDetailsRouteProp>();
   const [showTerms, setShowTerms] = useState(false);
-  const windowWidth = Dimensions.get("window").width;
   const [client, setClient] = useState<any>(null);
 
   useEffect(() => {
@@ -207,15 +206,17 @@ export default function ProjectDetails() {
             ))}
           </View>
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Features</Text>
-            {project.features.map((feature, index) => (
-              <View key={index} style={styles.requirementItem}>
-                <View style={styles.bullet} />
-                <Text style={styles.requirementText}>{feature}</Text>
-              </View>
-            ))}
-          </View>
+          {project.features && project.features.length > 0 ? (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Features</Text>
+              {project.features.map((feature, index) => (
+                <View key={index} style={styles.requirementItem}>
+                  <View style={styles.bullet} />
+                  <Text style={styles.requirementText}>{feature}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Project Owner</Text>

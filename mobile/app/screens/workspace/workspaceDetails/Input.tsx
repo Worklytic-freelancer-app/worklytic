@@ -112,7 +112,7 @@ export default function Input({ userRole, onSendUpdate, sendingUpdate }: InputPr
         </View>
     );
 
-    // Render input berbeda untuk client dan freelancer
+    // Render input berdasarkan userRole
     if (userRole === 'client') {
         return (
             <View style={styles.clientInputContainer}>
@@ -120,6 +120,7 @@ export default function Input({ userRole, onSendUpdate, sendingUpdate }: InputPr
                     <TextInput
                         style={styles.clientInput}
                         placeholder="Tulis pesan..."
+                        multiline
                         value={newUpdate}
                         onChangeText={setNewUpdate}
                     />
