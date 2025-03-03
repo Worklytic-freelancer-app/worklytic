@@ -1,6 +1,6 @@
-import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, Image, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, Image, ActivityIndicator, Keyboard } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Search as SearchIcon, X } from "lucide-react-native";
+import { Search as SearchIcon, X, MapPin, Clock } from "lucide-react-native";
 import { useState, useEffect, useCallback } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
@@ -8,6 +8,7 @@ import { RootStackParamList } from "@/navigators";
 import { useUser } from "@/hooks/tanstack/useUser";
 import { debounce } from "lodash";
 import { useFetch } from "@/hooks/tanstack/useFetch";
+import { COLORS } from "@/constant/color";
 
 // Update interfaces
 interface Project {
@@ -146,7 +147,10 @@ export default function Search(): JSX.Element {
             <Text style={styles.resultDescription} numberOfLines={2}>
               {freelancer.about || 'Tidak ada deskripsi'}
             </Text>
-            <Text style={styles.location}>📍 {freelancer.location || 'Remote'}</Text>
+            <View style={styles.locationContainer}>
+              <MapPin size={14} color={COLORS.darkGray} />
+              <Text style={styles.location}>{freelancer.location || 'Remote'}</Text>
+            </View>
             <View style={styles.tagsContainer}>
               {freelancer.rating > 0 && (
                 <View style={[styles.tag, styles.ratingTag]}>
@@ -183,8 +187,14 @@ export default function Search(): JSX.Element {
             </Text>
             <Text style={styles.budget}>Rp {project.budget.toLocaleString('id-ID')}</Text>
             <View style={styles.projectInfo}>
-              <Text style={styles.location}>📍 {project.location || 'Remote'}</Text>
-              <Text style={styles.duration}>⏱️ {project.duration}</Text>
+              <View style={styles.locationContainer}>
+                <MapPin size={14} color={COLORS.darkGray} />
+                <Text style={styles.location}>{project.location || 'Remote'}</Text>
+              </View>
+              <View style={styles.durationContainer}>
+                <Clock size={14} color={COLORS.darkGray} />
+                <Text style={styles.duration}>{project.duration}</Text>
+              </View>
             </View>
             <View style={styles.tagsContainer}>
               <View style={[styles.tag, styles.categoryTag]}>
@@ -247,36 +257,56 @@ export default function Search(): JSX.Element {
     );
   };
 
+  // Fungsi untuk menutup keyboard
+  const dismissKeyboard = () => {
+    Keyboard.dismiss();
+  };
+
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View 
+      style={[styles.container, { paddingTop: insets.top }]}
+      onStartShouldSetResponder={() => {
+        dismissKeyboard();
+        return false;
+      }}
+    >
       <View style={styles.header}>
         <View style={styles.searchContainer}>
-          <SearchIcon size={20} color="#6b7280" />
+          <SearchIcon size={20} color={COLORS.gray} strokeWidth={2} />
           <TextInput 
             style={styles.searchInput} 
-            placeholder={user?.role === 'client' ? "Cari freelancer..." : "Cari proyek..."}
-            placeholderTextColor="#6b7280" 
+            placeholder={user?.role === 'client' ? "Cari freelancer terbaik..." : "Cari proyek menarik..."}
+            placeholderTextColor={COLORS.gray} 
             value={searchQuery} 
-            onChangeText={setSearchQuery} 
+            onChangeText={setSearchQuery}
+            autoFocus
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={clearSearch}>
-              <X size={18} color="#6b7280" />
+            <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
+              <X size={18} color={COLORS.gray} />
             </TouchableOpacity>
           )}
         </View>
       </View>
 
-      <FlatList<SearchResult>
-        data={filteredResults}
-        renderItem={renderSearchItem}
-        keyExtractor={(item) => item._id}
-        contentContainerStyle={styles.resultsList}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={renderEmptyList}
-        onRefresh={refetch}
-        refreshing={isLoading}
-      />
+      <View style={styles.resultsContainer}>
+        <Text style={styles.resultsTitle}>
+          {searchQuery ? `Hasil pencarian "${searchQuery}"` : user?.role === 'client' ? "Freelancer Teratas" : "Proyek Terbaru"}
+        </Text>
+        
+        <FlatList<SearchResult>
+          data={filteredResults}
+          renderItem={renderSearchItem}
+          keyExtractor={(item) => item._id}
+          contentContainerStyle={styles.resultsList}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={renderEmptyList}
+          onRefresh={refetch}
+          refreshing={isLoading}
+          keyboardShouldPersistTaps="handled"
+          onScrollBeginDrag={dismissKeyboard}
+        />
+      </View>
     </View>
   );
 }
@@ -284,96 +314,120 @@ export default function Search(): JSX.Element {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.background,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: COLORS.border,
+    backgroundColor: COLORS.background,
   },
   searchContainer: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f3f4f6",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
+    backgroundColor: COLORS.inputBackground,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   searchInput: {
     flex: 1,
-    marginLeft: 8,
+    marginLeft: 12,
     fontSize: 16,
-    color: "#111827",
+    color: COLORS.black,
+  },
+  clearButton: {
+    padding: 4,
+  },
+  resultsContainer: {
+    flex: 1,
+    paddingTop: 16,
+  },
+  resultsTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: COLORS.black,
+    marginBottom: 16,
+    paddingHorizontal: 20,
   },
   resultsList: {
-    padding: 16,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
   },
   resultCard: {
     flexDirection: "row",
-    backgroundColor: "#fff",
-    borderRadius: 12,
+    backgroundColor: COLORS.background,
+    borderRadius: 16,
     marginBottom: 16,
-    padding: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    padding: 16,
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
     shadowRadius: 8,
-    elevation: 2,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   resultImage: {
     width: 80,
     height: 80,
-    borderRadius: 8,
+    borderRadius: 12,
   },
   resultContent: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 16,
   },
   resultTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "600",
-    color: "#111827",
-    marginBottom: 4,
+    color: COLORS.black,
+    marginBottom: 6,
   },
   resultDescription: {
     fontSize: 14,
-    color: "#6b7280",
+    color: COLORS.darkGray,
     marginBottom: 8,
+    lineHeight: 20,
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 4,
+  },
+  durationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   tagsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
+    marginTop: 8,
   },
   tag: {
-    backgroundColor: "#f3f4f6",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    backgroundColor: COLORS.inputBackground,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   tagText: {
     fontSize: 12,
-    color: "#374151",
+    fontWeight: "500",
+    color: COLORS.darkGray,
   },
   budget: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#2563eb",
+    fontSize: 18,
+    fontWeight: "700",
+    color: COLORS.primary,
     marginBottom: 8,
-  },
-  ratingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  rating: {
-    marginLeft: 4,
-    fontSize: 14,
-    color: "#6b7280",
   },
   projectInfo: {
     flexDirection: 'row',
@@ -383,24 +437,28 @@ const styles = StyleSheet.create({
   },
   location: {
     fontSize: 14,
-    color: '#6B7280',
-    marginVertical: 4,
+    color: COLORS.darkGray,
+    marginLeft: 6,
   },
   duration: {
     fontSize: 14,
-    color: '#6B7280',
+    color: COLORS.darkGray,
+    marginLeft: 6,
   },
   categoryTag: {
-    backgroundColor: '#EEF2FF',
+    backgroundColor: 'rgba(8, 145, 178, 0.08)',
+    borderColor: 'rgba(8, 145, 178, 0.2)',
   },
   openStatus: {
-    backgroundColor: '#DCFCE7',
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    borderColor: 'rgba(16, 185, 129, 0.2)',
   },
   inProgressStatus: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: 'rgba(245, 158, 11, 0.08)',
+    borderColor: 'rgba(245, 158, 11, 0.2)',
   },
   defaultStatus: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: COLORS.inputBackground,
   },
   emptyContainer: {
     flex: 1,
@@ -411,29 +469,35 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#6b7280',
+    color: COLORS.gray,
     textAlign: 'center',
-    marginTop: 12,
+    marginTop: 16,
   },
   errorText: {
     fontSize: 16,
-    color: '#ef4444',
+    color: COLORS.error,
     textAlign: 'center',
     marginBottom: 16,
   },
   retryButton: {
-    backgroundColor: '#2563eb',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
   },
   retryButtonText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '500',
+    color: COLORS.background,
+    fontSize: 16,
+    fontWeight: '600',
   },
   ratingTag: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: 'rgba(245, 158, 11, 0.08)',
+    borderColor: 'rgba(245, 158, 11, 0.2)',
   },
   ratingTagText: {
     color: '#D97706',

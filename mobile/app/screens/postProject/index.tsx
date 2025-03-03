@@ -9,6 +9,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
 import { useMutation } from "@/hooks/tanstack/useMutation";
 import { useUser } from "@/hooks/tanstack/useUser";
+import { COLORS } from "@/constant/color";
 
 // Kategori proyek
 const PROJECT_CATEGORIES = [
@@ -138,24 +139,19 @@ export default function PostProject() {
 
     const handleSubmit = async () => {
         try {
-            setLoading(true);
-            
             // Validasi form
             if (!form.title) {
                 Alert.alert("Error", "Judul proyek harus diisi");
-                setLoading(false);
                 return;
             }
             
             if (!form.description) {
                 Alert.alert("Error", "Deskripsi proyek harus diisi");
-                setLoading(false);
                 return;
             }
             
             if (!form.budget) {
                 Alert.alert("Error", "Budget proyek harus diisi");
-                setLoading(false);
                 return;
             }
             
@@ -163,14 +159,12 @@ export default function PostProject() {
             const budget = parseFloat(form.budget.replace(/[^0-9]/g, ''));
             if (isNaN(budget) || budget <= 0) {
                 Alert.alert("Error", "Budget harus berupa angka positif");
-                setLoading(false);
                 return;
             }
             
             // Cek apakah userData tersedia
             if (!userData?._id) {
                 Alert.alert("Error", "Data user tidak ditemukan");
-                setLoading(false);
                 return;
             }
             
@@ -179,31 +173,23 @@ export default function PostProject() {
                 ? form.requirements.split('\n').filter(item => item.trim() !== '')
                 : [];
             
-            // Buat project menggunakan mutation
-            const result = await createProjectMutation.mutateAsync({
-                clientId: userData._id,
+            // Navigasi ke halaman review dengan data proyek
+            navigation.navigate('ReviewPostProject', {
                 title: form.title,
                 description: form.description,
                 budget: budget,
                 category: form.category,
                 location: form.location,
-                completedDate: new Date(form.completedDate),
+                completedDate: form.completedDate,
                 status: form.status,
-                requirements: requirementsArray,
-                image: images
+                requirements: requirementsArray.join('\n'),
+                images: images,
+                clientId: userData._id
             });
             
-            if (result?._id) {
-                // Navigasi ke halaman pembayaran dengan ID proyek
-                navigation.navigate('Payment', { projectId: result._id });
-            } else {
-                throw new Error('Failed to create project');
-            }
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'An error occurred';
             Alert.alert('Error', errorMessage);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -214,8 +200,11 @@ export default function PostProject() {
             keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
         >
             <View style={[styles.header, { paddingTop: insets.top }]}>
-                <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                    <ChevronLeft size={24} color="#ffffff" />
+                <TouchableOpacity 
+                    style={styles.backButton} 
+                    onPress={() => navigation.goBack()}
+                >
+                    <ChevronLeft size={24} color={COLORS.primary} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Buat Proyek Baru</Text>
                 <View style={{ width: 40 }} />
@@ -228,7 +217,7 @@ export default function PostProject() {
                         <TextInput 
                             style={styles.input} 
                             placeholder="Masukkan judul proyek" 
-                            placeholderTextColor="#9ca3af" 
+                            placeholderTextColor={COLORS.gray} 
                             value={form.title} 
                             onChangeText={(text) => setForm({ ...form, title: text })} 
                         />
@@ -239,7 +228,7 @@ export default function PostProject() {
                         <TextInput
                             style={[styles.input, styles.textArea]}
                             placeholder="Jelaskan detail proyek Anda"
-                            placeholderTextColor="#9ca3af"
+                            placeholderTextColor={COLORS.gray}
                             multiline
                             numberOfLines={4}
                             value={form.description}
@@ -250,11 +239,11 @@ export default function PostProject() {
                     <View style={styles.inputGroup}>
                         <Text style={styles.label}>Budget <Text style={styles.required}>*</Text></Text>
                         <View style={styles.inputWithIcon}>
-                            <DollarSign size={20} color="#6b7280" style={styles.inputIcon} />
+                            <DollarSign size={20} color={COLORS.primary} style={styles.inputIcon} />
                             <TextInput 
                                 style={[styles.input, styles.inputWithPadding]} 
                                 placeholder="Masukkan budget proyek (contoh: 5000000)" 
-                                placeholderTextColor="#9ca3af" 
+                                placeholderTextColor={COLORS.gray} 
                                 keyboardType="numeric" 
                                 value={form.budget} 
                                 onChangeText={(text) => setForm({ ...form, budget: text })} 
@@ -268,9 +257,9 @@ export default function PostProject() {
                             style={styles.inputWithIcon}
                             onPress={() => setShowCategoryPicker(!showCategoryPicker)}
                         >
-                            <Tag size={20} color="#6b7280" style={styles.inputIcon} />
+                            <Tag size={20} color={COLORS.primary} style={styles.inputIcon} />
                             <View style={[styles.input, styles.inputWithPadding, styles.pickerText]}>
-                                <Text style={{ color: '#1f2937' }}>{form.category}</Text>
+                                <Text style={{ color: COLORS.black }}>{form.category}</Text>
                             </View>
                         </TouchableOpacity>
                         
@@ -297,9 +286,9 @@ export default function PostProject() {
                             style={styles.inputWithIcon}
                             onPress={() => setShowLocationPicker(!showLocationPicker)}
                         >
-                            <MapPin size={20} color="#6b7280" style={styles.inputIcon} />
+                            <MapPin size={20} color={COLORS.primary} style={styles.inputIcon} />
                             <View style={[styles.input, styles.inputWithPadding, styles.pickerText]}>
-                                <Text style={{ color: '#1f2937' }}>{form.location}</Text>
+                                <Text style={{ color: COLORS.black }}>{form.location}</Text>
                             </View>
                         </TouchableOpacity>
                         
@@ -323,11 +312,11 @@ export default function PostProject() {
                     <View style={styles.inputGroup}>
                         <Text style={styles.label}>Tanggal Selesai</Text>
                         <View style={styles.inputWithIcon}>
-                            <Calendar size={20} color="#6b7280" style={styles.inputIcon} />
+                            <Calendar size={20} color={COLORS.primary} style={styles.inputIcon} />
                             <TextInput 
                                 style={[styles.input, styles.inputWithPadding]} 
                                 placeholder="YYYY-MM-DD" 
-                                placeholderTextColor="#9ca3af" 
+                                placeholderTextColor={COLORS.gray} 
                                 value={form.completedDate} 
                                 onChangeText={(text) => setForm({ ...form, completedDate: text })} 
                             />
@@ -339,7 +328,7 @@ export default function PostProject() {
                         <TextInput
                             style={[styles.input, styles.textArea]}
                             placeholder="Masukkan persyaratan proyek (satu per baris)"
-                            placeholderTextColor="#9ca3af"
+                            placeholderTextColor={COLORS.gray}
                             multiline
                             numberOfLines={4}
                             value={form.requirements}
@@ -357,14 +346,14 @@ export default function PostProject() {
                                         style={styles.removeImageButton}
                                         onPress={() => removeImage(index)}
                                     >
-                                        <X size={16} color="#ffffff" />
+                                        <X size={16} color={COLORS.background} />
                                     </TouchableOpacity>
                                 </View>
                             ))}
                             
                             {images.length < 5 && (
                                 <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
-                                    <Upload size={24} color="#6b7280" />
+                                    <Upload size={24} color={COLORS.primary} />
                                     <Text style={styles.uploadText}>Upload</Text>
                                 </TouchableOpacity>
                             )}
@@ -381,7 +370,7 @@ export default function PostProject() {
                     disabled={loading}
                 >
                     {loading ? (
-                        <ActivityIndicator color="#ffffff" size="small" />
+                        <ActivityIndicator color={COLORS.background} size="small" />
                     ) : (
                         <Text style={styles.submitButtonText}>Buat Proyek</Text>
                     )}
@@ -399,42 +388,46 @@ export default function PostProject() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#f5f5f5",
+        backgroundColor: COLORS.background,
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingVertical: 12,
-        backgroundColor: "#3b82f6",
+        paddingVertical: 16,
+        backgroundColor: COLORS.background,
+        borderBottomWidth: 1,
+        borderBottomColor: COLORS.border,
     },
     backButton: {
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: "rgba(255, 255, 255, 0.2)",
+        backgroundColor: COLORS.inputBackground,
         alignItems: "center",
         justifyContent: "center",
     },
     headerTitle: {
         fontSize: 18,
-        fontWeight: "600",
-        color: "#ffffff",
+        fontWeight: "700",
+        color: COLORS.black,
     },
     formContainer: {
         padding: 16,
     },
     card: {
-        backgroundColor: "#ffffff",
+        backgroundColor: COLORS.background,
         borderRadius: 16,
         padding: 20,
-        shadowColor: "#000",
+        shadowColor: COLORS.black,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
         shadowRadius: 15,
         elevation: 2,
         marginBottom: 20,
+        borderWidth: 1,
+        borderColor: COLORS.border,
     },
     inputGroup: {
         marginBottom: 20,
@@ -442,20 +435,20 @@ const styles = StyleSheet.create({
     label: {
         fontSize: 16,
         fontWeight: "500",
-        color: "#374151",
+        color: COLORS.darkGray,
         marginBottom: 8,
     },
     required: {
-        color: "#ef4444",
+        color: COLORS.error,
     },
     input: {
-        backgroundColor: "#f9fafb",
+        backgroundColor: COLORS.inputBackground,
         borderWidth: 1,
-        borderColor: "#e5e7eb",
+        borderColor: COLORS.border,
         borderRadius: 12,
         padding: 14,
         fontSize: 16,
-        color: "#1f2937",
+        color: COLORS.black,
     },
     inputWithIcon: {
         position: 'relative',
@@ -477,9 +470,9 @@ const styles = StyleSheet.create({
     },
     pickerContainer: {
         marginTop: 8,
-        backgroundColor: "#f9fafb",
+        backgroundColor: COLORS.inputBackground,
         borderWidth: 1,
-        borderColor: "#e5e7eb",
+        borderColor: COLORS.border,
         borderRadius: 12,
         overflow: 'hidden',
     },
@@ -500,6 +493,8 @@ const styles = StyleSheet.create({
         marginBottom: 12,
         position: 'relative',
         overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: COLORS.border,
     },
     imagePreview: {
         width: '100%',
@@ -522,37 +517,45 @@ const styles = StyleSheet.create({
         height: 100,
         borderRadius: 12,
         borderWidth: 2,
-        borderColor: '#e5e7eb',
+        borderColor: COLORS.border,
         borderStyle: 'dashed',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#f9fafb',
+        backgroundColor: COLORS.inputBackground,
     },
     uploadText: {
         fontSize: 14,
-        color: '#6b7280',
+        color: COLORS.primary,
         marginTop: 8,
+        fontWeight: '500',
     },
     submitButton: {
-        backgroundColor: "#3b82f6",
+        backgroundColor: COLORS.primary,
         borderRadius: 12,
         padding: 16,
         alignItems: "center",
         marginBottom: 16,
+        shadowColor: COLORS.primary,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 2,
     },
     disabledButton: {
-        backgroundColor: "#93c5fd",
+        backgroundColor: COLORS.primaryLight,
+        opacity: 0.7,
     },
     submitButtonText: {
-        color: "#ffffff",
+        color: COLORS.background,
         fontSize: 16,
         fontWeight: "600",
     },
     disclaimer: {
         fontSize: 14,
-        color: "#6b7280",
+        color: COLORS.gray,
         textAlign: "center",
         marginBottom: 32,
         paddingHorizontal: 20,
+        lineHeight: 20,
     },
 });

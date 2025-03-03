@@ -1,5 +1,6 @@
 import { View, Text, Image, StyleSheet } from "react-native";
 import { MapPin, Star } from "lucide-react-native";
+import { COLORS } from "@/constant/color";
 
 interface ProfileInfoProps {
   fullName: string;
@@ -29,12 +30,12 @@ export default function ProfileInfo({
       <Text style={styles.name}>{fullName}</Text>
       {location && (
         <View style={styles.locationContainer}>
-          <MapPin size={16} color="#6b7280" />
+          <MapPin size={16} color={COLORS.gray} />
           <Text style={styles.location}>{location}</Text>
       </View>
       )}
       <View style={styles.ratingContainer}>
-        <Star size={16} color="#fbbf24" fill="#fbbf24" />
+        <Star size={16} color={COLORS.warning} fill={COLORS.warning} />
         <Text style={styles.rating}>{rating?.toFixed(1)} ({totalReviews} reviews)</Text>
       </View>
     </View>
@@ -55,7 +56,7 @@ const styles = StyleSheet.create({
     height: 128,
     borderRadius: 64,
     borderWidth: 4,
-    borderColor: "#2563eb",
+    borderColor: COLORS.primary,
   },
   onlineIndicator: {
     position: "absolute",
@@ -64,44 +65,44 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: "#22c55e",
+    backgroundColor: COLORS.success,
     borderWidth: 4,
-    borderColor: "#fff",
+    borderColor: COLORS.background,
   },
   name: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#111827",
+    color: COLORS.black,
     marginBottom: 10,
   },
   locationContainer: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 10,
-    backgroundColor: "#f3f4f6",
+    backgroundColor: COLORS.inputBackground,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
   },
   location: {
     marginLeft: 6,
-    color: "#4b5563",
+    color: COLORS.darkGray,
     fontSize: 15,
     fontWeight: "500",
   },
   ratingContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.background,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#fbbf24",
+    borderColor: COLORS.warning,
   },
   rating: {
     marginLeft: 6,
-    color: "#4b5563",
+    color: COLORS.darkGray,
     fontSize: 15,
     fontWeight: "500",
   },

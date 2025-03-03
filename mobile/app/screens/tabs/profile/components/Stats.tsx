@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
+import { COLORS } from "@/constant/color";
 
 interface StatsProps {
   totalProjects: number;
@@ -20,7 +21,7 @@ export default function Stats({ totalProjects, successRate, balance }: StatsProp
       </View>
       <View style={styles.divider} />
       <View style={styles.statItem}>
-        <Text style={styles.statNumber}>Rp{balance.toLocaleString('id-ID')}</Text>
+        <Text style={styles.statNumber}>Rp{(balance/1000000).toFixed(1)}M</Text>
         <Text style={styles.statLabel}>Earned</Text>
       </View>
     </View>
@@ -32,10 +33,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     paddingVertical: 24,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: "#f3f4f6",
+    backgroundColor: COLORS.background,
+    borderRadius: 16,
     marginBottom: 24,
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   statItem: {
     flex: 1,
@@ -43,16 +50,17 @@ const styles = StyleSheet.create({
   },
   divider: {
     width: 1,
-    backgroundColor: "#f3f4f6",
+    backgroundColor: COLORS.border,
   },
   statNumber: {
     fontSize: 20,
     fontWeight: "700",
-    color: "#111827",
+    color: COLORS.primary,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 14,
-    color: "#6b7280",
+    color: COLORS.gray,
+    fontWeight: "500",
   },
 }); 

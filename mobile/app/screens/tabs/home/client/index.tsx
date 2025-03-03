@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
   servicePrice: {
     fontSize: 18,
     fontWeight: "700",
-    color: COLORS.primary,
+    color: COLORS.success,
     marginBottom: 10,
   },
   serviceStats: {

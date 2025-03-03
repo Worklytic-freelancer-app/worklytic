@@ -1,4 +1,6 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Wallet } from "lucide-react-native";
+import { COLORS } from "@/constant/color";
 
 interface BalanceProps {
   balance: number;
@@ -9,7 +11,7 @@ export default function Balance({ balance }: BalanceProps) {
     <View style={styles.balanceContainer}>
       <View style={styles.balanceHeader}>
         <View style={styles.balanceIconContainer}>
-          <Text style={styles.balanceIcon}>S</Text>
+          <Wallet size={24} color={COLORS.background} strokeWidth={2} />
         </View>
         <View style={styles.balanceTextContainer}>
           <Text style={styles.balanceLabel}>Worklytic Balance</Text>
@@ -24,12 +26,12 @@ export default function Balance({ balance }: BalanceProps) {
 
 const styles = StyleSheet.create({
   balanceContainer: {
-    backgroundColor: "#2563eb",
+    backgroundColor: COLORS.primary,
     borderRadius: 16,
     marginHorizontal: 0,
     marginBottom: 24,
     padding: 20,
-    shadowColor: "#2563eb",
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -51,11 +53,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "rgba(255, 255, 255, 0.3)",
   },
-  balanceIcon: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#ffffff",
-  },
   balanceTextContainer: {
     flex: 1,
   },
@@ -68,6 +65,6 @@ const styles = StyleSheet.create({
   balanceAmount: {
     fontSize: 20,
     fontWeight: "700",
-    color: "#ffffff",
+    color: COLORS.background,
   },
 }); 

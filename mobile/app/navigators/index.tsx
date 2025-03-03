@@ -24,6 +24,7 @@ import Notifications from "@/screens/notifications";
 import { useEffect, useState } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { SecureStoreUtils } from "@/utils/SecureStore";
+import ReviewPostProject from "@/screens/postProject/reviewPostProject";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -57,7 +58,18 @@ export type RootStackParamList = {
   ChooseFreelancer: { projectId: string };
   Payment: { projectId: string };
   EditService: { serviceId: string };
-  ReviewPostProject: { projectId: string };
+  ReviewPostProject: { 
+    title: string;
+    description: string;
+    budget: number;
+    category: string;
+    location: string;
+    completedDate: string;
+    status: string;
+    requirements: string;
+    images: string[];
+    clientId: string;
+  };
   Notifications: undefined;
 };
 
@@ -122,7 +134,8 @@ export default function AppNavigator() {
       <Stack.Screen name="Workspace" component={Workspace} />
       <Stack.Screen name="WorkspaceDetails" component={WorkspaceDetails} />
       <Stack.Screen name="PostProject" component={PostProject} />
-
+      <Stack.Screen name="ReviewPostProject" component={ReviewPostProject} />
+      
       {/* Services */}
       <Stack.Screen name="AddService" component={AddService} />
       <Stack.Screen name="EditService" component={EditService} />

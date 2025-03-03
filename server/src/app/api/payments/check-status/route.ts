@@ -7,17 +7,36 @@ export async function POST(req: Request) {
         
         if (!orderId) {
             return NextResponse.json(
-                { message: "Order ID is required" },
+                { success: false, message: "Order ID is required" },
                 { status: 400 }
             );
         }
         
-        const result = await Payment.checkPaymentStatus(orderId);
-        
-        return NextResponse.json(result);
+        try {
+            const result = await Payment.checkPaymentStatus(orderId);
+            return NextResponse.json(result);
+        } catch (error) {
+            // Jika error terkait "Transaction doesn't exist", kembalikan status pending
+            if (error instanceof Error && 
+                (error.message.includes("Transaction doesn't exist") || 
+                 error.message.includes("404"))) {
+                
+                return NextResponse.json({
+                    success: true,
+                    message: "Payment is still being processed",
+                    data: { status: "pending" }
+                });
+            }
+            
+            throw error;
+        }
     } catch (error) {
+        console.error("Error checking payment status:", error);
         return NextResponse.json(
-            { message: error instanceof Error ? error.message : "Failed to check payment status" },
+            { 
+                success: false, 
+                message: error instanceof Error ? error.message : "Failed to check payment status" 
+            },
             { status: 500 }
         );
     }

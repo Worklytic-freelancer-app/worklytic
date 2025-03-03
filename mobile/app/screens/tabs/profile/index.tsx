@@ -10,6 +10,7 @@ import Services from "./components/Services";
 import { useUser } from "@/hooks/tanstack/useUser";
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
+import { COLORS } from "@/constant/color";
 
 
 export default function Profile() {
@@ -29,7 +30,7 @@ export default function Profile() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#2563eb" />
+        <ActivityIndicator size="large" color={COLORS.primary} />
       </View>
     );
   }
@@ -37,7 +38,7 @@ export default function Profile() {
   if (error || !user) {
     return (
       <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Tidak dapat memuat data profil</Text>
+        <Text style={styles.errorText}>Tidak dapat memuat data profil 😕</Text>
         <Text style={styles.errorDescription}>{error?.message}</Text>
       </View>
     );
@@ -46,7 +47,7 @@ export default function Profile() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView>
+      <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.container}>
           <Header />
           <ProfileInfo 
@@ -85,41 +86,47 @@ export default function Profile() {
 export const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.background,
   },
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.background,
     paddingHorizontal: 20,
+    paddingBottom: 30,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.background,
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.background,
     padding: 20,
   },
   errorText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#ef4444',
+    color: COLORS.error,
     marginBottom: 8,
   },
   errorDescription: {
     fontSize: 14,
-    color: '#6B7280',
+    color: COLORS.gray,
     textAlign: 'center',
   },
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 40,
+    backgroundColor: 'rgba(8, 145, 178, 0.05)',
+    borderRadius: 16,
+    marginVertical: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(8, 145, 178, 0.1)',
   },
   emptyText: {
     fontSize: 50,
@@ -127,7 +134,8 @@ export const styles = StyleSheet.create({
   },
   emptyDescription: {
     fontSize: 14,
-    color: '#6B7280',
+    color: COLORS.gray,
     textAlign: 'center',
+    fontWeight: '500',
   },
 });

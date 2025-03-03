@@ -14,7 +14,7 @@ export default function Home() {
   useEffect(() => {
     // Tangani error autentikasi jika terjadi
     if (error) {
-      handleAuthError(error, navigation as NavigationProp<RootStackParamList>);
+      handleAuthError(error, navigation as NavigationProp<RootStackParamList>  );
     }
   }, [error, navigation]);
 

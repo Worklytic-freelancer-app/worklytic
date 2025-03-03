@@ -2,13 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronLeft } from 'lucide-react-native';
+import { ChevronLeft, CreditCard } from 'lucide-react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '@/navigators';
-import { baseUrl } from '@/constant/baseUrl';
-import { SecureStoreUtils } from '@/utils/SecureStore';
 import { useUser } from '@/hooks/tanstack/useUser';
+import { usePayment } from '@/hooks/tanstack/usePayment';
+import { COLORS } from '@/constant/color';
 
 type PaymentRouteProps = RouteProp<RootStackParamList, 'Payment'>;
 type PaymentNavigationProps = StackNavigationProp<RootStackParamList>;
@@ -20,160 +20,172 @@ export default function Payment() {
     const { projectId } = route.params;
     const { data: user, isLoading: userLoading } = useUser();
     
-    const [loading, setLoading] = useState(true);
+    const [initialLoading, setInitialLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
     const [orderId, setOrderId] = useState<string | null>(null);
+    const [webViewLoading, setWebViewLoading] = useState(false);
+    const [paymentProcessed, setPaymentProcessed] = useState(false);
     
     const webViewRef = useRef<WebView>(null);
+    
+    // Gunakan hook usePayment
+    const { 
+        createPayment,
+        isCreatingPayment,
+        checkPaymentStatus,
+        isCheckingPaymentStatus,
+        getPaymentStatus
+    } = usePayment();
+
+    // Gunakan getPaymentStatus untuk auto-refresh status pembayaran
+    const { data: paymentStatusData, isLoading: isLoadingStatus } = 
+        getPaymentStatus(orderId || '', !!orderId);
+
+    // Efek untuk memantau perubahan status pembayaran
+    useEffect(() => {
+        if (paymentStatusData && orderId && !paymentProcessed) {
+            const status = paymentStatusData.status;
+            
+            if (status === 'success') {
+                setPaymentProcessed(true);
+                Alert.alert(
+                    'Pembayaran Berhasil',
+                    'Pembayaran Anda telah berhasil diproses.',
+                    [
+                        { 
+                            text: 'OK', 
+                            onPress: () => navigation.reset({
+                                index: 0,
+                                routes: [{ name: 'BottomTab', params: { screen: 'Workspace' } }],
+                            })
+                        }
+                    ]
+                );
+            } else if (status === 'failed' || status === 'expired') {
+                setPaymentProcessed(true);
+                Alert.alert(
+                    'Pembayaran Gagal',
+                    `Pembayaran Anda ${status === 'failed' ? 'gagal' : 'kedaluwarsa'}. Silakan coba lagi.`,
+                    [
+                        { 
+                            text: 'OK', 
+                            onPress: () => navigation.goBack()
+                        }
+                    ]
+                );
+            }
+        }
+    }, [paymentStatusData, orderId, paymentProcessed]);
 
     useEffect(() => {
         if (userLoading) return; // Tunggu sampai data user selesai dimuat
         
         if (!projectId) {
-            setError('Project ID is required');
-            setLoading(false);
+            handlePaymentError(new Error('Project ID is required'));
             return;
         }
         
         if (!user) {
-            setError('User data not found. Please try logging in again.');
-            setLoading(false);
+            handlePaymentError(new Error('User data not found. Please try logging in again.'));
             return;
         }
         
-        createPayment();
+        initiatePayment();
     }, [projectId, user, userLoading]);
 
-    const createPayment = async () => {
+    const initiatePayment = () => {
         try {
-            setLoading(true);
-            
-            const token = await SecureStoreUtils.getToken();
-            if (!token) {
-                throw new Error('Authentication token not found');
-            }
-            
             if (!user?._id) {
-                throw new Error('User data not found');
+                handlePaymentError(new Error('User data not found'));
+                return;
             }
             
             console.log('Creating payment for project:', projectId);
             console.log('User ID:', user._id);
             
-            const response = await fetch(`${baseUrl}/api/projects/${projectId}/payment`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+            // Gunakan createPayment dari hook usePayment
+            createPayment(
+                {
+                    userId: user._id,
+                    projectId
                 },
-                body: JSON.stringify({
-                    userId: user._id
-                })
-            });
-            
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error('Payment API error:', errorData);
-                throw new Error(errorData.message || `Error: ${response.status}`);
-            }
-            
-            const result = await response.json();
-            console.log('Payment API response:', result);
-            
-            if (!result.success || !result.data) {
-                throw new Error(result.message || 'Failed to create payment');
-            }
-            
-            setPaymentUrl(result.data.redirect_url || result.data.paymentUrl);
-            setOrderId(result.data.orderId);
-            
+                {
+                    onSuccess: (data) => {
+                        setPaymentUrl(data.redirect_url || data.paymentUrl || null);
+                        setOrderId(data.orderId);
+                        setInitialLoading(false);
+                    },
+                    onError: (err) => {
+                        handlePaymentError(err);
+                    }
+                }
+            );
         } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'An error occurred';
-            console.error('Payment creation error:', errorMessage);
-            setError(errorMessage);
-            Alert.alert('Payment Error', errorMessage);
-        } finally {
-            setLoading(false);
+            handlePaymentError(err);
         }
     };
 
-    const checkPaymentStatus = async () => {
-        if (!orderId) return;
+    const handleCheckPaymentStatus = () => {
+        if (!orderId || paymentProcessed) return;
         
-        try {
-            setLoading(true);
-            
-            const token = await SecureStoreUtils.getToken();
-            if (!token) {
-                throw new Error('Authentication token not found');
-            }
-            
-            const response = await fetch(`${baseUrl}/api/payments/check-status`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+        setWebViewLoading(true);
+        
+        // Gunakan checkPaymentStatus dari hook usePayment
+        checkPaymentStatus(
+            { orderId },
+            {
+                onSuccess: (result) => {
+                    setWebViewLoading(false);
+                    const paymentStatus = result.status;
+                    
+                    if (paymentStatus === 'success' && !paymentProcessed) {
+                        setPaymentProcessed(true);
+                        Alert.alert(
+                            'Pembayaran Berhasil',
+                            'Pembayaran Anda telah berhasil diproses.',
+                            [
+                                { 
+                                    text: 'OK', 
+                                    onPress: () => navigation.reset({
+                                        index: 0,
+                                        routes: [{ name: 'BottomTab', params: { screen: 'Workspace' } }],
+                                    })
+                                }
+                            ]
+                        );
+                    } else if ((paymentStatus === 'failed' || paymentStatus === 'expired') && !paymentProcessed) {
+                        setPaymentProcessed(true);
+                        Alert.alert(
+                            'Pembayaran Gagal',
+                            `Pembayaran Anda ${paymentStatus === 'failed' ? 'gagal' : 'kedaluwarsa'}. Silakan coba lagi.`,
+                            [
+                                { 
+                                    text: 'OK', 
+                                    onPress: () => navigation.goBack()
+                                }
+                            ]
+                        );
+                    } else if (!paymentProcessed) {
+                        // Untuk status pending atau lainnya
+                        Alert.alert(
+                            'Status Pembayaran',
+                            `Status pembayaran Anda: ${paymentStatus}`,
+                            [
+                                { 
+                                    text: 'OK', 
+                                    onPress: () => {}
+                                }
+                            ]
+                        );
+                    }
                 },
-                body: JSON.stringify({
-                    orderId: orderId
-                })
-            });
-            
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || `Error: ${response.status}`);
-            }
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                const paymentStatus = result.data.status;
-                
-                if (paymentStatus === 'success') {
-                    Alert.alert(
-                        'Payment Successful',
-                        'Your payment has been processed successfully.',
-                        [
-                            { 
-                                text: 'OK', 
-                                onPress: () => navigation.navigate('Workspace')
-                            }
-                        ]
-                    );
-                } else if (paymentStatus === 'failed' || paymentStatus === 'expired') {
-                    Alert.alert(
-                        'Payment Failed',
-                        `Your payment has ${paymentStatus}. Please try again.`,
-                        [
-                            { 
-                                text: 'OK', 
-                                onPress: () => navigation.goBack()
-                            }
-                        ]
-                    );
-                } else {
-                    // Untuk status pending atau lainnya
-                    Alert.alert(
-                        'Payment Status',
-                        `Your payment status is: ${paymentStatus}`,
-                        [
-                            { 
-                                text: 'OK', 
-                                onPress: () => navigation.goBack()
-                            }
-                        ]
-                    );
+                onError: (err) => {
+                    handlePaymentError(err);
+                    setWebViewLoading(false);
                 }
-            } else {
-                throw new Error(result.message || 'Failed to check payment status');
             }
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'An error occurred';
-            Alert.alert('Error', errorMessage);
-        } finally {
-            setLoading(false);
-        }
+        );
     };
 
     const handleNavigationStateChange = (navState: any) => {
@@ -183,10 +195,119 @@ export default function Payment() {
             navState.url.includes('payment-pending')) {
             
             // Cek status pembayaran
-            checkPaymentStatus();
+            handleCheckPaymentStatus();
         }
     };
 
+    // Fungsi untuk menangani error dengan lebih baik
+    const handlePaymentError = (error: unknown) => {
+        const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+        
+        // Log error untuk debugging
+        console.error('Payment error:', error);
+        
+        // Kategorikan error
+        if (errorMessage.includes('network') || errorMessage.includes('connection')) {
+            setError('Koneksi internet terputus. Silakan periksa koneksi Anda dan coba lagi.');
+        } else if (errorMessage.includes('token') || errorMessage.includes('authentication')) {
+            setError('Sesi login Anda telah berakhir. Silakan login kembali.');
+            // Mungkin redirect ke halaman login
+        } else {
+            setError(`Gagal memproses pembayaran: ${errorMessage}`);
+        }
+        
+        setInitialLoading(false);
+        setWebViewLoading(false);
+    };
+
+    // Render loading screen saat inisialisasi
+    if (initialLoading || userLoading || isCreatingPayment) {
+        return (
+            <View style={[styles.container, { paddingTop: insets.top }]}>
+                <View style={styles.header}>
+                    <TouchableOpacity 
+                        style={styles.backButton} 
+                        onPress={() => navigation.goBack()}
+                    >
+                        <ChevronLeft size={24} color={COLORS.primary} />
+                    </TouchableOpacity>
+                    <Text style={styles.headerTitle}>Pembayaran</Text>
+                    <View style={{ width: 40 }} />
+                </View>
+                
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={COLORS.primary} />
+                    <Text style={styles.loadingText}>Memuat halaman pembayaran...</Text>
+                </View>
+            </View>
+        );
+    }
+
+    // Render error screen
+    if (error) {
+        return (
+            <View style={[styles.container, { paddingTop: insets.top }]}>
+                <View style={styles.header}>
+                    <TouchableOpacity 
+                        style={styles.backButton} 
+                        onPress={() => navigation.goBack()}
+                    >
+                        <ChevronLeft size={24} color={COLORS.primary} />
+                    </TouchableOpacity>
+                    <Text style={styles.headerTitle}>Pembayaran</Text>
+                    <View style={{ width: 40 }} />
+                </View>
+                
+                <View style={styles.errorContainer}>
+                    <View style={styles.errorIconContainer}>
+                        <CreditCard size={48} color={COLORS.error} />
+                    </View>
+                    <Text style={styles.errorTitle}>Gagal Memuat Pembayaran</Text>
+                    <Text style={styles.errorText}>{error}</Text>
+                    <TouchableOpacity 
+                        style={styles.retryButton}
+                        onPress={initiatePayment}
+                    >
+                        <Text style={styles.retryButtonText}>Coba Lagi</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        );
+    }
+
+    // Render no payment URL screen
+    if (!paymentUrl) {
+        return (
+            <View style={[styles.container, { paddingTop: insets.top }]}>
+                <View style={styles.header}>
+                    <TouchableOpacity 
+                        style={styles.backButton} 
+                        onPress={() => navigation.goBack()}
+                    >
+                        <ChevronLeft size={24} color={COLORS.primary} />
+                    </TouchableOpacity>
+                    <Text style={styles.headerTitle}>Pembayaran</Text>
+                    <View style={{ width: 40 }} />
+                </View>
+                
+                <View style={styles.errorContainer}>
+                    <View style={styles.errorIconContainer}>
+                        <CreditCard size={48} color={COLORS.error} />
+                    </View>
+                    <Text style={styles.errorTitle}>Gagal Memuat Pembayaran</Text>
+                    <Text style={styles.errorText}>Tidak dapat memuat halaman pembayaran. Silakan coba lagi.</Text>
+                    <TouchableOpacity 
+                        style={styles.retryButton}
+                        onPress={initiatePayment}
+                    >
+                        <Text style={styles.retryButtonText}>Coba Lagi</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        );
+    }
+
+    // Render WebView for payment
     return (
         <View style={[styles.container, { paddingTop: insets.top }]}>
             <View style={styles.header}>
@@ -194,57 +315,27 @@ export default function Payment() {
                     style={styles.backButton} 
                     onPress={() => navigation.goBack()}
                 >
-                    <ChevronLeft size={24} color="#ffffff" />
+                    <ChevronLeft size={24} color={COLORS.primary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Payment</Text>
+                <Text style={styles.headerTitle}>Pembayaran</Text>
                 <View style={{ width: 40 }} />
             </View>
 
-            {(loading || userLoading) && (
-                <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#3b82f6" />
-                    <Text style={styles.loadingText}>Loading payment page...</Text>
-                </View>
-            )}
-
-            {error && (
-                <View style={styles.errorContainer}>
-                    <Text style={styles.errorText}>{error}</Text>
-                    <TouchableOpacity 
-                        style={styles.retryButton}
-                        onPress={createPayment}
-                    >
-                        <Text style={styles.retryButtonText}>Retry</Text>
-                    </TouchableOpacity>
-                </View>
-            )}
-
-            {!loading && !error && paymentUrl && (
-                <WebView
-                    ref={webViewRef}
-                    source={{ uri: paymentUrl }}
-                    style={styles.webView}
-                    onNavigationStateChange={handleNavigationStateChange}
-                    javaScriptEnabled={true}
-                    domStorageEnabled={true}
-                    startInLoadingState={true}
-                    renderLoading={() => (
-                        <View style={styles.webViewLoading}>
-                            <ActivityIndicator size="large" color="#3b82f6" />
-                        </View>
-                    )}
-                />
-            )}
-
-            {!loading && !error && !paymentUrl && (
-                <View style={styles.errorContainer}>
-                    <Text style={styles.errorText}>Failed to load payment page</Text>
-                    <TouchableOpacity 
-                        style={styles.retryButton}
-                        onPress={createPayment}
-                    >
-                        <Text style={styles.retryButtonText}>Retry</Text>
-                    </TouchableOpacity>
+            <WebView
+                ref={webViewRef}
+                source={{ uri: paymentUrl }}
+                style={styles.webView}
+                onNavigationStateChange={handleNavigationStateChange}
+                javaScriptEnabled={true}
+                domStorageEnabled={true}
+                startInLoadingState={true}
+                onLoadStart={() => setWebViewLoading(true)}
+                onLoadEnd={() => setWebViewLoading(false)}
+            />
+            
+            {(webViewLoading || isCheckingPaymentStatus || isLoadingStatus) && (
+                <View style={styles.webViewLoading}>
+                    <ActivityIndicator size="large" color={COLORS.primary} />
                 </View>
             )}
         </View>
@@ -254,58 +345,85 @@ export default function Payment() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#ffffff',
+        backgroundColor: COLORS.background,
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: 16,
-        backgroundColor: '#3b82f6',
+        paddingHorizontal: 16,
+        paddingVertical: 16,
+        backgroundColor: COLORS.background,
+        borderBottomWidth: 1,
+        borderBottomColor: COLORS.border,
     },
     backButton: {
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        backgroundColor: COLORS.inputBackground,
         alignItems: 'center',
         justifyContent: 'center',
     },
     headerTitle: {
         fontSize: 18,
-        fontWeight: '600',
-        color: '#ffffff',
+        fontWeight: '700',
+        color: COLORS.black,
     },
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        padding: 20,
     },
     loadingText: {
         marginTop: 16,
         fontSize: 16,
-        color: '#4b5563',
+        color: COLORS.darkGray,
+        textAlign: 'center',
     },
     errorContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 20,
+        padding: 24,
+    },
+    errorIconContainer: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 20,
+    },
+    errorTitle: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: COLORS.black,
+        marginBottom: 12,
+        textAlign: 'center',
     },
     errorText: {
         fontSize: 16,
-        color: '#ef4444',
+        color: COLORS.darkGray,
         textAlign: 'center',
-        marginBottom: 20,
+        marginBottom: 24,
+        lineHeight: 22,
     },
     retryButton: {
-        backgroundColor: '#3b82f6',
+        backgroundColor: COLORS.primary,
         paddingHorizontal: 24,
-        paddingVertical: 12,
-        borderRadius: 8,
+        paddingVertical: 14,
+        borderRadius: 12,
+        shadowColor: COLORS.primary,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 2,
     },
     retryButtonText: {
-        color: '#ffffff',
+        color: COLORS.background,
         fontSize: 16,
         fontWeight: '600',
     },
@@ -320,6 +438,6 @@ const styles = StyleSheet.create({
         bottom: 0,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
     },
 });

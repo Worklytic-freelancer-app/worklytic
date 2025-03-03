@@ -165,32 +165,62 @@ class PaymentService {
     
     async checkPaymentStatus(orderId: string): Promise<Result<Payments>> {
         try {
-            // Cek status transaksi dari Midtrans
-            const transactionStatus = await getTransactionStatus(orderId) as MidtransNotification;
+            // Cek apakah payment dengan orderId tersebut ada di database
+            const existingPayment = await Payment.findByOrderId(orderId);
             
-            // Tentukan status payment berdasarkan response Midtrans
-            let paymentStatus: PaymentStatus = "pending";
-            
-            if (transactionStatus.transaction_status === "capture" || transactionStatus.transaction_status === "settlement") {
-                paymentStatus = "success";
-            } else if (transactionStatus.transaction_status === "cancel" || transactionStatus.transaction_status === "deny" || transactionStatus.transaction_status === "failure") {
-                paymentStatus = "failed";
-            } else if (transactionStatus.transaction_status === "expire") {
-                paymentStatus = "expired";
-            } else if (transactionStatus.transaction_status === "refund") {
-                paymentStatus = "refunded";
+            if (!existingPayment.success || !existingPayment.data) {
+                return {
+                    success: false,
+                    message: "Payment not found",
+                    data: null
+                };
             }
             
-            // Update status payment di database
-            const updateData: UpdatePayment = {
-                status: paymentStatus,
-                metadata: {
-                    midtransResponse: transactionStatus
+            try {
+                // Cek status transaksi dari Midtrans
+                const transactionStatus = await getTransactionStatus(orderId) as MidtransNotification;
+                
+                // Tentukan status payment berdasarkan response Midtrans
+                let paymentStatus: PaymentStatus = "pending";
+                
+                if (transactionStatus.transaction_status === "capture" || transactionStatus.transaction_status === "settlement") {
+                    paymentStatus = "success";
+                } else if (transactionStatus.transaction_status === "cancel" || transactionStatus.transaction_status === "deny" || transactionStatus.transaction_status === "failure") {
+                    paymentStatus = "failed";
+                } else if (transactionStatus.transaction_status === "expire") {
+                    paymentStatus = "expired";
+                } else if (transactionStatus.transaction_status === "refund") {
+                    paymentStatus = "refunded";
                 }
-            };
-            
-            return await Payment.updateByOrderId(orderId, updateData);
+                
+                // Update status payment di database
+                const updateData: UpdatePayment = {
+                    status: paymentStatus,
+                    metadata: {
+                        midtransResponse: transactionStatus
+                    }
+                };
+                
+                return await Payment.updateByOrderId(orderId, updateData);
+            } catch (error) {
+                // Jika error dari Midtrans (transaction doesn't exist)
+                if (error instanceof Error && 
+                    (error.message.includes("Transaction doesn't exist") || 
+                     error.message.includes("404"))) {
+                    
+                    // Kembalikan data payment yang ada dengan status tetap pending
+                    return {
+                        success: true,
+                        message: "Payment is still being processed",
+                        data: existingPayment.data
+                    };
+                }
+                
+                // Untuk error lainnya, lempar error
+                throw error;
+            }
         } catch (error) {
+            console.error("Error checking payment status:", error);
             throw new Error(error instanceof Error ? error.message : "Failed to check payment status");
         }
     }

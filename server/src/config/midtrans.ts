@@ -6,15 +6,15 @@ const isProduction = process.env.NODE_ENV === 'production';
 // Buat instance Snap untuk payment gateway
 export const snap = new midtransClient.Snap({
     isProduction,
-    serverKey: process.env.NEXT_PUBLIC_MIDTRANS_SERVER_KEY || 'SB-Mid-client-9H7mfNNmWezLfAxL',
-    clientKey: process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || 'SB-Mid-server-cqmJ4UGEj-5Ks3Zo5f30pKXj'
+    serverKey: 'SB-Mid-server-cqmJ4UGEj-5Ks3Zo5f30pKXj',
+    clientKey: 'SB-Mid-client-9H7mfNNmWezLfAxL'
 });
 
 // Buat instance Core API untuk operasi lanjutan
 export const coreApi = new midtransClient.CoreApi({
     isProduction,
-    serverKey: process.env.NEXT_PUBLIC_MIDTRANS_SERVER_KEY || 'SB-Mid-server-cqmJ4UGEj-5Ks3Zo5f30pKXj',
-    clientKey: process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || 'SB-Mid-client-9H7mfNNmWezLfAxL'
+    serverKey: 'SB-Mid-server-cqmJ4UGEj-5Ks3Zo5f30pKXj',
+    clientKey: 'SB-Mid-client-9H7mfNNmWezLfAxL'
 });
 
 // Helper function untuk membuat transaction token

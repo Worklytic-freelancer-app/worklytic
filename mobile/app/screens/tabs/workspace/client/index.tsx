@@ -1,11 +1,13 @@
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Clock, Users, Plus } from "lucide-react-native";
+import { Clock, Users, Plus, Calendar } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 import { useUser } from "@/hooks/tanstack/useUser";
 import { useFetch } from "@/hooks/tanstack/useFetch";
+import Header from "@/components/Header";
+import { COLORS } from "@/constant/color";
 
 interface ProjectFeature {
     _id: string;
@@ -64,10 +66,10 @@ export default function ClientWorkspace() {
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         
         if (diffDays === 0) {
-            return 'today';
+            return 'Today';
         } else if (diffDays === 1) {
             // Cek apakah kemarin atau besok
-            return dateWithoutTime < nowWithoutTime ? 'yesterday' : 'tomorrow';
+            return dateWithoutTime < nowWithoutTime ? 'Yesterday' : 'Tomorrow';
         } else if (diffDays < 7) {
             return `${diffDays} days ago`;
         } else if (diffDays < 30) {
@@ -83,23 +85,23 @@ export default function ClientWorkspace() {
         switch (status.toLowerCase()) {
             case 'open':
                 return {
-                    bg: '#ecfdf5',
-                    text: '#059669'
+                    bg: 'rgba(16, 185, 129, 0.08)',
+                    text: COLORS.success
                 };
             case 'in progress':
                 return {
-                    bg: '#eff6ff',
+                    bg: 'rgba(59, 130, 246, 0.08)',
                     text: '#3b82f6'
                 };
             case 'completed':
                 return {
-                    bg: '#f3f4f6',
-                    text: '#4b5563'
+                    bg: 'rgba(107, 114, 128, 0.08)',
+                    text: COLORS.darkGray
                 };
             default:
                 return {
-                    bg: '#f3f4f6',
-                    text: '#4b5563'
+                    bg: 'rgba(107, 114, 128, 0.08)',
+                    text: COLORS.darkGray
                 };
         }
     };
@@ -111,7 +113,7 @@ export default function ClientWorkspace() {
         return (
             <TouchableOpacity
                 style={styles.projectCard}
-                onPress={() => navigation.navigate('ChooseFreelancer', { projectId: item._id })}
+                onPress={() => navigation.navigate('WorkspaceDetails', { projectId: item._id })}
             >
                 <Image
                     source={{ 
@@ -138,11 +140,11 @@ export default function ClientWorkspace() {
                     </Text>
                     <View style={styles.projectMeta}>
                         <View style={styles.metaItem}>
-                            <Clock size={16} color="#6b7280" />
+                            <Calendar size={16} color={COLORS.gray} />
                             <Text style={styles.metaText}>{formatDate(item.createdAt)}</Text>
                         </View>
                         <View style={styles.metaItem}>
-                            <Users size={16} color="#6b7280" />
+                            <Users size={16} color={COLORS.gray} />
                             <Text style={styles.metaText}>{featuresCount} freelancers</Text>
                         </View>
                     </View>
@@ -151,10 +153,19 @@ export default function ClientWorkspace() {
         );
     };
 
+    const AddButton = () => (
+        <TouchableOpacity 
+            style={styles.addButton}
+            onPress={() => navigation.navigate('PostProject')}
+        >
+            <Plus size={20} color={COLORS.background} strokeWidth={2.5} />
+        </TouchableOpacity>
+    );
+
     if (loading) {
         return (
             <View style={[styles.container, styles.loadingContainer]}>
-                <ActivityIndicator size="large" color="#2563eb" />
+                <ActivityIndicator size="large" color={COLORS.primary} />
             </View>
         );
     }
@@ -174,18 +185,19 @@ export default function ClientWorkspace() {
 
     return (
         <View style={[styles.container, { paddingTop: insets.top }]}>
-            <View style={styles.header}>
-                <Text style={styles.title}>Workspace</Text>
-                <TouchableOpacity 
-                    style={styles.addButton}
-                    onPress={() => navigation.navigate('PostProject')}
-                >
-                    <Plus size={24} color="#fff" />
-                </TouchableOpacity>
-            </View>
+            <Header 
+                title="Workspace" 
+                rightComponent={<AddButton />}
+                onRightComponentPress={() => navigation.navigate('Notifications')}
+            />
             
             {projects.length === 0 ? (
                 <View style={styles.emptyContainer}>
+                    <Image 
+                        source={{ uri: 'https://cdn-icons-png.flaticon.com/512/4076/4076478.png' }}
+                        style={styles.emptyImage}
+                    />
+                    <Text style={styles.emptyTitle}>Belum Ada Proyek</Text>
                     <Text style={styles.emptyText}>
                         Kamu belum memiliki proyek. Buat proyek baru untuk mulai mencari freelancer.
                     </Text>
@@ -214,48 +226,40 @@ export default function ClientWorkspace() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#f9fafb",
-    },
-    header: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        backgroundColor: "#fff",
-        borderBottomWidth: 1,
-        borderBottomColor: "#e5e7eb",
-    },
-    title: {
-        fontSize: 20,
-        fontWeight: "700",
-        color: "#111827",
+        backgroundColor: COLORS.background,
     },
     addButton: {
-        backgroundColor: "#2563eb",
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        backgroundColor: COLORS.primary,
+        width: 36,
+        height: 36,
+        borderRadius: 18,
         justifyContent: "center",
         alignItems: "center",
+        shadowColor: COLORS.primary,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 3,
     },
     projectList: {
-        padding: 16,
+        padding: 20,
     },
     projectCard: {
-        backgroundColor: "#fff",
+        backgroundColor: COLORS.background,
         borderRadius: 16,
-        marginBottom: 16,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
+        marginBottom: 20,
+        shadowColor: COLORS.black,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
         shadowRadius: 8,
-        elevation: 2,
+        elevation: 3,
         overflow: "hidden",
+        borderWidth: 1,
+        borderColor: COLORS.border,
     },
     projectImage: {
         width: "100%",
-        height: 140,
+        height: 160,
     },
     projectInfo: {
         padding: 16,
@@ -264,29 +268,29 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "flex-start",
-        marginBottom: 8,
+        marginBottom: 12,
     },
     projectTitle: {
         flex: 1,
         fontSize: 18,
-        fontWeight: "600",
-        color: "#111827",
-        marginRight: 8,
+        fontWeight: "700",
+        color: COLORS.black,
+        marginRight: 12,
     },
     statusBadge: {
-        paddingHorizontal: 8,
-        paddingVertical: 4,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
         borderRadius: 12,
     },
     statusText: {
         fontSize: 12,
-        fontWeight: "500",
+        fontWeight: "600",
     },
     projectBudget: {
-        fontSize: 16,
-        fontWeight: "600",
-        color: "#059669",
-        marginBottom: 12,
+        fontSize: 18,
+        fontWeight: "700",
+        color: COLORS.success,
+        marginBottom: 16,
     },
     projectMeta: {
         flexDirection: "row",
@@ -297,9 +301,10 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     metaText: {
-        fontSize: 13,
-        color: "#6b7280",
-        marginLeft: 4,
+        fontSize: 14,
+        color: COLORS.gray,
+        marginLeft: 6,
+        fontWeight: "500",
     },
     loadingContainer: {
         flex: 1,
@@ -314,42 +319,65 @@ const styles = StyleSheet.create({
     },
     errorText: {
         fontSize: 16,
-        color: '#ef4444',
+        color: COLORS.error,
         marginBottom: 16,
         textAlign: 'center',
     },
     retryButton: {
-        backgroundColor: '#2563eb',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 8,
+        backgroundColor: COLORS.primary,
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius: 12,
+        shadowColor: COLORS.primary,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 2,
     },
     retryButtonText: {
-        color: '#ffffff',
-        fontSize: 14,
-        fontWeight: '500',
+        color: COLORS.background,
+        fontSize: 16,
+        fontWeight: '600',
     },
     emptyContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        paddingVertical: 40,
+        paddingHorizontal: 40,
+    },
+    emptyImage: {
+        width: 120,
+        height: 120,
+        marginBottom: 24,
+        opacity: 0.8,
+    },
+    emptyTitle: {
+        fontSize: 20,
+        fontWeight: "700",
+        color: COLORS.black,
+        marginBottom: 12,
     },
     emptyText: {
         fontSize: 16,
-        color: '#6b7280',
+        color: COLORS.gray,
         textAlign: 'center',
-        marginBottom: 16,
+        marginBottom: 24,
+        lineHeight: 22,
     },
     postProjectButton: {
-        backgroundColor: '#2563eb',
-        paddingHorizontal: 20,
-        paddingVertical: 12,
-        borderRadius: 8,
+        backgroundColor: COLORS.primary,
+        paddingHorizontal: 24,
+        paddingVertical: 14,
+        borderRadius: 12,
+        shadowColor: COLORS.primary,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 2,
     },
     postProjectButtonText: {
-        color: '#ffffff',
+        color: COLORS.background,
         fontSize: 16,
-        fontWeight: '500',
+        fontWeight: '600',
     },
 });
