@@ -1,59 +1,167 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from "react-native";
+import React, { useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, ActivityIndicator, Alert } from "react-native";
 import { Plus } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
+import { Pencil, Trash2 } from "lucide-react-native";
+import { useFetch } from "@/hooks/tanstack/useFetch";
+import { useMutation } from "@/hooks/tanstack/useMutation";
 
 type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
+interface Service {
+    _id: string;
+    title: string;
+    description: string;
+    price: number;
+    images: string[];
+}
+
 export default function Services() {
-  const navigation = useNavigation<ProfileScreenNavigationProp>();
+    const navigation = useNavigation<ProfileScreenNavigationProp>();
+    const [deletingId, setDeletingId] = useState<string | null>(null);
+    
+    // Menggunakan useFetch untuk mendapatkan data layanan
+    const { 
+        data: services = [], 
+        isLoading, 
+        error, 
+        refetch 
+    } = useFetch<Service[]>({
+        endpoint: 'services/my-services',
+    });
+    
+    // Menggunakan useMutation untuk menghapus layanan
+    const { mutate: deleteService } = useMutation<any, {}>({
+        endpoint: 'services',
+        method: 'DELETE',
+        invalidateQueries: ['services/my-services'],
+        onSuccess: () => {
+            Alert.alert("Sukses", "Layanan berhasil dihapus");
+        },
+    });
 
-  const services = [
-    {
-      id: 1,
-      title: "Mobile App Development",
-      description: "Create custom mobile applications for iOS and Android",
-      price: "Rp5.000.000",
-      image: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=500&auto=format&fit=crop&q=60",
-    },
-    {
-      id: 2,
-      title: "Web Development",
-      description: "Build responsive and modern web applications",
-      price: "Rp4.000.000",
-      image: "https://images.unsplash.com/photo-1547658719-da2b51169166?w=500&auto=format&fit=crop&q=60",
-    },
-  ];
+    const handleDeleteService = async (serviceId: string) => {
+        try {
+            setDeletingId(serviceId);
+            deleteService({ customEndpoint: `services/${serviceId}` });
+        } catch (err) {
+            Alert.alert("Error", "Terjadi kesalahan saat menghapus layanan");
+        } finally {
+            setDeletingId(null);
+        }
+    };
 
-  return (
-    <View style={styles.section}>
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Services</Text>
-        <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate("AddService")}>
-          <Plus size={20} color="#ffffff" />
-        </TouchableOpacity>
-      </View>
-      
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.servicesContainer}
-      >
-        {services.map((service) => (
-          <View key={service.id} style={styles.serviceCard}>
-            <Image 
-              source={{ uri: service.image }} 
-              style={styles.serviceImage}
-            />
-            <Text style={styles.serviceTitle}>{service.title}</Text>
-            <Text style={styles.serviceDescription}>{service.description}</Text>
-            <Text style={styles.servicePrice}>{service.price}</Text>
-          </View>
-        ))}
-      </ScrollView>
-    </View>
-  );
+    const confirmDelete = (serviceId: string) => {
+        Alert.alert(
+            "Konfirmasi Hapus",
+            "Apakah Anda yakin ingin menghapus layanan ini?",
+            [
+                { text: "Batal", style: "cancel" },
+                { text: "Hapus", style: "destructive", onPress: () => handleDeleteService(serviceId) }
+            ]
+        );
+    };
+
+    // Format harga ke format Rupiah
+    const formatPrice = (price: number) => {
+        return `Rp${price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
+    };
+
+    if (isLoading) {
+        return (
+            <View style={[styles.section, styles.loadingContainer]}>
+                <ActivityIndicator size="large" color="#2563eb" />
+            </View>
+        );
+    }
+
+    if (error) {
+        return (
+            <View style={[styles.section, styles.errorContainer]}>
+                <Text style={styles.errorText}>Gagal memuat layanan: {error.message}</Text>
+                <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
+                    <Text style={styles.retryButtonText}>Coba Lagi</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
+
+    return (
+        <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Layanan Saya</Text>
+                <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate("AddService")}>
+                    <Plus size={20} color="#ffffff" />
+                </TouchableOpacity>
+            </View>
+            
+            {services.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                    <Text style={styles.emptyText}>Anda belum memiliki layanan</Text>
+                    <TouchableOpacity 
+                        style={styles.addServiceButton} 
+                        onPress={() => navigation.navigate("AddService")}
+                    >
+                        <Text style={styles.addServiceButtonText}>Tambah Layanan</Text>
+                    </TouchableOpacity>
+                </View>
+            ) : (
+                <ScrollView 
+                    horizontal 
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.servicesContainer}
+                >
+                    {services.map((service) => (
+                        <TouchableOpacity 
+                            key={service._id} 
+                            style={styles.serviceCard}
+                        >
+                            <Image 
+                                source={{ uri: service.images[0] }} 
+                                style={styles.serviceImage}
+                            />
+                            <Text style={styles.serviceTitle}>{service.title}</Text>
+                            <Text style={styles.serviceDescription}>{service.description}</Text>
+                            <Text style={styles.servicePrice}>{formatPrice(service.price)}</Text>
+                            
+                            <View style={styles.actionButtons}>
+                                <TouchableOpacity 
+                                    style={[styles.actionButton, styles.editButton]}
+                                    onPress={(e) => {
+                                        e.stopPropagation();
+                                        navigation.navigate("EditService", { serviceId: service._id });
+                                    }}
+                                >
+                                    <Pencil size={16} color="#ffffff" />
+                                    <Text style={styles.actionButtonText}>Edit</Text>
+                                </TouchableOpacity>
+                                
+                                <TouchableOpacity 
+                                    style={[styles.actionButton, styles.deleteButton]}
+                                    onPress={(e) => {
+                                        e.stopPropagation();
+                                        confirmDelete(service._id);
+                                    }}
+                                    disabled={deletingId === service._id}
+                                >
+                                    {deletingId === service._id ? (
+                                        <ActivityIndicator size="small" color="#ffffff" />
+                                    ) : (
+                                        <>
+                                            <Trash2 size={16} color="#ffffff" />
+                                            <Text style={styles.actionButtonText}>Hapus</Text>
+                                        </>
+                                    )}
+                                </TouchableOpacity>
+                            </View>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
+            )}
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
@@ -119,4 +227,80 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#2563eb',
   },
-}); 
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginTop: 12,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 8,
+    borderRadius: 8,
+    gap: 6,
+  },
+  actionButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  editButton: {
+    backgroundColor: '#2563eb',
+  },
+  deleteButton: {
+    backgroundColor: '#dc2626',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  errorContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  errorText: {
+    color: '#dc2626',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  retryButton: {
+    backgroundColor: '#2563eb',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#ffffff',
+    fontWeight: '500',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#f3f4f6',
+    marginHorizontal: 12,
+  },
+  emptyText: {
+    color: '#6b7280',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  addServiceButton: {
+    backgroundColor: '#2563eb',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  addServiceButtonText: {
+    color: '#ffffff',
+    fontWeight: '500',
+  },
+});

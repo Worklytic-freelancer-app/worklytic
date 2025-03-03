@@ -5,6 +5,7 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 
+import { useEffect, useState } from "react";
 import TopFreelancer from "../TopFreelancer";
 import { useFetch } from "@/hooks/tanstack/useFetch";
 
@@ -20,8 +21,28 @@ interface ApiFreelancer {
     role: string;
 }
 
+// Interface untuk service dari API
+interface ApiService {
+    _id: string;
+    freelancerId: string;
+    title: string;
+    description: string;
+    price: number;
+    deliveryTime: string;
+    category: string;
+    images: string[];
+    rating: number;
+    reviews: number;
+    includes: string[];
+    requirements: string[];
+    createdAt: string;
+    updatedAt: string;
+    freelancerName?: string;
+    freelancerImage?: string;
+}
+
 interface Service {
-    id: number;
+    id: string;
     freelancerName: string;
     freelancerImage: string;
     title: string;
@@ -42,50 +63,77 @@ export default function Client() {
     const navigation = useNavigation<ClientScreenNavigationProp>();
     const insets = useSafeAreaInsets();
     
-    // Gunakan useFetch untuk mendapatkan data freelancer
+    // Menggunakan useFetch untuk mendapatkan data freelancer
     const { 
-        data: topFreelancers = [], 
+        data: freelancersData = [], 
         isLoading: freelancersLoading, 
         error: freelancersError,
-        refetch: fetchTopFreelancers
+        refetch: refetchFreelancers
     } = useFetch<ApiFreelancer[]>({
         endpoint: 'users',
-        requiresAuth: true
     });
+    
+    // Menggunakan useFetch untuk mendapatkan data services
+    const { 
+        data: servicesData = [], 
+        isLoading: servicesLoading, 
+        error: servicesError,
+        refetch: refetchServices
+    } = useFetch<ApiService[]>({
+        endpoint: 'services',
+    });
+    
+    // State untuk menyimpan data yang sudah diproses
+    const [topFreelancers, setTopFreelancers] = useState<ApiFreelancer[]>([]);
+    const [popularServices, setPopularServices] = useState<Service[]>([]);
+    
+    // Memproses data freelancer ketika data berubah
+    useEffect(() => {
+        if (freelancersData.length > 0) {
+            // Filter hanya freelancer dan urutkan berdasarkan rating tertinggi
+            const filteredFreelancers = freelancersData
+                .filter((user: ApiFreelancer) => user.role === 'freelancer')
+                .sort((a: ApiFreelancer, b: ApiFreelancer) => b.rating - a.rating)
+                .slice(0, 10); // Ambil 10 teratas
+            
+            setTopFreelancers(filteredFreelancers);
+        }
+    }, [freelancersData]);
+    
+    // Memproses data services ketika data berubah
+    useEffect(() => {
+        if (servicesData.length > 0 && freelancersData.length > 0) {
+            // Menggabungkan data services dengan data freelancer
+            const servicesWithFreelancerInfo = servicesData.map((service: ApiService) => {
+                const freelancer = freelancersData.find((f: ApiFreelancer) => f._id === service.freelancerId);
+                
+                return {
+                    id: service._id,
+                    freelancerName: freelancer ? freelancer.fullName : "Unknown Freelancer",
+                    freelancerImage: freelancer ? freelancer.profileImage : "https://via.placeholder.com/150",
+                    title: service.title,
+                    price: `Rp${service.price.toLocaleString('id-ID')}`,
+                    rating: service.rating,
+                    reviews: service.reviews,
+                    image: service.images[0] || "https://via.placeholder.com/400",
+                };
+            });
+            
+            // Mengurutkan services berdasarkan rating dan jumlah reviews
+            const sortedServices = servicesWithFreelancerInfo.sort((a: Service, b: Service) => {
+                // Prioritaskan rating terlebih dahulu
+                if (b.rating !== a.rating) {
+                    return b.rating - a.rating;
+                }
+                // Jika rating sama, urutkan berdasarkan jumlah reviews
+                return b.reviews - a.reviews;
+            });
+            
+            setPopularServices(sortedServices);
+        }
+    }, [servicesData, freelancersData]);
 
-    // Filter hanya freelancer dan urutkan berdasarkan rating tertinggi
-    const filteredFreelancers = topFreelancers
-        .filter(user => user.role === 'freelancer')
-        .sort((a, b) => b.rating - a.rating)
-        .slice(0, 10); // Ambil 10 teratas
-
-    // Popular services data (commented out for now)
-    /*
-    const services: Service[] = [
-        {
-            id: 1,
-            freelancerName: "John Doe",
-            freelancerImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80",
-            title: "Mobile App Development",
-            price: "Rp5.000.000",
-            rating: 4.8,
-            reviews: 25,
-            image: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&auto=format&fit=crop&q=60",
-        },
-        {
-            id: 2,
-            freelancerName: "Jane Smith",
-            freelancerImage: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&auto=format&fit=crop&q=60",
-            title: "Web Development",
-            price: "Rp4.000.000",
-            rating: 4.9,
-            reviews: 32,
-            image: "https://images.unsplash.com/photo-1547658719-da2b51169166?w=800&auto=format&fit=crop&q=60",
-        },
-    ];
-    */
-
-    // Update sections array
+    // Update sections array dengan data yang sudah diproses
     const sections: Section[] = [
         {
             id: "search",
@@ -95,42 +143,42 @@ export default function Client() {
             id: "post-project",
             type: "post-project",
         },
-        // Popular services section (commented out for now)
-        /*
         {
             id: "projects",
             type: "projects",
             title: "Popular Services",
-            data: services,
+            data: popularServices,
         },
-        */
         {
             id: "freelancers",
             type: "freelancers",
             title: "Top Freelancers",
-            data: filteredFreelancers,
+            data: topFreelancers,
         },
     ];
 
-    // const renderService = ({ item }: { item: Service }) => (
-    //     <TouchableOpacity style={styles.serviceCard} onPress={() => console.log("service", item)}>
-    //         <Image source={{ uri: item.image }} style={styles.serviceImage} />
-    //         <View style={styles.serviceInfo}>
-    //             <View style={styles.freelancerInfo}>
-    //                 <Image source={{ uri: item.freelancerImage }} style={styles.freelancerThumb} />
-    //                 <Text style={styles.freelancerName}>{item.freelancerName}</Text>
-    //             </View>
-    //             <Text style={styles.serviceTitle}>{item.title}</Text>
-    //             <Text style={styles.servicePrice}>{item.price}</Text>
-    //             <View style={styles.serviceStats}>
-    //                 <View style={styles.ratingContainer}>
-    //                     <Text style={styles.rating}>⭐️ {item.rating}</Text>
-    //                 </View>
-    //                 <Text style={styles.reviewsText}>({item.reviews} reviews)</Text>
-    //             </View>
-    //         </View>
-    //     </TouchableOpacity>
-    // );
+    const renderService = ({ item }: { item: Service }) => (
+        <TouchableOpacity 
+            style={styles.serviceCard} 
+            onPress={() => navigation.navigate("ServiceDetails", { serviceId: item.id })}
+        >
+            <Image source={{ uri: item.image }} style={styles.serviceImage} />
+            <View style={styles.serviceInfo}>
+                <View style={styles.freelancerInfo}>
+                    <Image source={{ uri: item.freelancerImage }} style={styles.freelancerThumb} />
+                    <Text style={styles.freelancerName}>{item.freelancerName}</Text>
+                </View>
+                <Text style={styles.serviceTitle}>{item.title}</Text>
+                <Text style={styles.servicePrice}>{item.price}</Text>
+                <View style={styles.serviceStats}>
+                    <View style={styles.ratingContainer}>
+                        <Text style={styles.rating}>⭐️ {item.rating}</Text>
+                    </View>
+                    <Text style={styles.reviewsText}>({item.reviews} reviews)</Text>
+                </View>
+            </View>
+        </TouchableOpacity>
+    );
 
     const renderSection = ({ item }: { item: Section }) => {
         switch (item.type) {
@@ -157,33 +205,50 @@ export default function Client() {
                     </TouchableOpacity>
                 );
 
-            // case "projects":
-            //     return (
-            //         <View style={styles.section}>
-            //             <View style={styles.sectionHeader}>
-            //                 <Text style={styles.sectionTitle}>{item.title}</Text>
-            //                 <TouchableOpacity onPress={() => navigation.navigate("Services")}>
-            //                     <Text style={styles.seeAllButton}>See All</Text>
-            //                 </TouchableOpacity>
-            //             </View>
-            //             <FlatList<Service> 
-            //                 data={item.data as Service[]} 
-            //                 renderItem={renderService} 
-            //                 keyExtractor={(item) => item.id.toString()} 
-            //                 horizontal 
-            //                 showsHorizontalScrollIndicator={false} 
-            //                 contentContainerStyle={styles.servicesScroll} 
-            //             />
-            //         </View>
-            //     );
+            case "projects":
+                return (
+                    <View style={styles.section}>
+                        <View style={styles.sectionHeader}>
+                            <Text style={styles.sectionTitle}>{item.title}</Text>
+                            <TouchableOpacity>
+                                <Text style={styles.seeAllButton}>See All</Text>
+                            </TouchableOpacity>
+                        </View>
+                        
+                        {servicesLoading ? (
+                            <View style={styles.loadingContainer}>
+                                <ActivityIndicator size="large" color="#0891b2" />
+                                <Text style={styles.loadingText}>Loading services... 🔄</Text>
+                            </View>
+                        ) : servicesError ? (
+                            <View style={styles.errorContainer}>
+                                <Text style={styles.errorText}>
+                                    Failed to load services 😕
+                                </Text>
+                                <TouchableOpacity style={styles.retryButton} onPress={() => refetchServices()}>
+                                    <Text style={styles.retryButtonText}>Retry</Text>
+                                </TouchableOpacity>
+                            </View>
+                        ) : (
+                            <FlatList<Service> 
+                                data={item.data as Service[]} 
+                                renderItem={renderService} 
+                                keyExtractor={(item) => item.id.toString()} 
+                                horizontal 
+                                showsHorizontalScrollIndicator={false} 
+                                contentContainerStyle={styles.servicesScroll} 
+                            />
+                        )}
+                    </View>
+                );
 
             case "freelancers":
                 return (
                     <TopFreelancer
-                        freelancers={filteredFreelancers}
+                        freelancers={topFreelancers}
                         loading={freelancersLoading}
-                        error={freelancersError ? (freelancersError as Error).message : null}
-                        onRetry={fetchTopFreelancers}
+                        error={freelancersError ? freelancersError.message : null}
+                        onRetry={refetchFreelancers}
                         title={item.title || "Top Freelancers"}
                     />
                 );
@@ -229,17 +294,16 @@ const styles = StyleSheet.create({
     },
     greeting: {
         fontSize: 24,
-        fontWeight: "700",
+        fontWeight: "bold",
         color: "#111827",
-        marginBottom: 4,
     },
     notificationButton: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
         backgroundColor: "#f3f4f6",
-        alignItems: "center",
         justifyContent: "center",
+        alignItems: "center",
     },
     content: {
         flex: 1,
@@ -248,49 +312,16 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         backgroundColor: "#f3f4f6",
-        marginHorizontal: 20,
+        borderRadius: 12,
         paddingHorizontal: 16,
         paddingVertical: 12,
-        borderRadius: 12,
-        marginBottom: 24,
+        marginHorizontal: 20,
+        marginBottom: 16,
     },
     searchPlaceholder: {
-        marginLeft: 12,
-        fontSize: 15,
+        marginLeft: 8,
+        fontSize: 16,
         color: "#6b7280",
-    },
-    postProjectContainer: {
-        backgroundColor: "#2563eb",
-        borderRadius: 16,
-        marginHorizontal: 20,
-        marginBottom: 24,
-        padding: 16,
-    },
-    postProjectContent: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
-    postProjectIcon: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
-        backgroundColor: "rgba(255, 255, 255, 0.2)",
-        alignItems: "center",
-        justifyContent: "center",
-        marginRight: 16,
-    },
-    postProjectText: {
-        flex: 1,
-    },
-    postProjectTitle: {
-        fontSize: 18,
-        fontWeight: "600",
-        color: "#ffffff",
-        marginBottom: 4,
-    },
-    postProjectDescription: {
-        fontSize: 14,
-        color: "#e5e7eb",
     },
     section: {
         marginBottom: 24,
@@ -304,114 +335,33 @@ const styles = StyleSheet.create({
     },
     sectionTitle: {
         fontSize: 18,
-        fontWeight: "600",
+        fontWeight: "bold",
         color: "#111827",
-        marginBottom: 16,
     },
     seeAllButton: {
         fontSize: 14,
-        fontWeight: "500",
-        color: "#2563eb",
-        marginBottom: 18,
-    },
-    projectsScroll: {
-        paddingLeft: 20,
-        paddingBottom: 8,
-    },
-    projectCard: {
-        width: 280,
-        backgroundColor: "#fff",
-        borderRadius: 16,
-        marginRight: 16,
-        marginBottom: 8,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 2,
-    },
-    projectImage: {
-        width: "100%",
-        height: 140,
-        borderTopLeftRadius: 16,
-        borderTopRightRadius: 16,
-    },
-    projectInfo: {
-        padding: 16,
-    },
-    projectTitle: {
-        fontSize: 16,
-        fontWeight: "600",
-        color: "#111827",
-        marginBottom: 4,
-    },
-    projectCategory: {
-        fontSize: 14,
-        color: "#6b7280",
-        marginBottom: 8,
-    },
-    projectBudget: {
-        fontSize: 16,
-        fontWeight: "600",
-        color: "#059669",
-        marginBottom: 8,
-    },
-    projectStats: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-    },
-    statusContainer: {
-        backgroundColor: "#dcfce7",
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 12,
-    },
-    statusText: {
-        fontSize: 12,
-        fontWeight: "500",
-        color: "#059669",
-    },
-    applicantsText: {
-        fontSize: 12,
-        color: "#6b7280",
+        color: "#0891b2",
     },
     servicesScroll: {
         paddingLeft: 20,
-        paddingBottom: 8,
-    },
-    loadingContainer: {
-        padding: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: 200,
-    },
-    errorContainer: {
-        padding: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    errorText: {
-        fontSize: 14,
-        color: '#ef4444',
+        paddingRight: 8,
     },
     serviceCard: {
         width: 280,
-        backgroundColor: "#fff",
+        backgroundColor: "#ffffff",
         borderRadius: 16,
-        marginRight: 16,
-        marginBottom: 8,
+        marginRight: 12,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
         shadowRadius: 8,
         elevation: 2,
+        overflow: "hidden",
     },
     serviceImage: {
         width: "100%",
-        height: 140,
-        borderTopLeftRadius: 16,
-        borderTopRightRadius: 16,
+        height: 160,
+        resizeMode: "cover",
     },
     serviceInfo: {
         padding: 16,
@@ -419,7 +369,7 @@ const styles = StyleSheet.create({
     freelancerInfo: {
         flexDirection: "row",
         alignItems: "center",
-        marginBottom: 12,
+        marginBottom: 8,
     },
     freelancerThumb: {
         width: 24,
@@ -427,25 +377,102 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         marginRight: 8,
     },
+    freelancerName: {
+        fontSize: 14,
+        color: "#4b5563",
+    },
     serviceTitle: {
         fontSize: 16,
-        fontWeight: "600",
+        fontWeight: "bold",
         color: "#111827",
         marginBottom: 8,
     },
     servicePrice: {
         fontSize: 16,
-        fontWeight: "600",
-        color: "#059669",
+        fontWeight: "bold",
+        color: "#0891b2",
         marginBottom: 8,
     },
     serviceStats: {
         flexDirection: "row",
         alignItems: "center",
     },
+    ratingContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    rating: {
+        fontSize: 14,
+        color: "#4b5563",
+        marginRight: 4,
+    },
     reviewsText: {
-        fontSize: 12,
+        fontSize: 14,
         color: "#6b7280",
-        marginLeft: 4,
+    },
+    postProjectContainer: {
+        marginHorizontal: 20,
+        marginBottom: 24,
+        backgroundColor: "#f0f9ff",
+        borderRadius: 16,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: "#e0f2fe",
+    },
+    postProjectContent: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    postProjectIcon: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: "#0891b2",
+        justifyContent: "center",
+        alignItems: "center",
+        marginRight: 16,
+    },
+    postProjectText: {
+        flex: 1,
+    },
+    postProjectTitle: {
+        fontSize: 16,
+        fontWeight: "bold",
+        color: "#111827",
+        marginBottom: 4,
+    },
+    postProjectDescription: {
+        fontSize: 14,
+        color: "#4b5563",
+    },
+    loadingContainer: {
+        padding: 20,
+        alignItems: "center",
+    },
+    loadingText: {
+        marginTop: 8,
+        fontSize: 14,
+        color: "#6b7280",
+    },
+    errorContainer: {
+        padding: 20,
+        alignItems: "center",
+    },
+    errorText: {
+        fontSize: 14,
+        color: "#ef4444",
+        marginBottom: 8,
+        textAlign: "center",
+    },
+    retryButton: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        backgroundColor: "#0891b2",
+        borderRadius: 8,
+    },
+    retryButtonText: {
+        fontSize: 14,
+        color: "#ffffff",
+        fontWeight: "bold",
     },
 });

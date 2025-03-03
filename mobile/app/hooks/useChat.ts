@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { chatService, Message, Chat } from '../services/chatService';
+import { chatService, Message, Chat } from '../utils/chatService';
 
 export const useChat = (userId?: string, chatId?: string) => {
   const [messages, setMessages] = useState<Message[]>([]);

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { realtimeChatService, Message, Chat } from '../services/realtimeChatService';
+import { realtimeChatService, Message, Chat } from '../utils/realtimeChatService';
 
 export const useRealtimeChat = (userId?: string, chatId?: string) => {
   const [messages, setMessages] = useState<Message[]>([]);

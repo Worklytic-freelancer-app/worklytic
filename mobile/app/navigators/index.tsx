@@ -52,6 +52,8 @@ export type RootStackParamList = {
   EditProfile: undefined;
   ChooseFreelancer: { projectId: string };
   Payment: { projectId: string };
+  EditService: { serviceId: string };
+  ReviewPostProject: { projectId: string };
 };
 
 export default function AppNavigator() {

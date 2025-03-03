@@ -1,36 +1,113 @@
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowLeft, Star, Clock, MessageCircle } from "lucide-react-native";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
+import { useMemo } from "react";
+import { useFetch } from "@/hooks/tanstack/useFetch";
 
 type ServiceDetailScreenNavigationProp = StackNavigationProp<RootStackParamList>;
+type ServiceDetailScreenRouteProp = RouteProp<RootStackParamList, "ServiceDetails">;
+
+interface ApiService {
+  _id: string;
+  freelancerId: string;
+  title: string;
+  description: string;
+  price: number;
+  deliveryTime: string;
+  category: string;
+  images: string[];
+  rating: number;
+  reviews: number;
+  includes: string[];
+  requirements: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ApiFreelancer {
+  _id: string;
+  fullName: string;
+  profileImage: string;
+  skills: string[];
+  rating: number;
+  role: string;
+  totalProjects?: number;
+}
 
 export default function ServiceDetails() {
   const navigation = useNavigation<ServiceDetailScreenNavigationProp>();
-  const route = useRoute();
-
-  // Mock data - replace with actual data fetching
-  const service = {
-    id: 1,
-    title: "Mobile App Development",
-    description: "Professional mobile app development service for iOS and Android platforms. I specialize in creating high-quality, user-friendly applications using React Native and other modern technologies.",
-    price: "Rp5.000.000",
-    deliveryTime: "14 days",
-    rating: 4.8,
-    reviews: 25,
-    image: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&auto=format&fit=crop&q=60",
-    freelancer: {
-      id: 1,
-      name: "John Doe",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80",
-      role: "Senior Mobile Developer",
-      completedProjects: 45,
-    },
-    includes: ["Native app development", "UI/UX design", "API integration", "Testing and debugging", "App store submission"],
-    requirements: ["Project requirements document", "Brand assets and guidelines", "API documentation (if available)"],
+  const route = useRoute<ServiceDetailScreenRouteProp>();
+  const { serviceId } = route.params;
+  
+  // Fetch service details
+  const { 
+    data: service, 
+    isLoading: serviceLoading, 
+    error: serviceError,
+    refetch: refetchService
+  } = useFetch<ApiService>({
+    endpoint: `services/${serviceId}`,
+    requiresAuth: true
+  });
+  
+  // Fetch freelancer details jika service sudah diload
+  const {
+    data: freelancer,
+    isLoading: freelancerLoading,
+    error: freelancerError,
+    refetch: refetchFreelancer
+  } = useFetch<ApiFreelancer>({
+    endpoint: service ? `users/${service.freelancerId}` : '',
+    requiresAuth: true,
+    enabled: !!service // Hanya fetch jika service sudah ada
+  });
+  
+  const loading = serviceLoading || (!!service && freelancerLoading);
+  
+  // Gabungkan error dari service dan freelancer
+  const error = useMemo(() => {
+    if (serviceError) {
+      return serviceError instanceof Error ? serviceError.message : 'Failed to fetch service details';
+    }
+    if (service && freelancerError) {
+      return freelancerError instanceof Error ? freelancerError.message : 'Failed to fetch freelancer details';
+    }
+    return null;
+  }, [serviceError, freelancerError, service]);
+  
+  // Retry function untuk mencoba fetch ulang
+  const handleRetry = () => {
+    refetchService();
+    if (service) {
+      refetchFreelancer();
+    }
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0891b2" />
+        <Text style={styles.loadingText}>Loading service details...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (error || !service) {
+    return (
+      <SafeAreaView style={styles.errorContainer}>
+        <Text style={styles.errorText}>{error || 'Service not found'}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Text style={styles.backButtonText}>Go Back</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -43,33 +120,40 @@ export default function ServiceDetails() {
           <View style={{ width: 24 }} />
         </View>
 
-        <Image source={{ uri: service.image }} style={styles.coverImage} />
+        <Image 
+          source={{ uri: service.images[0] || "https://via.placeholder.com/400" }} 
+          style={styles.coverImage} 
+        />
 
         <View style={styles.content}>
-          <TouchableOpacity 
-            style={styles.freelancerSection}
-            onPress={() => navigation.navigate("FreelancerDetails", { 
-              freelancerId: service.freelancer.id 
-            })}
-          >
-            <Image source={{ uri: service.freelancer.image }} style={styles.freelancerImage} />
-            <View style={styles.freelancerInfo}>
-              <Text style={styles.freelancerName}>{service.freelancer.name}</Text>
-              <Text style={styles.freelancerRole}>{service.freelancer.role}</Text>
-            </View>
-            <TouchableOpacity
-              style={styles.chatButton}
-              onPress={() =>
-                navigation.navigate("DirectMessage", {
-                  userId: service.freelancer.id,
-                  userName: service.freelancer.name,
-                  userImage: service.freelancer.image,
-                })
-              }
+          {freelancer && (
+            <TouchableOpacity 
+              style={styles.freelancerSection}
+              onPress={() => navigation.navigate("FreelancerDetails", { 
+                freelancerId: freelancer._id 
+              })}
             >
-              <MessageCircle size={20} color="#ffffff" />
+              <Image 
+                source={{ uri: freelancer.profileImage || "https://via.placeholder.com/150" }} 
+                style={styles.freelancerImage} 
+              />
+              <View style={styles.freelancerInfo}>
+                <Text style={styles.freelancerName}>{freelancer.fullName}</Text>
+                <Text style={styles.freelancerRole}>{freelancer.role}</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.chatButton}
+                onPress={() => navigation.navigate("DirectMessage", {
+                  userId: freelancer._id,
+                  userName: freelancer.fullName,
+                  userImage: freelancer.profileImage,
+                  chatId: `freelancer_${freelancer._id}`
+                })} 
+              >
+                <MessageCircle size={20} color="#ffffff" />
+              </TouchableOpacity>
             </TouchableOpacity>
-          </TouchableOpacity>
+          )}
 
           <Text style={styles.title}>{service.title}</Text>
 
@@ -116,7 +200,7 @@ export default function ServiceDetails() {
       <View style={styles.footer}>
         <View style={styles.priceContainer}>
           <Text style={styles.priceLabel}>Starting from</Text>
-          <Text style={styles.price}>{service.price}</Text>
+          <Text style={styles.price}>Rp{service.price.toLocaleString('id-ID')}</Text>
         </View>
         <TouchableOpacity
           style={styles.hireMeButton}
@@ -180,7 +264,7 @@ const styles = StyleSheet.create({
     color: "#6b7280",
   },
   chatButton: {
-    backgroundColor: "#2563eb",
+    backgroundColor: "#0891b2",
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -249,21 +333,68 @@ const styles = StyleSheet.create({
   priceLabel: {
     fontSize: 12,
     color: "#6b7280",
-    marginBottom: 4,
   },
   price: {
     fontSize: 20,
     fontWeight: "700",
-    color: "#111827",
+    color: "#0891b2",
   },
   hireMeButton: {
-    backgroundColor: "#2563eb",
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 12,
+    backgroundColor: "#0891b2",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
   },
   hireMeButtonText: {
     color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#ffffff",
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: "#6b7280",
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#ffffff",
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: "#ef4444",
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  retryButton: {
+    backgroundColor: "#0891b2",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  retryButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  backButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+  },
+  backButtonText: {
+    color: "#4b5563",
     fontSize: 16,
     fontWeight: "600",
   },

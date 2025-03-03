@@ -1,34 +1,27 @@
-import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, FlatList, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { MapPin, Mail, Phone, Calendar, ChevronLeft } from "lucide-react-native";
+import { MapPin, Mail, Phone, Calendar, ChevronLeft, Star } from "lucide-react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
-import { baseUrl } from "@/constant/baseUrl";
-import { SecureStoreUtils } from "@/utils/SecureStore";
+import { useFetch } from "@/hooks/tanstack/useFetch";
 
-interface Project {
-  id: number;
-  title: string;
-  description: string;
-  completionDate: string;
-  clientName: string;
-  image: string;
-  category: string;
-  budget: string;
-  duration: string;
-  status: string;
-}
-
-// First, add the Service interface near the top with other interfaces
+// Updated Service interface to match API response
 interface Service {
-  id: number;
+  _id: string;
+  freelancerId: string;
   title: string;
   description: string;
-  price: string;
-  image: string;
+  price: number;
+  deliveryTime: string;
   category: string;
+  images: string[];
+  rating: number;
+  reviews: number;
+  includes: string[];
+  requirements: string[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 type FreelancerDetailsNavigationProp = StackNavigationProp<RootStackParamList>;
@@ -59,44 +52,43 @@ export default function FreelancerDetails() {
   const insets = useSafeAreaInsets();
   const { freelancerId } = route.params;
   
-  const [freelancer, setFreelancer] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Menggunakan useFetch untuk data freelancer
+  const { 
+    data: freelancer, 
+    isLoading: loading, 
+    error: fetchError,
+    refetch: refetchFreelancer
+  } = useFetch<User>({
+    endpoint: `users/${freelancerId}`,
+    requiresAuth: true
+  });
   
-  useEffect(() => {
-    fetchFreelancerData();
-  }, [freelancerId]);
+  // Menggunakan useFetch untuk layanan freelancer
+  const {
+    data: allServices,
+    isLoading: servicesLoading,
+    error: servicesError,
+    refetch: refetchServices
+  } = useFetch<Service[]>({
+    endpoint: 'services',
+    requiresAuth: true
+  });
   
-  const fetchFreelancerData = async () => {
-    try {
-      setLoading(true);
-      const token = await SecureStoreUtils.getToken();
-      
-      const response = await fetch(`${baseUrl}/api/users/${freelancerId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        setFreelancer(result.data);
-      } else {
-        throw new Error(result.message || 'Failed to fetch freelancer data');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Filter layanan berdasarkan freelancerId
+  const services = allServices?.filter(service => service.freelancerId === freelancerId) || [];
   
   // Format joined date from ISO string
   const formatJoinedDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   };
+
+  // Format price to Rupiah
+  const formatPrice = (price: number) => {
+    return `Rp${price.toLocaleString('id-ID')}`;
+  };
+  
+  const error = fetchError ? (fetchError instanceof Error ? fetchError.message : 'An error occurred') : null;
   
   if (loading) {
     return (
@@ -113,13 +105,37 @@ export default function FreelancerDetails() {
         <Text style={styles.errorText}>Gagal memuat data: {error}</Text>
         <TouchableOpacity 
           style={styles.retryButton} 
-          onPress={fetchFreelancerData}
+          onPress={() => refetchFreelancer()}
         >
           <Text style={styles.retryButtonText}>Coba Lagi</Text>
         </TouchableOpacity>
       </View>
     );
   }
+
+  const renderService = ({ item }: { item: Service }) => (
+    <TouchableOpacity 
+      style={styles.serviceCard}
+      onPress={() => navigation.navigate('ServiceDetails', { serviceId: item._id })}
+    >
+      <Image 
+        source={{ uri: item.images[0] || 'https://via.placeholder.com/300' }} 
+        style={styles.serviceImage}
+      />
+      <View style={styles.serviceContent}>
+        <Text style={styles.serviceTitle}>{item.title}</Text>
+        <Text style={styles.serviceDescription} numberOfLines={2}>{item.description}</Text>
+        <Text style={styles.servicePrice}>{formatPrice(item.price)}</Text>
+        <View style={styles.serviceStats}>
+          <View style={styles.ratingContainer}>
+            <Star size={14} color="#FFC107" fill="#FFC107" />
+            <Text style={styles.ratingText}>{item.rating}</Text>
+          </View>
+          <Text style={styles.reviewsText}>({item.reviews} reviews)</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -147,6 +163,8 @@ export default function FreelancerDetails() {
           <Text style={styles.sectionTitle}>About</Text>
           <Text style={styles.about}>{freelancer.about || "Tidak ada deskripsi tersedia."}</Text>
         </View>
+
+        
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Contact Information</Text>
@@ -181,12 +199,41 @@ export default function FreelancerDetails() {
           </View>
         </View>
 
+        {/* Services Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Services</Text>
+          {servicesLoading ? (
+            <View style={styles.servicesLoadingContainer}>
+              <ActivityIndicator size="small" color="#2563EB" />
+              <Text style={styles.loadingText}>Memuat layanan...</Text>
+            </View>
+          ) : servicesError ? (
+            <View style={styles.servicesErrorContainer}>
+              <Text style={styles.errorText}>Gagal memuat layanan: {servicesError.message}</Text>
+              <TouchableOpacity style={styles.retryButton} onPress={() => refetchServices()}>
+                <Text style={styles.retryButtonText}>Coba Lagi</Text>
+              </TouchableOpacity>
+            </View>
+          ) : services.length === 0 ? (
+            <Text style={styles.noDataText}>Freelancer belum memiliki layanan</Text>
+          ) : (
+            <FlatList
+              data={services}
+              renderItem={renderService}
+              keyExtractor={(item) => item._id}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.servicesContainer}
+            />
+          )}
+        </View>
+
         <TouchableOpacity 
           onPress={() => navigation.navigate("DirectMessage", {
             userId: freelancer._id,
             userName: freelancer.fullName,
             userImage: freelancer.profileImage,
-            chatId: freelancer._id,
+            chatId: `freelancer_${freelancer._id}`
           })} 
           style={[styles.hireButton, { backgroundColor: "#2563EB" }]}
         >
@@ -249,9 +296,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   location: {
-    marginLeft: 4,
     fontSize: 14,
     color: "#6B7280",
+    marginLeft: 4,
   },
   section: {
     paddingHorizontal: 20,
@@ -261,10 +308,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     color: "#111827",
-    marginBottom: 16,
+    marginBottom: 12,
   },
   about: {
-    fontSize: 14,
+    fontSize: 15,
     lineHeight: 22,
     color: "#4B5563",
   },
@@ -279,20 +326,22 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   contactText: {
-    marginLeft: 8,
     fontSize: 14,
     color: "#4B5563",
+    marginLeft: 8,
   },
   skillsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8,
+    marginTop: 8,
   },
   skillBadge: {
     backgroundColor: "#EFF6FF",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
+    marginRight: 8,
+    marginBottom: 8,
   },
   skillText: {
     fontSize: 14,
@@ -308,42 +357,111 @@ const styles = StyleSheet.create({
   hireButtonText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#fff",
+    color: "#FFFFFF",
   },
   loadingContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingText: {
-    marginTop: 16,
+    marginTop: 12,
     fontSize: 16,
-    color: '#6B7280',
+    color: "#6B7280",
   },
   errorContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   errorText: {
     fontSize: 16,
-    color: '#EF4444',
+    color: "#EF4444",
+    textAlign: "center",
     marginBottom: 16,
-    textAlign: 'center',
   },
   retryButton: {
-    backgroundColor: '#2563EB',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    backgroundColor: "#2563EB",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderRadius: 8,
   },
   retryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#FFFFFF",
   },
   noDataText: {
     fontSize: 14,
-    color: '#6B7280',
-    fontStyle: 'italic',
+    color: "#6B7280",
+    textAlign: "center",
+    marginTop: 8,
+  },
+  // Services styles
+  servicesContainer: {
+    paddingRight: 20,
+    paddingBottom: 8,
+  },
+  servicesLoadingContainer: {
+    alignItems: "center",
+    paddingVertical: 20,
+  },
+  servicesErrorContainer: {
+    alignItems: "center",
+    paddingVertical: 16,
+  },
+  serviceCard: {
+    width: 280,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    marginRight: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+    overflow: "hidden",
+  },
+  serviceImage: {
+    width: "100%",
+    height: 150,
+    resizeMode: "cover",
+  },
+  serviceContent: {
+    padding: 16,
+  },
+  serviceTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#111827",
+    marginBottom: 8,
+  },
+  serviceDescription: {
+    fontSize: 14,
+    color: "#6B7280",
+    marginBottom: 8,
+  },
+  servicePrice: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#2563EB",
+    marginBottom: 8,
+  },
+  serviceStats: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  ratingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 4,
+  },
+  ratingText: {
+    fontSize: 14,
+    color: "#4B5563",
+    marginLeft: 4,
+  },
+  reviewsText: {
+    fontSize: 14,
+    color: "#6B7280",
   },
 });
