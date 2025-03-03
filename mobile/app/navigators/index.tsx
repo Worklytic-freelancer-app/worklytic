@@ -1,22 +1,22 @@
 import { createStackNavigator } from "@react-navigation/stack";
 import BottomTab from "./BottomTab";
 import ProjectDetails from "@/screens/projects/projectDetails";
-import Settings from "@/screens/profile/settings";
+import Settings from "@/screens/tabs/profile/settings";
 import SignIn from "@/screens/auth/signIn";
 import SignUp from "@/screens/auth/signUp";
-import Search from "@/screens/search";
-import DirectMessage from "@/screens/inbox/directMessage";
+import Search from "@/screens/tabs/search";
+import DirectMessage from "@/screens/tabs/inbox/directMessage";
 import Freelancers from "@/screens/profileDetails/freelancers";
 import FreelancerDetails from "@/screens/profileDetails/freelancers/freelancerDetails";
-import WorkspaceDetails from "@/screens/workspace/workspaceDetails";
-import Workspace from "@/screens/workspace";
+import WorkspaceDetails from "@/screens/tabs/workspace/workspaceDetails";
+import Workspace from "@/screens/tabs/workspace";
 import PostProject from "@/screens/postProject";
-import AddService from "@/screens/profile/addService";
+import AddService from "@/screens/tabs/profile/addService";
 import Services from "@/screens/services";
 import ServiceDetails from "@/screens/services/serviceDetails";
 import Projects from "@/screens/projects";
-import EditProfile from "@/screens/profile/settings/editProfile";
-import ChooseFreelancer from "@/screens/workspace/chooseFreelancer";
+import EditProfile from "@/screens/tabs/profile/settings/editProfile";
+import ChooseFreelancer from "@/screens/tabs/workspace/chooseFreelancer";
 import Payment from "@/screens/payment";
 import { useEffect, useState } from "react";
 import { View, ActivityIndicator } from "react-native";
@@ -88,33 +88,38 @@ export default function AppNavigator() {
         headerShown: false,
       }}
     >
-      <Stack.Screen 
-        name="SignIn" 
-        component={SignIn} 
-        options={{ gestureEnabled: false }} 
-      />
-      <Stack.Screen 
-        name="SignUp" 
-        component={SignUp} 
-      />
-      <Stack.Screen 
-        name="BottomTab" 
-        component={BottomTab} 
-        options={{ gestureEnabled: false }} 
-      />
+      <Stack.Screen name="BottomTab" component={BottomTab} options={{ gestureEnabled: false }} />
+
+      {/* Auth */}
+      <Stack.Screen name="SignIn" component={SignIn} options={{ gestureEnabled: false }} />
+      <Stack.Screen name="SignUp" component={SignUp} />
+
+      {/* Settings */}
       <Stack.Screen name="Settings" component={Settings} />
+
+      {/* Projects */}
       <Stack.Screen name="ProjectDetails" component={ProjectDetails} />
       <Stack.Screen name="Projects" component={Projects} />
-      <Stack.Screen name="Search" component={Search} />
+
+      {/* Search */}
       <Stack.Screen name="DirectMessage" component={DirectMessage} />
+      <Stack.Screen name="Search" component={Search} />
+
+      {/* Freelancers */}
       <Stack.Screen name="Freelancers" component={Freelancers} />
       <Stack.Screen name="FreelancerDetails" component={FreelancerDetails} />
+
+      {/* Workspace */}
       <Stack.Screen name="Workspace" component={Workspace} />
       <Stack.Screen name="WorkspaceDetails" component={WorkspaceDetails} />
       <Stack.Screen name="PostProject" component={PostProject} />
+
+      {/* Services */}
       <Stack.Screen name="AddService" component={AddService} />
       <Stack.Screen name="Services" component={Services} />
       <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
+
+      {/* Profile */}
       <Stack.Screen name="EditProfile" component={EditProfile} />
       <Stack.Screen name="ChooseFreelancer" component={ChooseFreelancer} />
       <Stack.Screen name="Payment" component={Payment} />

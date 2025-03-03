@@ -1,11 +1,11 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
-import Home from "@/screens/home";
-import Profile from "@/screens/profile";
-import WorklyticAI from "@/screens/worklyticAI";
-import Workspace from "@/screens/workspace";
-import Search from "@/screens/search";
-import Inbox from "@/screens/inbox";
+import Home from "@/screens/tabs/home";
+import Profile from "@/screens/tabs/profile";
+import WorklyticAI from "@/screens/tabs/worklyticAI";
+import Workspace from "@/screens/tabs/workspace";
+import Search from "@/screens/tabs/search";
+import Inbox from "@/screens/tabs/inbox";
 
 const Tab = createBottomTabNavigator();
 
