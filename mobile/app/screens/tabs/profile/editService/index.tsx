@@ -87,7 +87,7 @@ export default function EditService() {
 
     const handleImagePick = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: "images",
             allowsEditing: true,
             aspect: [16, 9],
             quality: 0.8,
@@ -101,55 +101,6 @@ export default function EditService() {
 
     const removeImage = (index: number) => {
         setImages(images.filter((_, i) => i !== index));
-    };
-
-    // Fungsi untuk mengupload gambar ke Cloudinary
-    const uploadImageToCloudinary = async (uri: string) => {
-        // Jika URI sudah berupa URL (gambar yang sudah ada di server), kembalikan saja
-        if (uri.startsWith('http')) {
-            return uri;
-        }
-        
-        try {
-            // Konversi URI gambar ke base64
-            const response = await fetch(uri);
-            const blob = await response.blob();
-            
-            const reader = new FileReader();
-            return new Promise((resolve, reject) => {
-                reader.onload = async () => {
-                    try {
-                        const base64data = reader.result as string;
-                        const base64Content = base64data.split(',')[1];
-                        
-                        // Kirim ke endpoint upload di server
-                        const token = await SecureStoreUtils.getToken();
-                        const uploadResponse = await fetch(`${baseUrl}/api/upload`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${token}`
-                            },
-                            body: JSON.stringify({ image: `data:image/jpeg;base64,${base64Content}` })
-                        });
-                        
-                        const uploadResult = await uploadResponse.json();
-                        if (uploadResult.success) {
-                            resolve(uploadResult.data);
-                        } else {
-                            reject(new Error(uploadResult.message || 'Gagal mengupload gambar'));
-                        }
-                    } catch (error) {
-                        reject(error);
-                    }
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
-            });
-        } catch (error) {
-            console.error('Error uploading image:', error);
-            throw new Error('Gagal mengupload gambar');
-        }
     };
 
     const handleSubmit = async () => {
@@ -185,10 +136,30 @@ export default function EditService() {
                 return;
             }
             
-            // Upload semua gambar ke Cloudinary (jika belum di-upload)
             try {
-                const uploadPromises = images.map(image => uploadImageToCloudinary(image));
-                const uploadedImageUrls = await Promise.all(uploadPromises);
+                // Konversi semua gambar ke base64 (jika belum berupa URL)
+                const processedImages = await Promise.all(
+                    images.map(async (uri) => {
+                        // Jika URI sudah berupa URL (gambar yang sudah ada di server), kembalikan saja
+                        if (uri.startsWith('http')) {
+                            return uri;
+                        }
+                        
+                        // Konversi URI gambar lokal ke base64
+                        const response = await fetch(uri);
+                        const blob = await response.blob();
+                        
+                        return new Promise<string>((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                                const base64data = reader.result as string;
+                                resolve(base64data);
+                            };
+                            reader.onerror = reject;
+                            reader.readAsDataURL(blob);
+                        });
+                    })
+                );
                 
                 // Siapkan data untuk dikirim ke API
                 const serviceData = {
@@ -197,7 +168,7 @@ export default function EditService() {
                     price: parseInt(formData.price),
                     deliveryTime: formData.deliveryTime,
                     category: formData.category,
-                    images: uploadedImageUrls,
+                    images: processedImages, // Kirim gambar dalam format base64 atau URL
                     includes: formData.includes ? formData.includes.split(',').map(item => item.trim()) : [],
                     requirements: formData.requirements ? formData.requirements.split(',').map(item => item.trim()) : [],
                 };
@@ -206,8 +177,8 @@ export default function EditService() {
                 updateService(serviceData as Partial<ServiceData>);
                 
             } catch (uploadError) {
-                console.error('Error during upload:', uploadError);
-                Alert.alert("Error", "Terjadi kesalahan saat mengupload gambar");
+                console.error('Error during image processing:', uploadError);
+                Alert.alert("Error", "Terjadi kesalahan saat memproses gambar");
             }
         } catch (error) {
             console.error('Error updating service:', error);
