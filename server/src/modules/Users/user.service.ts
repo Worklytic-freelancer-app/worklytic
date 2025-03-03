@@ -7,7 +7,7 @@ import {
 import type { Result } from "./user.repository";
 import { hashText, compareText } from "../../utils/bcrypt";
 import { generateToken } from "../../utils/jwt";
-import cloudinary from "../../config/cloudinary";
+import { uploadToCloudinary } from "../../utils/upload";
 
 class UserService {
     async create(data: CreateUser): Promise<Result<Users>> {
@@ -102,18 +102,13 @@ class UserService {
 
     async updateProfileImage(id: string, imageData: string): Promise<Result<Users>> {
         try {
-            // Upload gambar ke Cloudinary
-            const uploadResult = await cloudinary.uploader.upload(imageData, {
-                folder: 'freelancer-app',
-                use_filename: true,
-                unique_filename: true,
-                overwrite: true,
+            // Upload gambar ke Cloudinary menggunakan utility function
+            const uploadResult = await uploadToCloudinary(imageData, {
+                folder: 'freelancer-app/profile-images'
             });
             
-            const profileImageUrl = uploadResult.secure_url;
-            
             // Update profil user dengan URL gambar baru
-            const result = await User.update({ id }, { profileImage: profileImageUrl });
+            const result = await User.update({ id }, { profileImage: uploadResult.url });
             
             if (!result.data) {
                 throw new Error("Gagal memperbarui gambar profil");

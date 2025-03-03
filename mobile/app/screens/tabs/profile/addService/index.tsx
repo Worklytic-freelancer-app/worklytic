@@ -4,10 +4,39 @@ import { ArrowLeft, Plus, X } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from 'expo-image-picker';
 import React, { useState } from "react";
-import { baseUrl } from "@/constant/baseUrl";
-import { SecureStoreUtils } from "@/utils/SecureStore";
 import { useMutation } from "@/hooks/tanstack/useMutation";
 import { useUser } from "@/hooks/tanstack/useUser";
+
+// Definisikan tipe untuk data service
+interface ServiceData {
+    _id: string;
+    title: string;
+    description: string;
+    price: number;
+    deliveryTime: string;
+    category: string;
+    images: string[];
+    rating: number;
+    reviews: number;
+    includes: string[];
+    requirements: string[];
+    freelancerId: string;
+}
+
+// Definisikan tipe untuk request payload
+interface CreateServicePayload {
+    title: string;
+    description: string;
+    price: number;
+    deliveryTime: string;
+    category: string;
+    images: string[];
+    rating: number;
+    reviews: number;
+    includes: string[];
+    requirements: string[];
+    freelancerId: string;
+}
 
 export default function AddService() {
   const navigation = useNavigation();
@@ -25,11 +54,11 @@ export default function AddService() {
   // Menggunakan useUser untuk mendapatkan data user
   const { data: userData } = useUser();
 
-  // Menggunakan useMutation untuk menambahkan layanan
-  const { mutate: createService, isPending: isLoading } = useMutation<any, any>({
+  // Menggunakan useMutation dengan tipe yang tepat
+  const { mutate: createService, isPending: isLoading } = useMutation<ServiceData, CreateServicePayload>({
     endpoint: 'services',
     method: 'POST',
-    invalidateQueries: ['services/my-services'],
+    invalidateQueries: ['users'],
     onSuccess: () => {
       Alert.alert("Sukses", "Layanan berhasil ditambahkan", [
         { text: "OK", onPress: () => navigation.goBack() }
@@ -39,7 +68,7 @@ export default function AddService() {
 
   const handleImagePick = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: "images",
       allowsEditing: true,
       aspect: [16, 9],
       quality: 0.8,
@@ -53,50 +82,6 @@ export default function AddService() {
 
   const removeImage = (index: number) => {
     setImages(images.filter((_, i) => i !== index));
-  };
-
-  // Fungsi untuk mengupload gambar ke Cloudinary
-  const uploadImageToCloudinary = async (uri: string) => {
-    try {
-      // Konversi URI gambar ke base64
-      const response = await fetch(uri);
-      const blob = await response.blob();
-      
-      const reader = new FileReader();
-      return new Promise((resolve, reject) => {
-        reader.onload = async () => {
-          try {
-            const base64data = reader.result as string;
-            const base64Content = base64data.split(',')[1];
-            
-            // Kirim ke endpoint upload di server
-            const token = await SecureStoreUtils.getToken();
-            const uploadResponse = await fetch(`${baseUrl}/api/upload`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              },
-              body: JSON.stringify({ image: `data:image/jpeg;base64,${base64Content}` })
-            });
-            
-            const uploadResult = await uploadResponse.json();
-            if (uploadResult.success) {
-              resolve(uploadResult.data);
-            } else {
-              reject(new Error(uploadResult.message || 'Gagal mengupload gambar'));
-            }
-          } catch (error) {
-            reject(error);
-          }
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      throw new Error('Gagal mengupload gambar');
-    }
   };
 
   const handleSubmit = async () => {
@@ -132,10 +117,24 @@ export default function AddService() {
         return;
       }
       
-      // Upload semua gambar ke Cloudinary
       try {
-        const uploadPromises = images.map(image => uploadImageToCloudinary(image));
-        const uploadedImageUrls = await Promise.all(uploadPromises);
+        // Konversi semua gambar ke base64
+        const base64Images = await Promise.all(
+          images.map(async (uri) => {
+            const response = await fetch(uri);
+            const blob = await response.blob();
+            
+            return new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => {
+                const base64data = reader.result as string;
+                resolve(base64data);
+              };
+              reader.onerror = reject;
+              reader.readAsDataURL(blob);
+            });
+          })
+        );
         
         if (!userData?._id) {
           throw new Error('User ID tidak ditemukan');
@@ -149,7 +148,7 @@ export default function AddService() {
           price: parseInt(formData.price),
           deliveryTime: formData.deliveryTime,
           category: formData.category,
-          images: uploadedImageUrls,
+          images: base64Images, // Kirim gambar dalam format base64
           rating: 0,
           reviews: 0,
           includes: formData.includes ? formData.includes.split(',').map(item => item.trim()) : [],
@@ -160,8 +159,8 @@ export default function AddService() {
         createService(serviceData);
         
       } catch (uploadError) {
-        console.error('Error during upload:', uploadError);
-        Alert.alert("Error", "Terjadi kesalahan saat mengupload gambar");
+        console.error('Error during image processing:', uploadError);
+        Alert.alert("Error", "Terjadi kesalahan saat memproses gambar");
       }
     } catch (error) {
       console.error('Error creating service:', error);

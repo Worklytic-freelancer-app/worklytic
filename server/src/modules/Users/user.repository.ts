@@ -4,143 +4,177 @@ import type { CreateUser, UpdateUser, Users, UserId } from "./user.schema";
 import { User } from "./user.schema";
 
 export type Result<T> = {
-  success: boolean;
-  message?: string;
-  data: T | null;
-  error?: unknown;
+    success: boolean;
+    message?: string;
+    data: T | null;
+    error?: unknown;
 };
 
 export class UserRepository {
-  private readonly collection = "Users";
+    private readonly collection = "Users";
 
-  private getCollection = async () => {
-    return db.collection(this.collection);
-  };
+    private getCollection = async () => {
+        return db.collection(this.collection);
+    };
 
-  create = async (data: CreateUser): Promise<Result<Users>> => {
-    try {
-      const doc = {
-        ...data,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      } as const;
+    create = async (data: CreateUser): Promise<Result<Users>> => {
+        try {
+            const doc = {
+                ...data,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            } as const;
 
-      const collection = await this.getCollection();
-      const result = await collection.insertOne(doc);
+            const collection = await this.getCollection();
+            const result = await collection.insertOne(doc);
 
-      if (!result.acknowledged) {
-        throw new Error("Failed to create user");
-      }
+            if (!result.acknowledged) {
+                throw new Error("Failed to create user");
+            }
 
-      return {
-        success: true,
-        message: "User created successfully",
-        data: new User({ ...doc, _id: result.insertedId }) as Users,
-      };
-    } catch (error) {
-      throw new Error(error instanceof Error ? error.message : "Failed to create user");
-    }
-  };
+            return {
+                success: true,
+                message: "User created successfully",
+                data: new User({ ...doc, _id: result.insertedId }) as Users,
+            };
+        } catch (error) {
+            throw new Error(error instanceof Error ? error.message : "Failed to create user");
+        }
+    };
 
-  findAll = async (): Promise<Result<Users[]>> => {
-    try {
-      const collection = await this.getCollection();
-      const docs = (await collection.find({}).toArray()) as Users[];
+    findAll = async (): Promise<Result<Users[]>> => {
+        try {
+            const collection = await this.getCollection();
 
-      return {
-        success: true,
-        data: docs.map((doc) => new User(doc) as Users),
-      };
-    } catch (error) {
-      console.log(error);
-      throw new Error("Failed to fetch users");
-    }
-  };
+            // const docs = (await collection.find({}).toArray()) as Users[];
+            const docs = (await collection.aggregate([
+                {
+                    $match: {
+                        role: "freelancer"
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "Services",
+                        localField: "_id",
+                        foreignField: "freelancerId",
+                        as: "services"
+                    }
+                }
+            ]).toArray()) as Users[];
 
-  findById = async ({ id }: UserId): Promise<Result<Users>> => {
-    try {
-      const collection = await this.getCollection();
-      const doc = (await collection.findOne({ _id: new ObjectId(id) })) as Users | null;
+            // console.log(docs);
 
-      if (!doc) {
-        throw new Error("User not found");
-      }
+            return {
+                success: true,
+                data: docs.map((doc) => new User(doc) as Users),
+            };
+        } catch (error) {
+            console.log(error);
+            throw new Error("Failed to fetch users");
+        }
+    };
 
-      return {
-        success: true,
-        data: new User(doc) as Users,
-      };
-    } catch (error) {
-      throw new Error(error instanceof Error ? error.message : "Failed to find user");
-    }
-  };
+    findById = async ({ id }: UserId): Promise<Result<Users>> => {
+        try {
+            const collection = await this.getCollection();
+            const docs = await collection.aggregate([
+                {
+                    $match: {
+                        _id: new ObjectId(id)
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "Services",
+                        localField: "_id",
+                        foreignField: "freelancerId",
+                        as: "services"
+                    }
+                }
+            ]).toArray();
 
-  findByEmail = async (email: string): Promise<Result<Users>> => {
-    try {
-      const collection = await this.getCollection();
-      const doc = (await collection.findOne({ email })) as Users | null;
+            if (!docs.length) {
+                throw new Error("User not found");
+            }
 
-      if (!doc) {
-        throw new Error("User not found");
-      }
+            const doc = docs[0] as Users;
 
-      return {
-        success: true,
-        data: new User(doc) as Users,
-      };
-    } catch (error) {
-      throw new Error(error instanceof Error ? error.message : "Failed to find user");
-    }
-  };
+            return {
+                success: true,
+                data: new User(doc) as Users,
+            };
+        } catch (error) {
+            throw new Error(error instanceof Error ? error.message : "Failed to find user");
+        }
+    };
 
-  update = async ({ id }: UserId, data: UpdateUser): Promise<Result<Users>> => {
-    try {
-      const collection = await this.getCollection();
-      const result = await collection.findOneAndUpdate(
-        { _id: new ObjectId(id) },
-        {
-          $set: {
-            ...data,
-            updatedAt: new Date(),
-          },
-        },
-        { returnDocument: "after" }
-      );
+    findByEmail = async (email: string): Promise<Result<Users>> => {
+        try {
+            const collection = await this.getCollection();
+            const doc = (await collection.findOne({ email })) as Users | null;
 
-      if (!result) {
-        throw new Error("User not found");
-      }
+            if (!doc) {
+                throw new Error("User not found");
+            }
 
-      return {
-        success: true,
-        message: "User updated successfully",
-        data: new User(result) as Users,
-      };
-    } catch (error) {
-      throw new Error(error instanceof Error ? error.message : "Failed to update user");
-    }
-  };
+            return {
+                success: true,
+                data: new User(doc) as Users,
+            };
+        } catch (error) {
+            throw new Error(error instanceof Error ? error.message : "Failed to find user");
+        }
+    };
 
-  delete = async ({ id }: UserId): Promise<Result<Users>> => {
-    try {
-      const collection = await this.getCollection();
-      const doc = await collection.findOne({ _id: new ObjectId(id) });
+    update = async ({ id }: UserId, data: UpdateUser): Promise<Result<Users>> => {
+        try {
+            const collection = await this.getCollection();
+            const result = await collection.findOneAndUpdate(
+                { _id: new ObjectId(id) },
+                {
+                    $set: {
+                        ...data,
+                        updatedAt: new Date(),
+                    },
+                },
+                { returnDocument: "after" }
+            );
 
-      if (!doc) {
-        throw new Error("User not found");
-      }
+            if (!result) {
+                throw new Error("User not found");
+            }
 
-      await collection.deleteOne({ _id: new ObjectId(id) });
+            return {
+                success: true,
+                message: "User updated successfully",
+                data: new User(result) as Users,
+            };
+        } catch (error) {
+            throw new Error(error instanceof Error ? error.message : "Failed to update user");
+        }
+    };
 
-      return {
-        success: true,
-        message: "User deleted successfully",
-        data: new User(doc) as Users,
-      };
-    } catch (error) {
-      throw new Error(error instanceof Error ? error.message : "Failed to delete user");
-    }
-  };
+    delete = async ({ id }: UserId): Promise<Result<Users>> => {
+        try {
+            const collection = await this.getCollection();
+            const doc = await collection.findOne({ _id: new ObjectId(id) });
+
+            if (!doc) {
+                throw new Error("User not found");
+            }
+
+            await collection.deleteOne({ _id: new ObjectId(id) });
+
+            return {
+                success: true,
+                message: "User deleted successfully",
+                data: new User(doc) as Users,
+            };
+        } catch (error) {
+            throw new Error(error instanceof Error ? error.message : "Failed to delete user");
+        }
+    };
 }
 
 // ! -- CUSTOM METHODS --

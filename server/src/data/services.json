@@ -1,6 +1,6 @@
 [
     {
-        "freelancerId": "67c09e7ea8bf2bcd8d03f7fd",
+        "freelancerId": "66d064e5e913892a850e1236",
         "title": "UI/UX Design untuk Website dan Mobile Apps",
         "description": "Jasa desain UI/UX profesional untuk website dan aplikasi mobile dengan fokus pada user experience dan accessibility. Termasuk user research, wireframing, dan prototype interaktif.",
         "price": 750000,
@@ -30,7 +30,7 @@
         "updatedAt": "2024-02-27T22:41:19.724Z"
     },
     {
-        "freelancerId": "67c09e7ea8bf2bcd8d03f7fe",
+        "freelancerId": "66d064e5e913892a850e1237",
         "title": "Pengembangan Aplikasi Mobile Android & iOS",
         "description": "Jasa pembuatan aplikasi mobile untuk platform Android dan iOS menggunakan React Native atau Flutter. Termasuk integrasi API dan testing.",
         "price": 2500000,
@@ -60,7 +60,7 @@
         "updatedAt": "2024-02-27T00:20:10.466Z"
     },
     {
-        "freelancerId": "67c09e7ea8bf2bcd8d03f7fd",
+        "freelancerId": "66d064e5e913892a850e1236",
         "title": "Design System Development",
         "description": "Pembuatan design system komprehensif untuk produk digital Anda. Mencakup komponen UI, guidelines, dan dokumentasi lengkap.",
         "price": 1200000,
@@ -90,7 +90,7 @@
         "updatedAt": "2024-02-27T15:41:19.724Z"
     },
     {
-        "freelancerId": "67c09e7ea8bf2bcd8d03f7fe",
+        "freelancerId": "66d064e5e913892a850e1234",
         "title": "Backend Development dengan Node.js",
         "description": "Pengembangan REST API dan sistem backend menggunakan Node.js, Express, dan MongoDB. Termasuk authentication dan authorization.",
         "price": 1800000,
@@ -120,7 +120,7 @@
         "updatedAt": "2024-02-27T12:20:10.466Z"
     },
     {
-        "freelancerId": "67c09e7ea8bf2bcd8d03f7fd",
+        "freelancerId": "66d064e5e913892a850e1238",
         "title": "Mobile App UI Prototyping",
         "description": "Pembuatan prototype interaktif untuk aplikasi mobile dengan fokus pada user experience dan micro-interactions.",
         "price": 900000,
@@ -150,7 +150,7 @@
         "updatedAt": "2024-02-27T18:41:19.724Z"
     },
     {
-        "freelancerId": "67c09e7ea8bf2bcd8d03f7fe",
+        "freelancerId": "66d064e5e913892a850e1296",
         "title": "Full-Stack Web Application",
         "description": "Pengembangan aplikasi web full-stack menggunakan MERN stack (MongoDB, Express, React, Node.js) dengan fitur real-time.",
         "price": 3500000,

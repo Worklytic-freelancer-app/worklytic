@@ -41,6 +41,9 @@ class ProjectService {
                 };
             }
 
+            // console.log(projects.data, "projects");
+            console.log(skills, "skills");
+
             // Filter proyek yang sesuai dengan skills dan urutkan berdasarkan budget tertinggi
             const recommendedProjects = projects.data
                 .filter(project => {
@@ -63,13 +66,13 @@ class ProjectService {
 
 export const Service = new ProjectService();
 
-// async function test() {
-//     try {
-//         const projects = await Service.getRecommendationsBySkills(["react", "nodejs", "typescript", "mongodb", "express"]);
-//         console.log(projects);
-//     } catch (error) {
-//         console.log(error);
-//     }
-// }
+async function test() {
+    try {
+        const projects = await Service.getRecommendationsBySkills(["react", "nodejs", "typescript", "mongodb", "express"]);
+        console.log(projects);
+    } catch (error) {
+        console.log(error);
+    }
+}
 
-// test();
+test();

@@ -5,8 +5,8 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 import { Pencil, Trash2 } from "lucide-react-native";
-import { useFetch } from "@/hooks/tanstack/useFetch";
 import { useMutation } from "@/hooks/tanstack/useMutation";
+import { useUser } from "@/hooks/tanstack/useUser";
 
 type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -16,27 +16,38 @@ interface Service {
     description: string;
     price: number;
     images: string[];
+    deliveryTime?: string;
+    category?: string;
+    rating?: number;
+    reviews?: number;
+    includes?: string[];
+    requirements?: string[];
+    freelancerId?: string;
 }
 
 export default function Services() {
     const navigation = useNavigation<ProfileScreenNavigationProp>();
     const [deletingId, setDeletingId] = useState<string | null>(null);
     
-    // Menggunakan useFetch untuk mendapatkan data layanan
+    // Menggunakan useUser untuk mendapatkan data user yang sedang login
     const { 
-        data: services = [], 
-        isLoading, 
-        error, 
-        refetch 
-    } = useFetch<Service[]>({
-        endpoint: 'services/my-services',
-    });
+        data: userData, 
+        isLoading: isUserLoading, 
+        error: userError,
+        refetch: refetchUser
+    } = useUser();
+    
+    // Ekstrak services dari data user
+    const services = userData?.services || [];
     
     // Menggunakan useMutation untuk menghapus layanan
-    const { mutate: deleteService } = useMutation<any, {}>({
+    const { mutate: deleteService } = useMutation<
+        { success: boolean; message: string }, 
+        { customEndpoint: string }
+    >({
         endpoint: 'services',
         method: 'DELETE',
-        invalidateQueries: ['services/my-services'],
+        invalidateQueries: ['user'],
         onSuccess: () => {
             Alert.alert("Sukses", "Layanan berhasil dihapus");
         },
@@ -69,7 +80,7 @@ export default function Services() {
         return `Rp${price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
     };
 
-    if (isLoading) {
+    if (isUserLoading) {
         return (
             <View style={[styles.section, styles.loadingContainer]}>
                 <ActivityIndicator size="large" color="#2563eb" />
@@ -77,11 +88,11 @@ export default function Services() {
         );
     }
 
-    if (error) {
+    if (userError) {
         return (
             <View style={[styles.section, styles.errorContainer]}>
-                <Text style={styles.errorText}>Gagal memuat layanan: {error.message}</Text>
-                <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
+                <Text style={styles.errorText}>Gagal memuat layanan: {userError.message}</Text>
+                <TouchableOpacity style={styles.retryButton} onPress={() => refetchUser()}>
                     <Text style={styles.retryButtonText}>Coba Lagi</Text>
                 </TouchableOpacity>
             </View>
@@ -113,7 +124,7 @@ export default function Services() {
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={styles.servicesContainer}
                 >
-                    {services.map((service) => (
+                    {services.map((service: Service) => (
                         <TouchableOpacity 
                             key={service._id} 
                             style={styles.serviceCard}

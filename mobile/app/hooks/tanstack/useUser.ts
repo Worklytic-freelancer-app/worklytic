@@ -2,6 +2,21 @@ import { useQuery } from '@tanstack/react-query';
 import { baseUrl } from '@/constant/baseUrl';
 import { SecureStoreUtils } from '@/utils/SecureStore';
 
+interface Service {
+    _id: string;
+    title: string;
+    description: string;
+    price: number;
+    images: string[];
+    deliveryTime?: string;
+    category?: string;
+    rating?: number;
+    reviews?: number;
+    includes?: string[];
+    requirements?: string[];
+    freelancerId?: string;
+}
+
 interface User {
     _id: string;
     fullName: string;
@@ -20,6 +35,7 @@ interface User {
     totalReviews: number;
     companyName?: string;
     industry?: string;
+    services: Service[];
 }
 
 export const useUser = () => {

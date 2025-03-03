@@ -16,12 +16,12 @@ import Services from "@/screens/services";
 import ServiceDetails from "@/screens/services/serviceDetails";
 import Projects from "@/screens/projects";
 import EditProfile from "@/screens/tabs/profile/settings/editProfile";
+import EditService from "@/screens/tabs/profile/editService";
 import ChooseFreelancer from "@/screens/tabs/workspace/chooseFreelancer";
 import Payment from "@/screens/payment";
 import { useEffect, useState } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { SecureStoreUtils } from "@/utils/SecureStore";
-
 const Stack = createStackNavigator<RootStackParamList>();
 
 export type RootStackParamList = {
@@ -119,6 +119,7 @@ export default function AppNavigator() {
 
       {/* Services */}
       <Stack.Screen name="AddService" component={AddService} />
+      <Stack.Screen name="EditService" component={EditService} />
       <Stack.Screen name="Services" component={Services} />
       <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
 

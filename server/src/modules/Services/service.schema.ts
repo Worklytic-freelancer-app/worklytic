@@ -7,7 +7,8 @@ export class Service {
     }
 }
 
-const ServiceSchema = z.object({
+// Skema dasar untuk layanan
+const ServiceBaseSchema = z.object({
     freelancerId: z.string().transform((val) => new ObjectId(val)),
     title: z.string(),
     description: z.string(),
@@ -19,31 +20,36 @@ const ServiceSchema = z.object({
     reviews: z.number(),
     includes: z.array(z.string()),
     requirements: z.array(z.string()),
-    createdAt: z.date(),
-    updatedAt: z.date()
 })
 
+// Skema untuk ID
 const WithIdSchema = z.object({
     _id: z.instanceof(ObjectId)
 })
 
+// Skema untuk timestamp
 const TimestampSchema = z.object({
     createdAt: z.date(),
     updatedAt: z.date()
 })
 
+// Validasi ID layanan
 export const ServiceIdValidate = z.object({
     id: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId format")
 })
 
-export const CreateServiceValidate = ServiceSchema
+// Validasi untuk membuat layanan baru (tidak perlu timestamp)
+export const CreateServiceValidate = ServiceBaseSchema
 
-export const ServicesValidate = ServiceSchema
+// Validasi untuk layanan lengkap (dengan ID dan timestamp)
+export const ServicesValidate = ServiceBaseSchema
     .merge(WithIdSchema)
     .merge(TimestampSchema)
 
-export const UpdateServiceValidate = ServiceSchema.partial()
+// Validasi untuk update layanan (semua field opsional)
+export const UpdateServiceValidate = ServiceBaseSchema.partial()
 
+// Type definitions
 export type CreateService = z.infer<typeof CreateServiceValidate>
 export type Services = z.infer<typeof ServicesValidate>
 export type UpdateService = z.infer<typeof UpdateServiceValidate>

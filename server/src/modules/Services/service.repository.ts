@@ -19,11 +19,16 @@ export class ServiceRepository {
     
     create = async (data: CreateService): Promise<Result<Services>> => {
         try {
+            console.log("Creating service with data:", JSON.stringify(data, null, 2));
+            
+            // Pastikan field yang diperlukan ada
             const doc = {
                 ...data,
                 createdAt: new Date(),
                 updatedAt: new Date()
             } as const;
+            
+            console.log("Final document to insert:", JSON.stringify(doc, null, 2));
             
             const collection = await this.getCollection();
             const result = await collection.insertOne(doc);
@@ -38,6 +43,7 @@ export class ServiceRepository {
                 data: new Service({ ...doc, _id: result.insertedId }) as Services
             };
         } catch (error) {
+            console.error("Error in repository create:", error);
             throw new Error(error instanceof Error ? error.message : "Failed to create service");
         }
     };
@@ -46,7 +52,16 @@ export class ServiceRepository {
         try {
             const collection = await this.getCollection();
             const docs = await collection
-                .find({})
+                .aggregate([
+                    {
+                        $lookup: {
+                            from: "Users",
+                            localField: "freelancerId",
+                            foreignField: "_id",
+                            as: "freelancer"
+                        }
+                    },
+                ])
                 .toArray() as Services[];
                 
             return {
@@ -56,6 +71,25 @@ export class ServiceRepository {
         } catch (error) {
             console.log(error)
             throw new Error("Failed to fetch services");
+        }
+    };
+
+    findByFreelancerId = async ({ freelancerId }: { freelancerId: string }): Promise<Result<Services>> => {
+        try {
+            const collection = await this.getCollection();
+            const doc = await collection
+                .findOne({ freelancerId: new ObjectId(freelancerId) }) as Services | null;
+
+            if (!doc) {
+                throw new Error("Service not found");
+            }
+            
+            return {
+                success: true,
+                data: new Service(doc) as Services
+            };
+        } catch (error) {
+            throw new Error(error instanceof Error ? error.message : "Failed to find service by freelancerId");
         }
     };
 
