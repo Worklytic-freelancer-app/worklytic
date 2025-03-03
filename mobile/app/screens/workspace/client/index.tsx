@@ -9,6 +9,15 @@ import { baseUrl } from "@/constant/baseUrl";
 import { SecureStoreUtils } from "@/utils/SecureStore";
 import { useUser } from "@/hooks/useUser";
 
+interface ProjectFeature {
+    _id: string;
+    projectId: string;
+    freelancerId: string;
+    status: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
 interface Project {
     _id: string;
     title: string;
@@ -17,9 +26,11 @@ interface Project {
     status: string;
     image: string[];
     featuresCount?: number;
+    features?: ProjectFeature[];
     client?: {
         _id: string;
         fullName: string;
+        profileImage?: string;
     };
 }
 
@@ -60,9 +71,9 @@ export default function ClientWorkspace() {
             
             if (result.success) {
                 // Filter proyek yang dimiliki oleh client yang sedang login
-                const clientProjects = result.data.filter(
-                    (project: Project) => project.client?._id === user._id
-                );
+                const clientProjects = Array.isArray(result.data) 
+                    ? result.data.filter((project: Project) => project.client?._id === user._id)
+                    : [];
                 setProjects(clientProjects);
             } else {
                 throw new Error(result.message || 'Gagal mengambil data proyek');
@@ -78,11 +89,20 @@ export default function ClientWorkspace() {
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         const now = new Date();
-        const diffTime = Math.abs(now.getTime() - date.getTime());
+        
+        // Reset jam untuk perbandingan tanggal saja
+        const dateWithoutTime = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const nowWithoutTime = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        
+        // Hitung selisih dalam hari
+        const diffTime = Math.abs(nowWithoutTime.getTime() - dateWithoutTime.getTime());
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         
-        if (diffDays === 1) {
-            return 'yesterday';
+        if (diffDays === 0) {
+            return 'today';
+        } else if (diffDays === 1) {
+            // Cek apakah kemarin atau besok
+            return dateWithoutTime < nowWithoutTime ? 'yesterday' : 'tomorrow';
         } else if (diffDays < 7) {
             return `${diffDays} days ago`;
         } else if (diffDays < 30) {
@@ -96,92 +116,95 @@ export default function ClientWorkspace() {
 
     const getStatusColor = (status: string) => {
         switch (status.toLowerCase()) {
-            case "open":
-                return "#10b981";
-            case "in progress":
-                return "#f59e0b";
-            case "completed":
-                return "#6b7280";
+            case 'open':
+                return {
+                    bg: '#ecfdf5',
+                    text: '#059669'
+                };
+            case 'in progress':
+                return {
+                    bg: '#eff6ff',
+                    text: '#3b82f6'
+                };
+            case 'completed':
+                return {
+                    bg: '#f3f4f6',
+                    text: '#4b5563'
+                };
             default:
-                return "#6b7280";
+                return {
+                    bg: '#f3f4f6',
+                    text: '#4b5563'
+                };
         }
     };
 
-    const renderProject = ({ item }: { item: Project }) => (
-        <TouchableOpacity 
-            style={styles.projectCard} 
-            onPress={() => navigation.navigate("ChooseFreelancer", { projectId: item._id })}
-        >
-            <Image 
-                source={{ 
-                    uri: item.image && item.image.length > 0 
-                        ? item.image[0] 
-                        : "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&auto=format&fit=crop&q=60" 
-                }} 
-                style={styles.projectImage} 
-            />
-            <View style={styles.projectInfo}>
-                <View style={styles.projectHeader}>
-                    <Text style={styles.projectTitle}>{item.title}</Text>
-                    <View style={[styles.statusBadge, { backgroundColor: `${getStatusColor(item.status)}15` }]}>
-                        <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
-                            {item.status === "in progress" ? "In Progress" : 
-                             item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+    const renderProject = ({ item }: { item: Project }) => {
+        const statusColor = getStatusColor(item.status);
+        const featuresCount = item.featuresCount || (item.features?.length || 0);
+        
+        return (
+            <TouchableOpacity
+                style={styles.projectCard}
+                onPress={() => navigation.navigate('ChooseFreelancer', { projectId: item._id })}
+            >
+                <Image
+                    source={{ 
+                        uri: item.image && item.image.length > 0 
+                            ? item.image[0] 
+                            : 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d' 
+                    }}
+                    style={styles.projectImage}
+                    resizeMode="cover"
+                />
+                <View style={styles.projectInfo}>
+                    <View style={styles.projectHeader}>
+                        <Text style={styles.projectTitle} numberOfLines={2}>
+                            {item.title}
                         </Text>
+                        <View style={[styles.statusBadge, { backgroundColor: statusColor.bg }]}>
+                            <Text style={[styles.statusText, { color: statusColor.text }]}>
+                                {item.status}
+                            </Text>
+                        </View>
+                    </View>
+                    <Text style={styles.projectBudget}>
+                        Rp {item.budget.toLocaleString('id-ID')}
+                    </Text>
+                    <View style={styles.projectMeta}>
+                        <View style={styles.metaItem}>
+                            <Clock size={16} color="#6b7280" />
+                            <Text style={styles.metaText}>
+                                Posted {formatDate(item.createdAt)}
+                            </Text>
+                        </View>
+                        <View style={styles.metaItem}>
+                            <Users size={16} color="#6b7280" />
+                            <Text style={styles.metaText}>
+                                {featuresCount} {featuresCount === 1 ? 'freelancer' : 'freelancers'}
+                            </Text>
+                        </View>
                     </View>
                 </View>
-                <Text style={styles.projectBudget}>${item.budget.toLocaleString()}</Text>
-                <View style={styles.projectMeta}>
-                    <View style={styles.metaItem}>
-                        <Clock size={16} color="#6b7280" />
-                        <Text style={styles.metaText}>Posted {formatDate(item.createdAt)}</Text>
-                    </View>
-                    <View style={styles.metaItem}>
-                        <Users size={16} color="#6b7280" />
-                        <Text style={styles.metaText}>{item.featuresCount || 0} Applicants</Text>
-                    </View>
-                </View>
-            </View>
-        </TouchableOpacity>
-    );
+            </TouchableOpacity>
+        );
+    };
 
     if (loading) {
         return (
-            <View style={[styles.container, { paddingTop: insets.top }]}>
-                <View style={styles.header}>
-                    <Text style={styles.headerTitle}>My Posted Projects</Text>
-                    <TouchableOpacity 
-                        style={styles.postButton}
-                        onPress={() => navigation.navigate("PostProject")}
-                    >
-                        <Plus size={20} color="#ffffff" />
-                    </TouchableOpacity>
-                </View>
-                <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#2563eb" />
-                </View>
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#2563eb" />
             </View>
         );
     }
 
     if (error) {
         return (
-            <View style={[styles.container, { paddingTop: insets.top }]}>
-                <View style={styles.header}>
-                    <Text style={styles.headerTitle}>My Posted Projects</Text>
-                    <TouchableOpacity 
-                        style={styles.postButton}
-                        onPress={() => navigation.navigate("PostProject")}
-                    >
-                        <Plus size={20} color="#ffffff" />
-                    </TouchableOpacity>
-                </View>
-                <View style={styles.errorContainer}>
-                    <Text style={styles.errorText}>{error}</Text>
-                    <TouchableOpacity style={styles.retryButton} onPress={fetchProjects}>
-                        <Text style={styles.retryButtonText}>Coba Lagi</Text>
-                    </TouchableOpacity>
-                </View>
+            <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>{error}</Text>
+                <TouchableOpacity style={styles.retryButton} onPress={fetchProjects}>
+                    <Text style={styles.retryButtonText}>Coba Lagi</Text>
+                </TouchableOpacity>
             </View>
         );
     }
@@ -189,35 +212,36 @@ export default function ClientWorkspace() {
     return (
         <View style={[styles.container, { paddingTop: insets.top }]}>
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>My Posted Projects</Text>
+                <Text style={styles.title}>Workspace</Text>
                 <TouchableOpacity 
-                    style={styles.postButton}
-                    onPress={() => navigation.navigate("PostProject")}
+                    style={styles.addButton}
+                    onPress={() => navigation.navigate('PostProject')}
                 >
-                    <Plus size={20} color="#ffffff" />
+                    <Plus size={20} color="#fff" />
                 </TouchableOpacity>
             </View>
-
-            <FlatList<Project> 
-                data={projects} 
-                renderItem={renderProject} 
-                keyExtractor={(item) => item._id.toString()} 
-                contentContainerStyle={styles.projectsList} 
-                showsVerticalScrollIndicator={false}
-                refreshing={loading}
-                onRefresh={fetchProjects}
-                ListEmptyComponent={
-                    <View style={styles.emptyContainer}>
-                        <Text style={styles.emptyText}>Kamu belum memposting proyek</Text>
-                        <TouchableOpacity 
-                            style={styles.postProjectButton}
-                            onPress={() => navigation.navigate("PostProject")}
-                        >
-                            <Text style={styles.postProjectButtonText}>Post Project</Text>
-                        </TouchableOpacity>
-                    </View>
-                }
-            />
+            
+            {projects.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                    <Text style={styles.emptyText}>
+                        Kamu belum memiliki proyek. Buat proyek baru untuk mulai mencari freelancer.
+                    </Text>
+                    <TouchableOpacity 
+                        style={styles.postProjectButton}
+                        onPress={() => navigation.navigate('PostProject')}
+                    >
+                        <Text style={styles.postProjectButtonText}>Buat Proyek Baru</Text>
+                    </TouchableOpacity>
+                </View>
+            ) : (
+                <FlatList
+                    data={projects}
+                    renderItem={renderProject}
+                    keyExtractor={(item) => item._id}
+                    contentContainerStyle={styles.projectList}
+                    showsVerticalScrollIndicator={false}
+                />
+            )}
         </View>
     );
 }
@@ -225,21 +249,24 @@ export default function ClientWorkspace() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#fff",
+        backgroundColor: "#f9fafb",
     },
     header: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        paddingHorizontal: 20,
-        paddingVertical: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        backgroundColor: "#fff",
+        borderBottomWidth: 1,
+        borderBottomColor: "#e5e7eb",
     },
-    headerTitle: {
-        fontSize: 24,
+    title: {
+        fontSize: 20,
         fontWeight: "700",
         color: "#111827",
     },
-    postButton: {
+    addButton: {
         backgroundColor: "#2563eb",
         width: 40,
         height: 40,
@@ -247,8 +274,8 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
-    projectsList: {
-        padding: 20,
+    projectList: {
+        padding: 16,
     },
     projectCard: {
         backgroundColor: "#fff",

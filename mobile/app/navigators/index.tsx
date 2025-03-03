@@ -24,7 +24,7 @@ import { SecureStoreUtils } from "@/utils/SecureStore";
 const Stack = createStackNavigator();
 
 export type RootStackParamList = {
-  BottomTab: undefined;
+  BottomTab: { screen: string } | undefined;
   Settings: undefined;
   Projects: undefined;
   ProjectDetails: { projectId: string; clientId?: string };

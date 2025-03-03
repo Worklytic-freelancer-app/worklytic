@@ -78,38 +78,11 @@ export default function FreelancerWorkspace() {
             
             if (result.success) {
                 // Filter project features yang dimiliki oleh freelancer yang sedang login
-                const freelancerProjects = result.data.filter(
-                    (feature: ProjectFeature) => feature.freelancerId === user._id
-                );
+                const freelancerProjects = Array.isArray(result.data) 
+                    ? result.data.filter((feature: ProjectFeature) => feature.freelancerId === user._id)
+                    : [];
                 
-                // Ambil detail project untuk setiap project feature
-                const projectsWithDetails = await Promise.all(
-                    freelancerProjects.map(async (feature: ProjectFeature) => {
-                        try {
-                            const projectResponse = await fetch(`${baseUrl}/api/projects/${feature.projectId}`, {
-                                headers: {
-                                    'Authorization': `Bearer ${token}`
-                                }
-                            });
-                            
-                            if (projectResponse.ok) {
-                                const projectResult = await projectResponse.json();
-                                if (projectResult.success) {
-                                    return {
-                                        ...feature,
-                                        project: projectResult.data
-                                    };
-                                }
-                            }
-                            return feature;
-                        } catch (err) {
-                            console.error('Error fetching project details:', err);
-                            return feature;
-                        }
-                    })
-                );
-                
-                setMyProjects(projectsWithDetails);
+                setMyProjects(freelancerProjects);
             } else {
                 throw new Error(result.message || 'Gagal mengambil data project features');
             }
@@ -127,7 +100,9 @@ export default function FreelancerWorkspace() {
         const diffTime = Math.abs(now.getTime() - date.getTime());
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         
-        if (diffDays === 1) {
+        if (diffDays <= 1) {
+            return 'today';
+        } else if (diffDays < 2) {
             return 'yesterday';
         } else if (diffDays < 7) {
             return `${diffDays} days ago`;
@@ -182,7 +157,10 @@ export default function FreelancerWorkspace() {
     const renderProject = ({ item }: { item: ProjectFeature }) => (
         <TouchableOpacity 
             style={styles.projectCard} 
-            onPress={() => navigation.navigate("WorkspaceDetails", { projectId: item._id })}
+            onPress={() => navigation.navigate("WorkspaceDetails", { 
+                projectId: item.projectId,  // Gunakan projectId, bukan _id
+                freelancerId: user?._id     // Tambahkan freelancerId
+            })}
         >
             <Image 
                 source={{ 
@@ -217,7 +195,9 @@ export default function FreelancerWorkspace() {
                         <Text style={styles.companyName}>
                             {item.project?.client?.fullName || "Unknown Client"}
                         </Text>
-                        <Text style={styles.appliedDate}>Applied {formatDate(item.createdAt)}</Text>
+                        <Text style={styles.appliedDate}>
+                            Applied {formatDate(item.createdAt)}
+                        </Text>
                     </View>
                 </View>
             </View>
@@ -351,19 +331,18 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     companyImage: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        marginRight: 12,
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        marginRight: 8,
     },
     companyName: {
         fontSize: 14,
         fontWeight: "500",
         color: "#111827",
-        marginBottom: 2,
     },
     appliedDate: {
-        fontSize: 13,
+        fontSize: 12,
         color: "#6b7280",
     },
     loadingContainer: {
@@ -390,15 +369,13 @@ const styles = StyleSheet.create({
         borderRadius: 8,
     },
     retryButtonText: {
-        color: '#ffffff',
-        fontSize: 14,
+        color: '#fff',
         fontWeight: '500',
     },
     emptyContainer: {
-        flex: 1,
-        justifyContent: 'center',
+        padding: 40,
         alignItems: 'center',
-        paddingVertical: 40,
+        justifyContent: 'center',
     },
     emptyText: {
         fontSize: 16,

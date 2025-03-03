@@ -258,8 +258,10 @@ export default function ProjectDetails() {
         onClose={() => setShowTerms(false)}
         onAccept={() => {
           setShowTerms(false);
-          // Handle acceptance logic here
+          navigation.navigate('BottomTab', { screen: 'Workspace' });
+          alert('Aplikasi berhasil dikirim! Tunggu konfirmasi dari client.');
         }}
+        projectId={route.params.projectId}
       />
     </View>
   );

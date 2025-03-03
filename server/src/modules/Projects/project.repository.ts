@@ -96,8 +96,42 @@ export class ProjectRepository {
     findById = async ({ id }: ProjectId): Promise<Result<Projects>> => {
         try {
             const collection = await this.getCollection();
-            const doc = await collection
-                .findOne({ _id: new ObjectId(id) }) as Projects | null;
+            const [doc] = await collection.aggregate([
+                {
+                    $match: { _id: new ObjectId(id) }
+                },
+                // Lookup untuk mendapatkan data client
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "clientId",
+                        foreignField: "_id",
+                        as: "client"
+                    }
+                },
+                // Unwind client array (mengubah array menjadi object)
+                {
+                    $unwind: {
+                        path: "$client",
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                // Lookup untuk mendapatkan project features
+                {
+                    $lookup: {
+                        from: "ProjectFeatures",
+                        localField: "_id",
+                        foreignField: "projectId",
+                        as: "features"
+                    }
+                },
+                // Tambahkan field untuk menghitung jumlah features
+                {
+                    $addFields: {
+                        featuresCount: { $size: "$features" }
+                    }
+                }
+            ]).toArray() as Projects[];
                 
             if (!doc) {
                 throw new Error("Project not found");

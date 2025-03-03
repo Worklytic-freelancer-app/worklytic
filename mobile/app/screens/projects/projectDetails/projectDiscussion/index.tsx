@@ -1,15 +1,19 @@
 import React, { useState, useRef } from "react";
-import { View, Text, Modal, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from "react-native";
+import { View, Text, Modal, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SecureStoreUtils } from "@/utils/SecureStore";
+import { baseUrl } from "@/constant/baseUrl";
 
 interface ProjectDiscussionProps {
   isVisible: boolean;
   onClose: () => void;
   onAccept: () => void;
+  projectId: string;
 }
 
-export default function ProjectDiscussion({ isVisible, onClose, onAccept }: ProjectDiscussionProps) {
+export default function ProjectDiscussion({ isVisible, onClose, onAccept, projectId }: ProjectDiscussionProps) {
   const [canAccept, setCanAccept] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const insets = useSafeAreaInsets();
 
@@ -20,6 +24,66 @@ export default function ProjectDiscussion({ isVisible, onClose, onAccept }: Proj
 
     if (isCloseToBottom) {
       setCanAccept(true);
+    }
+  };
+
+  const handleAccept = async () => {
+    if (!canAccept || isSubmitting) return;
+    
+    setIsSubmitting(true);
+    try {
+      const userData = await SecureStoreUtils.getUserData();
+      const token = await SecureStoreUtils.getToken();
+      
+      if (!userData?._id) {
+        throw new Error('User ID tidak ditemukan');
+      }
+      
+      if (!token) {
+        throw new Error('Token tidak ditemukan');
+      }
+      
+      // Buat project feature baru
+      const response = await fetch(`${baseUrl}/api/projectfeatures`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          projectId: projectId,
+          freelancerId: userData._id,
+          status: 'pending'
+        })
+      });
+      
+      // Cek status response
+      if (response.status === 409) {
+        // Jika freelancer sudah apply
+        const errorData = await response.json();
+        alert(errorData.message || 'Kamu sudah melamar untuk proyek ini');
+        onClose(); // Tutup modal
+        return;
+      }
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Error: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.message || 'Gagal mengajukan lamaran');
+      }
+      
+      // Panggil onAccept callback untuk navigasi
+      onAccept();
+    } catch (error) {
+      console.error('Error applying to project:', error);
+      alert(error instanceof Error ? error.message : 'Terjadi kesalahan saat mengajukan lamaran');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -111,16 +175,24 @@ By accepting these terms, you agree to:
           <View style={[styles.modalFooter, { paddingBottom: insets.bottom }]}>
             <View style={styles.buttonContainer}>
               <TouchableOpacity 
-                style={[styles.modalButton, styles.buttonFlex, !canAccept && styles.modalButtonDisabled]} 
-                disabled={!canAccept} 
-                onPress={onAccept}
+                style={[styles.modalButton, styles.buttonFlex, (!canAccept || isSubmitting) && styles.modalButtonDisabled]} 
+                disabled={!canAccept || isSubmitting} 
+                onPress={handleAccept}
               >
-                <Text style={[styles.modalButtonText, !canAccept && styles.modalButtonTextDisabled]}>
-                  {canAccept ? "Accept & Continue" : "Please read all terms"}
-                </Text>
+                {isSubmitting ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={[styles.modalButtonText, !canAccept && styles.modalButtonTextDisabled]}>
+                    {canAccept ? "Accept & Continue" : "Please read all terms"}
+                  </Text>
+                )}
               </TouchableOpacity>
 
-              <TouchableOpacity style={[styles.modalButton, styles.cancelButton, styles.buttonFlex]} onPress={onClose}>
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.cancelButton, styles.buttonFlex]} 
+                onPress={onClose}
+                disabled={isSubmitting}
+              >
                 <Text style={[styles.modalButtonText, styles.cancelButtonText]}>Cancel</Text>
               </TouchableOpacity>
             </View>
