@@ -1,9 +1,10 @@
 import React from "react";
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndicator } from "react-native";
-import { Star, ChevronRight } from "lucide-react-native";
+import { Star } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
+import { COLORS } from "@/constant/color";
 
 interface ApiFreelancer {
     _id: string;
@@ -43,9 +44,8 @@ export default function TopFreelancer({
                 <View style={styles.sectionHeader}>
                     <Text style={styles.sectionTitle}>{title}</Text>
                     {showSeeAll && (
-                        <TouchableOpacity style={styles.seeAllButton} onPress={handleSeeAll}>
-                            <Text style={styles.seeAllText}>Lihat Semua</Text>
-                            <ChevronRight size={16} color="#2563eb" />
+                        <TouchableOpacity onPress={handleSeeAll}>
+                            <Text style={styles.seeAllText}>See All</Text>
                         </TouchableOpacity>
                     )}
                 </View>
@@ -62,9 +62,8 @@ export default function TopFreelancer({
                 <View style={styles.sectionHeader}>
                     <Text style={styles.sectionTitle}>{title}</Text>
                     {showSeeAll && (
-                        <TouchableOpacity style={styles.seeAllButton} onPress={handleSeeAll}>
-                            <Text style={styles.seeAllText}>Lihat Semua</Text>
-                            <ChevronRight size={16} color="#2563eb" />
+                        <TouchableOpacity onPress={handleSeeAll}>
+                            <Text style={styles.seeAllText}>See All</Text>
                         </TouchableOpacity>
                     )}
                 </View>
@@ -84,9 +83,8 @@ export default function TopFreelancer({
                 <View style={styles.sectionHeader}>
                     <Text style={styles.sectionTitle}>{title}</Text>
                     {showSeeAll && (
-                        <TouchableOpacity style={styles.seeAllButton} onPress={handleSeeAll}>
-                            <Text style={styles.seeAllText}>Lihat Semua</Text>
-                            <ChevronRight size={16} color="#2563eb" />
+                        <TouchableOpacity onPress={handleSeeAll}>
+                            <Text style={styles.seeAllText}>See All</Text>
                         </TouchableOpacity>
                     )}
                 </View>
@@ -102,9 +100,8 @@ export default function TopFreelancer({
             <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>{title}</Text>
                 {showSeeAll && (
-                    <TouchableOpacity style={styles.seeAllButton} onPress={handleSeeAll}>
-                        <Text style={styles.seeAllText}>Lihat Semua</Text>
-                        <ChevronRight size={16} color="#2563eb" />
+                    <TouchableOpacity onPress={handleSeeAll}>
+                        <Text style={styles.seeAllText}>See All</Text>
                     </TouchableOpacity>
                 )}
             </View>
@@ -155,12 +152,11 @@ const styles = StyleSheet.create({
         color: "#111827",
     },
     seeAllButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
+        // Style kept for backward compatibility
     },
     seeAllText: {
         fontSize: 14,
-        color: "#2563eb",
+        color: COLORS.primary,
         fontWeight: "500",
     },
     freelancersScroll: {
@@ -202,7 +198,7 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
     rating: {
-        marginLeft: 4,
+        marginLeft: 6,
         fontSize: 14,
         color: "#111827",
     },
@@ -225,7 +221,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     retryButton: {
-        backgroundColor: '#2563eb',
+        backgroundColor: COLORS.primary,
         paddingHorizontal: 16,
         paddingVertical: 8,
         borderRadius: 8,

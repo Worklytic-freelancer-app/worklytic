@@ -20,6 +20,7 @@ import EditProfile from "@/screens/tabs/profile/settings/editProfile";
 import EditService from "@/screens/tabs/profile/editService";
 import ChooseFreelancer from "@/screens/tabs/workspace/chooseFreelancer";
 import Payment from "@/screens/payment";
+import Notifications from "@/screens/notifications";
 import { useEffect, useState } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { SecureStoreUtils } from "@/utils/SecureStore";
@@ -57,6 +58,7 @@ export type RootStackParamList = {
   Payment: { projectId: string };
   EditService: { serviceId: string };
   ReviewPostProject: { projectId: string };
+  Notifications: undefined;
 };
 
 export default function AppNavigator() {
@@ -131,6 +133,9 @@ export default function AppNavigator() {
       <Stack.Screen name="EditProfile" component={EditProfile} />
       <Stack.Screen name="ChooseFreelancer" component={ChooseFreelancer} />
       <Stack.Screen name="Payment" component={Payment} />
+
+      {/* Notifications */}
+      <Stack.Screen name="Notifications" component={Notifications} />
     </Stack.Navigator>
   );
 }

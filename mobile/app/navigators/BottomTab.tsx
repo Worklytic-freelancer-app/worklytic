@@ -1,11 +1,12 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Ionicons } from "@expo/vector-icons";
+import { Home as HomeIcon, Search as SearchIcon, Sparkles, Briefcase, MessageCircle, User } from "lucide-react-native";
 import Home from "@/screens/tabs/home";
 import Profile from "@/screens/tabs/profile";
 import WorklyticAI from "@/screens/tabs/worklyticAI";
 import Workspace from "@/screens/tabs/workspace";
 import Search from "@/screens/tabs/search";
 import Inbox from "@/screens/tabs/inbox";
+import { COLORS } from "@/constant/color";
 
 const Tab = createBottomTabNavigator();
 
@@ -14,37 +15,46 @@ export default function BottomTab() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: "#007AFF",
-        tabBarInactiveTintColor: "#8E8E93",
+        tabBarActiveTintColor: COLORS.primary,
+        tabBarInactiveTintColor: COLORS.gray,
         tabBarStyle: {
-          paddingBottom: 5,
-          paddingTop: 5,
+          height: 80,
+          paddingHorizontal: 15,
+          backgroundColor: COLORS.background,
+          borderTopWidth: 1,
+          borderTopColor: COLORS.border,
+          shadowColor: COLORS.black,
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.05,
+          shadowRadius: 4,
+        },
+        tabBarShowLabel: false,
+        tabBarItemStyle: {
+          height: 80,
+          paddingTop: 10,
+          justifyContent: 'center',
+          alignItems: 'center',
         },
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
-
+          const iconSize = size;
+          const strokeWidth = focused ? 2.5 : 2;
+          
           switch (route.name) {
             case "Home":
-              iconName = focused ? "home" : "home-outline";
-              break;
-            case "Search": // Update case
-              iconName = focused ? "search" : "search-outline";
-              break;
+              return <HomeIcon size={iconSize} color={color} strokeWidth={strokeWidth} />;
+            case "Search":
+              return <SearchIcon size={iconSize} color={color} strokeWidth={strokeWidth} />;
             case "WorklyticAI":
-              iconName = focused ? "sparkles" : "sparkles-outline";
-              break;
+              return <Sparkles size={iconSize} color={color} strokeWidth={strokeWidth} />;
             case "Workspace":
-              iconName = focused ? "briefcase" : "briefcase-outline";
-              break;
+              return <Briefcase size={iconSize} color={color} strokeWidth={strokeWidth} />;
             case "inbox":
-              iconName = focused ? "chatbubbles" : "chatbubbles-outline";
-              break;
+              return <MessageCircle size={iconSize} color={color} strokeWidth={strokeWidth} />;
             case "Profile":
-              iconName = focused ? "person" : "person-outline";
-              break;
+              return <User size={iconSize} color={color} strokeWidth={strokeWidth} />;
+            default:
+              return <HomeIcon size={iconSize} color={color} strokeWidth={strokeWidth} />;
           }
-
-          return <Ionicons name={iconName as any} size={size} color={color} />;
         },
       })}
     >
