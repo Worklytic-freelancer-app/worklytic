@@ -1,14 +1,43 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, TextInput, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowLeft, Search } from "lucide-react-native";
+import { ArrowLeft, Search, X } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
+import { SecureStoreUtils } from "@/utils/SecureStore";
+import { baseUrl } from "@/constant/baseUrl";
 
 type ServicesScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
+interface ApiService {
+  _id: string;
+  freelancerId: string;
+  title: string;
+  description: string;
+  price: number;
+  deliveryTime: string;
+  category: string;
+  images: string[];
+  rating: number;
+  reviews: number;
+  includes: string[];
+  requirements: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ApiFreelancer {
+  _id: string;
+  fullName: string;
+  profileImage: string;
+  skills: string[];
+  rating: number;
+  role: string;
+}
+
 interface Service {
-  id: number;
+  id: string;
   freelancerName: string;
   freelancerImage: string;
   title: string;
@@ -20,35 +49,91 @@ interface Service {
 
 export default function Services() {
   const navigation = useNavigation<ServicesScreenNavigationProp>();
+  const [services, setServices] = useState<Service[]>([]);
+  const [filteredServices, setFilteredServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const services: Service[] = [
-    {
-      id: 1,
-      freelancerName: "John Doe",
-      freelancerImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80",
-      title: "Mobile App Development",
-      price: "Rp5.000.000",
-      rating: 4.8,
-      reviews: 25,
-      image: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&auto=format&fit=crop&q=60",
-    },
-    {
-      id: 2,
-      freelancerName: "Jane Smith",
-      freelancerImage: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&auto=format&fit=crop&q=60",
-      title: "Web Development",
-      price: "Rp4.000.000",
-      rating: 4.9,
-      reviews: 32,
-      image: "https://images.unsplash.com/photo-1547658719-da2b51169166?w=800&auto=format&fit=crop&q=60",
-    },
-    // Add more services as needed
-  ];
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredServices(services);
+    } else {
+      const filtered = services.filter(service => 
+        service.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredServices(filtered);
+    }
+  }, [searchQuery, services]);
+
+  const fetchServices = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const token = await SecureStoreUtils.getToken();
+      
+      // Mengambil data services
+      const servicesResponse = await fetch(`${baseUrl}/api/services`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      const servicesResult = await servicesResponse.json();
+      
+      if (servicesResult.success && servicesResult.data) {
+        // Mengambil data freelancers untuk mendapatkan nama dan gambar profil
+        const freelancersResponse = await fetch(`${baseUrl}/api/users`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        const freelancersResult = await freelancersResponse.json();
+        const freelancers = freelancersResult.success ? freelancersResult.data : [];
+        
+        // Menggabungkan data services dengan data freelancer
+        const servicesWithFreelancerInfo = servicesResult.data.map((service: ApiService) => {
+          const freelancer = freelancers.find((f: ApiFreelancer) => f._id === service.freelancerId);
+          
+          return {
+            id: service._id,
+            freelancerName: freelancer ? freelancer.fullName : "Unknown Freelancer",
+            freelancerImage: freelancer ? freelancer.profileImage : "https://via.placeholder.com/150",
+            title: service.title,
+            price: `Rp${service.price.toLocaleString('id-ID')}`,
+            rating: service.rating,
+            reviews: service.reviews,
+            image: service.images[0] || "https://via.placeholder.com/400",
+          };
+        });
+        
+        setServices(servicesWithFreelancerInfo);
+        setFilteredServices(servicesWithFreelancerInfo);
+      } else {
+        setError(servicesResult.message || 'Failed to fetch services');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('Error fetching services:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
+  };
 
   const renderService = ({ item }: { item: Service }) => (
     <TouchableOpacity 
       style={styles.serviceCard}
-      onPress={() => navigation.navigate('ServiceDetails', { serviceId: item.id.toString() })}
+      onPress={() => navigation.navigate('ServiceDetails', { serviceId: item.id })}
     >
       <Image source={{ uri: item.image }} style={styles.serviceImage} />
       <View style={styles.serviceInfo}>
@@ -68,6 +153,24 @@ export default function Services() {
     </TouchableOpacity>
   );
 
+  const renderEmptyList = () => (
+    <View style={styles.emptyContainer}>
+      {searchQuery.trim() !== "" ? (
+        <>
+          <Text style={styles.emptyTitle}>No services found</Text>
+          <Text style={styles.emptyText}>
+            We couldn't find any services matching "{searchQuery}"
+          </Text>
+          <TouchableOpacity style={styles.clearButton} onPress={clearSearch}>
+            <Text style={styles.clearButtonText}>Clear Search</Text>
+          </TouchableOpacity>
+        </>
+      ) : (
+        <Text style={styles.emptyText}>No services available at the moment</Text>
+      )}
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -80,16 +183,42 @@ export default function Services() {
 
       <View style={styles.searchContainer}>
         <Search size={20} color="#6b7280" />
-        <Text style={styles.searchPlaceholder}>Search services</Text>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search services"
+          placeholderTextColor="#6b7280"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={clearSearch}>
+            <X size={20} color="#6b7280" />
+          </TouchableOpacity>
+        )}
       </View>
 
-      <FlatList
-        data={services}
-        renderItem={renderService}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.servicesList}
-        showsVerticalScrollIndicator={false}
-      />
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0891b2" />
+          <Text style={styles.loadingText}>Loading services...</Text>
+        </View>
+      ) : error ? (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={fetchServices}>
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredServices}
+          renderItem={renderService}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.servicesList}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={renderEmptyList}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -121,13 +250,15 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 12,
   },
-  searchPlaceholder: {
+  searchInput: {
+    flex: 1,
     marginLeft: 12,
     fontSize: 15,
-    color: "#6b7280",
+    color: "#111827",
   },
   servicesList: {
     padding: 20,
+    flexGrow: 1,
   },
   serviceCard: {
     backgroundColor: "#fff",
@@ -138,12 +269,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2,
+    overflow: "hidden",
   },
   serviceImage: {
     width: "100%",
     height: 200,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    resizeMode: "cover",
   },
   serviceInfo: {
     padding: 16,
@@ -161,7 +292,6 @@ const styles = StyleSheet.create({
   },
   freelancerName: {
     fontSize: 14,
-    fontWeight: "500",
     color: "#4b5563",
   },
   serviceTitle: {
@@ -173,7 +303,7 @@ const styles = StyleSheet.create({
   servicePrice: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#059669",
+    color: "#0891b2",
     marginBottom: 8,
   },
   serviceStats: {
@@ -183,19 +313,78 @@ const styles = StyleSheet.create({
   ratingContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f3f4f6",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
   },
   rating: {
-    fontSize: 12,
-    color: "#6b7280",
-    fontWeight: "500",
+    fontSize: 14,
+    color: "#4b5563",
+    marginRight: 4,
   },
   reviewsText: {
-    fontSize: 12,
+    fontSize: 14,
     color: "#6b7280",
-    marginLeft: 4,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: "#6b7280",
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: "#ef4444",
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  retryButton: {
+    backgroundColor: "#0891b2",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+    minHeight: 300,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#111827",
+    marginBottom: 8,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#6b7280",
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  clearButton: {
+    backgroundColor: "#0891b2",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  clearButtonText: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "600",
   },
 });
