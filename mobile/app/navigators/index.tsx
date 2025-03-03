@@ -4,6 +4,7 @@ import ProjectDetails from "@/screens/projects/projectDetails";
 import Settings from "@/screens/tabs/profile/settings";
 import SignIn from "@/screens/auth/signIn";
 import SignUp from "@/screens/auth/signUp";
+import SelectRole from "@/screens/auth/selectRole";
 import Search from "@/screens/tabs/search";
 import DirectMessage from "@/screens/tabs/inbox/directMessage";
 import Freelancers from "@/screens/profileDetails/freelancers";
@@ -31,6 +32,7 @@ export type RootStackParamList = {
   Projects: undefined;
   ProjectDetails: { projectId: string; clientId?: string };
   SignIn: undefined;
+  SelectRole: undefined;
   SignUp: { role: "freelancer" | "client" } | undefined;
   ForgotPassword: undefined;
   Search: undefined;
@@ -59,12 +61,12 @@ export type RootStackParamList = {
 
 export default function AppNavigator() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  
+
   useEffect(() => {
     // Memeriksa token saat aplikasi dimulai
     checkAuthStatus();
   }, []);
-  
+
   const checkAuthStatus = async () => {
     try {
       const token = await SecureStoreUtils.getToken();
@@ -74,11 +76,11 @@ export default function AppNavigator() {
       setIsAuthenticated(false);
     }
   };
-  
+
   // Menampilkan loading screen saat memeriksa status autentikasi
   if (isAuthenticated === null) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#fff" }}>
         <ActivityIndicator size="large" color="#2563eb" />
       </View>
     );
@@ -95,7 +97,8 @@ export default function AppNavigator() {
       <Stack.Screen name="BottomTab" component={BottomTab} options={{ gestureEnabled: false }} />
 
       {/* Auth */}
-      <Stack.Screen name="SignIn" component={SignIn} options={{ gestureEnabled: false }} />
+      <Stack.Screen name="SignIn" component={SignIn} options={{ animation: "fade_from_bottom", gestureEnabled: false }} />
+      <Stack.Screen name="SelectRole" component={SelectRole} />
       <Stack.Screen name="SignUp" component={SignUp} />
 
       {/* Settings */}

@@ -1,12 +1,13 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Eye, EyeOff } from "lucide-react-native";
+import { Eye, EyeOff, Mail, Lock } from "lucide-react-native";
 import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 import { Alert } from "react-native";
 import { useAuth } from "@/hooks/tanstack/useAuth";
+import { COLORS } from "@/constant/color";
 
 type SignInScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -18,7 +19,7 @@ export default function SignIn() {
     email: "",
     password: "",
   });
-  
+
   const { signIn, isSigningIn, signInError } = useAuth();
 
   async function handleSignIn() {
@@ -32,7 +33,7 @@ export default function SignIn() {
         },
         onError: (error) => {
           Alert.alert("Error", error.message || "Gagal melakukan login");
-        }
+        },
       });
     } catch (error) {
       console.error("Error signing in:", error);
@@ -41,100 +42,143 @@ export default function SignIn() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Sign In to Worklytic</Text>
-        <Text style={styles.subtitle}>Welcome back! Please enter your details</Text>
-      </View>
-
-      <View style={styles.form}>
-        <View style={styles.inputContainer}>
-          <TextInput style={styles.input} placeholder="Email" placeholderTextColor="#6b7280" keyboardType="email-address" autoCapitalize="none" value={form.email} onChangeText={(text) => setForm({ ...form, email: text })} />
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: COLORS.background }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <ScrollView contentContainerStyle={[styles.container, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 }]}>
+        <View style={styles.logoContainer}>
+          <View style={styles.logoCircle}>
+            <Text style={styles.logoText}>W</Text>
+          </View>
+          <Text style={styles.logoTitle}>Worklytic</Text>
         </View>
 
-        <View style={styles.inputContainer}>
-          <TextInput style={styles.input} placeholder="Password" placeholderTextColor="#6b7280" secureTextEntry={!showPassword} value={form.password} onChangeText={(text) => setForm({ ...form, password: text })} />
-          <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeButton}>
-            {showPassword ? <EyeOff size={20} color="#6b7280" /> : <Eye size={20} color="#6b7280" />}
+        <View style={styles.header}>
+          <Text style={styles.title}>Welcome Back</Text>
+          <Text style={styles.subtitle}>Sign in to continue your journey</Text>
+        </View>
+
+        <View style={styles.form}>
+          <View style={styles.inputContainer}>
+            <View style={styles.iconContainer}>
+              <Mail size={20} color={COLORS.primary} />
+            </View>
+            <TextInput style={styles.input} placeholder="Email" placeholderTextColor={COLORS.gray} keyboardType="email-address" autoCapitalize="none" value={form.email} onChangeText={(text) => setForm({ ...form, email: text })} />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <View style={styles.iconContainer}>
+              <Lock size={20} color={COLORS.primary} />
+            </View>
+            <TextInput style={styles.input} placeholder="Password" placeholderTextColor={COLORS.gray} secureTextEntry={!showPassword} value={form.password} onChangeText={(text) => setForm({ ...form, password: text })} />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeButton}>
+              {showPassword ? <EyeOff size={20} color={COLORS.gray} /> : <Eye size={20} color={COLORS.gray} />}
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity style={styles.forgotPassword} onPress={() => navigation.navigate("ForgotPassword")}>
+            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={[styles.signInButton, isSigningIn && styles.disabledButton]} onPress={handleSignIn} disabled={isSigningIn}>
+            <Text style={styles.signInButtonText}>{isSigningIn ? "Signing In..." : "Sign In"}</Text>
+          </TouchableOpacity>
+
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>OR</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          <TouchableOpacity style={styles.socialButton}>
+            <Image source={{ uri: "https://cdn-icons-png.flaticon.com/512/2991/2991148.png" }} style={styles.socialIcon} />
+            <Text style={styles.socialButtonText}>Continue with Google</Text>
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.forgotPassword} onPress={() => navigation.navigate("ForgotPassword")}>
-          <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[styles.signInButton, isSigningIn && styles.disabledButton]} 
-          onPress={handleSignIn}
-          disabled={isSigningIn}
-        >
-          <Text style={styles.signInButtonText}>
-            {isSigningIn ? "Signing In..." : "Sign In"}
-          </Text>
-        </TouchableOpacity>
-
-        <View style={styles.divider}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>OR</Text>
-          <View style={styles.dividerLine} />
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Don't have an account? </Text>
+          <TouchableOpacity onPress={() => navigation.navigate("SelectRole")}>
+            <Text style={styles.footerLink}>Sign Up</Text>
+          </TouchableOpacity>
         </View>
-
-        <TouchableOpacity style={styles.googleButton}>
-          <Text style={styles.googleButtonText}>Continue with Google</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Don't have an account? </Text>
-        <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
-          <Text style={styles.footerLink}>Sign Up</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: "#fff",
+    flexGrow: 1,
+    backgroundColor: COLORS.background,
     paddingHorizontal: 24,
     justifyContent: "center",
   },
+  logoContainer: {
+    alignItems: "center",
+    marginBottom: 30,
+  },
+  logoCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: COLORS.primary,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 10,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  logoText: {
+    fontSize: 30,
+    fontWeight: "bold",
+    color: COLORS.background,
+  },
+  logoTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: COLORS.black,
+  },
   header: {
     alignItems: "center",
-    paddingVertical: 48,
+    marginBottom: 30,
   },
   title: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#111827",
-    marginBottom: 12,
+    color: COLORS.black,
+    marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: "#6b7280",
+    color: COLORS.gray,
     textAlign: "center",
   },
   form: {
-    marginTop: 24,
+    width: "100%",
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f3f4f6",
+    backgroundColor: COLORS.inputBackground,
     borderRadius: 12,
-    paddingHorizontal: 16,
     marginBottom: 16,
     height: 56,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  iconContainer: {
+    paddingHorizontal: 16,
   },
   input: {
     flex: 1,
     fontSize: 16,
-    color: "#111827",
+    color: COLORS.black,
+    height: "100%",
   },
   eyeButton: {
-    padding: 8,
+    padding: 16,
   },
   forgotPassword: {
     alignSelf: "flex-end",
@@ -142,19 +186,24 @@ const styles = StyleSheet.create({
   },
   forgotPasswordText: {
     fontSize: 14,
-    color: "#2563eb",
+    color: COLORS.primary,
     fontWeight: "500",
   },
   signInButton: {
-    backgroundColor: "#2563eb",
+    backgroundColor: COLORS.primary,
     borderRadius: 12,
     height: 56,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 24,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   signInButtonText: {
-    color: "#fff",
+    color: COLORS.background,
     fontSize: 16,
     fontWeight: "600",
   },
@@ -166,25 +215,30 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: "#e5e7eb",
+    backgroundColor: COLORS.border,
   },
   dividerText: {
     marginHorizontal: 16,
-    color: "#6b7280",
+    color: COLORS.gray,
     fontSize: 14,
   },
-  googleButton: {
+  socialButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.background,
     borderRadius: 12,
     height: 56,
     borderWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: COLORS.border,
   },
-  googleButtonText: {
-    color: "#374151",
+  socialIcon: {
+    width: 24,
+    height: 24,
+    marginRight: 12,
+  },
+  socialButtonText: {
+    color: COLORS.darkGray,
     fontSize: 16,
     fontWeight: "500",
   },
@@ -192,24 +246,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
+    marginTop: 40,
   },
   footerText: {
     fontSize: 14,
-    marginTop: 20,
-    color: "#6b7280",
+    color: COLORS.gray,
   },
   footerLink: {
     fontSize: 14,
-    marginTop: 20,
-    color: "#2563eb",
+    color: COLORS.primary,
     fontWeight: "500",
   },
   disabledButton: {
-    backgroundColor: "#93c5fd",
+    backgroundColor: COLORS.disabled,
   },
 });

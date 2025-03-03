@@ -1,12 +1,13 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Mail, Lock, Eye, EyeOff, User } from "lucide-react-native";
+import { Mail, Lock, Eye, EyeOff, User, ChevronLeft } from "lucide-react-native";
 import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 import { Alert } from "react-native";
 import { useAuth } from "@/hooks/tanstack/useAuth";
+import { COLORS } from "@/constant/color";
 
 type SignUpScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -61,7 +62,7 @@ export default function SignUpForm({ role }: SignUpFormProps) {
           fullName: form.name,
           email: form.email,
           password: form.password,
-          role: form.role
+          role: form.role,
         },
         {
           onSuccess: () => {
@@ -72,15 +73,26 @@ export default function SignUpForm({ role }: SignUpFormProps) {
           },
           onError: (error) => {
             Alert.alert("Error", error.message || "Gagal melakukan registrasi");
-          }
+          },
         }
       );
     }
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.contentContainer}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: COLORS.background }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <ScrollView contentContainerStyle={[styles.container, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 }]}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <ChevronLeft size={24} color={COLORS.black} />
+        </TouchableOpacity>
+
+        <View style={styles.logoContainer}>
+          <View style={styles.logoCircle}>
+            <Text style={styles.logoText}>W</Text>
+          </View>
+          <Text style={styles.logoTitle}>Worklytic</Text>
+        </View>
+
         <View style={styles.header}>
           <Text style={styles.title}>Sign Up as {role === "client" ? "Client" : "Freelancer"}</Text>
           <Text style={styles.subtitle}>Create your account to get started</Text>
@@ -88,31 +100,39 @@ export default function SignUpForm({ role }: SignUpFormProps) {
 
         <View style={styles.form}>
           <View style={styles.inputContainer}>
-            <User size={20} color="#6b7280" />
-            <TextInput autoCapitalize="none" style={styles.input} placeholder="Full Name" placeholderTextColor="#6b7280" value={form.name} onChangeText={(text) => setForm({ ...form, name: text })} />
+            <View style={styles.iconContainer}>
+              <User size={20} color={COLORS.primary} />
+            </View>
+            <TextInput style={styles.input} placeholder="Full Name" placeholderTextColor={COLORS.gray} autoCapitalize="words" value={form.name} onChangeText={(text) => setForm({ ...form, name: text })} />
           </View>
 
           <View style={styles.inputContainer}>
-            <Mail size={20} color="#6b7280" />
-            <TextInput autoCapitalize="none" style={styles.input} placeholder="Email" placeholderTextColor="#6b7280" keyboardType="email-address" value={form.email} onChangeText={(text) => setForm({ ...form, email: text })} />
+            <View style={styles.iconContainer}>
+              <Mail size={20} color={COLORS.primary} />
+            </View>
+            <TextInput style={styles.input} placeholder="Email" placeholderTextColor={COLORS.gray} keyboardType="email-address" autoCapitalize="none" value={form.email} onChangeText={(text) => setForm({ ...form, email: text })} />
           </View>
 
           <View style={styles.inputContainer}>
-            <Lock size={20} color="#6b7280" />
-            <TextInput autoCapitalize="none" style={styles.input} placeholder="Password" placeholderTextColor="#6b7280" secureTextEntry={!showPassword} value={form.password} onChangeText={(text) => setForm({ ...form, password: text })} />
+            <View style={styles.iconContainer}>
+              <Lock size={20} color={COLORS.primary} />
+            </View>
+            <TextInput
+              style={styles.input}
+              placeholder="Password"
+              placeholderTextColor={COLORS.gray}
+              secureTextEntry={!showPassword}
+              autoCapitalize="none"
+              value={form.password}
+              onChangeText={(text) => setForm({ ...form, password: text })}
+            />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeButton}>
-              {showPassword ? <EyeOff size={20} color="#6b7280" /> : <Eye size={20} color="#6b7280" />}
+              {showPassword ? <EyeOff size={20} color={COLORS.gray} /> : <Eye size={20} color={COLORS.gray} />}
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity 
-            style={[styles.signUpButton, isSigningUp && styles.disabledButton]} 
-            onPress={handleSignUp}
-            disabled={isSigningUp}
-          >
-            <Text style={styles.signUpButtonText}>
-              {isSigningUp ? "Creating Account..." : "Create Account"}
-            </Text>
+          <TouchableOpacity style={[styles.signUpButton, isSigningUp && styles.disabledButton]} onPress={handleSignUp} disabled={isSigningUp}>
+            <Text style={styles.signUpButtonText}>{isSigningUp ? "Creating Account..." : "Create Account"}</Text>
           </TouchableOpacity>
 
           <View style={styles.divider}>
@@ -122,78 +142,117 @@ export default function SignUpForm({ role }: SignUpFormProps) {
           </View>
 
           <TouchableOpacity style={styles.googleButton}>
+            <Image source={{ uri: "https://cdn-icons-png.flaticon.com/512/2991/2991148.png" }} style={styles.socialIcon} />
             <Text style={styles.googleButtonText}>Continue with Google</Text>
           </TouchableOpacity>
         </View>
-      </View>
 
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Already have an account? </Text>
-        <TouchableOpacity onPress={() => navigation.navigate("SignIn")}>
-          <Text style={styles.footerLink}>Sign In</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Already have an account? </Text>
+          <TouchableOpacity onPress={() => navigation.navigate("SignIn")}>
+            <Text style={styles.footerLink}>Sign In</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: "#fff",
+    flexGrow: 1,
+    backgroundColor: COLORS.background,
     paddingHorizontal: 24,
   },
-  contentContainer: {
-    flex: 1,
+  backButton: {
+    width: 40,
+    height: 40,
     justifyContent: "center",
-    marginTop: -48,
+    marginBottom: 10,
+  },
+  logoContainer: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  logoCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: COLORS.primary,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 10,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  logoText: {
+    fontSize: 30,
+    fontWeight: "bold",
+    color: COLORS.background,
+  },
+  logoTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: COLORS.black,
   },
   header: {
     alignItems: "center",
-    paddingVertical: 48,
+    marginBottom: 30,
   },
   title: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#111827",
-    marginBottom: 12,
+    color: COLORS.black,
+    marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: "#6b7280",
+    color: COLORS.gray,
     textAlign: "center",
   },
   form: {
-    marginTop: 24,
+    width: "100%",
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f3f4f6",
+    backgroundColor: COLORS.inputBackground,
     borderRadius: 12,
-    paddingHorizontal: 16,
     marginBottom: 16,
     height: 56,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  iconContainer: {
+    paddingHorizontal: 16,
   },
   input: {
     flex: 1,
     fontSize: 16,
-    color: "#111827",
-    marginLeft: 12,
+    color: COLORS.black,
+    height: "100%",
   },
   eyeButton: {
-    padding: 8,
+    padding: 16,
   },
   signUpButton: {
-    backgroundColor: "#2563eb",
+    backgroundColor: COLORS.primary,
     borderRadius: 12,
     height: 56,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 24,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   signUpButtonText: {
-    color: "#fff",
+    color: COLORS.background,
     fontSize: 16,
     fontWeight: "600",
   },
@@ -205,25 +264,30 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: "#e5e7eb",
+    backgroundColor: COLORS.border,
   },
   dividerText: {
     marginHorizontal: 16,
-    color: "#6b7280",
+    color: COLORS.gray,
     fontSize: 14,
   },
   googleButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.background,
     borderRadius: 12,
     height: 56,
     borderWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: COLORS.border,
+  },
+  socialIcon: {
+    width: 24,
+    height: 24,
+    marginRight: 12,
   },
   googleButtonText: {
-    color: "#374151",
+    color: COLORS.darkGray,
     fontSize: 16,
     fontWeight: "500",
   },
@@ -231,22 +295,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
+    marginTop: 40,
   },
   footerText: {
     fontSize: 14,
-    color: "#6b7280",
+    color: COLORS.gray,
   },
   footerLink: {
     fontSize: 14,
-    color: "#2563eb",
+    color: COLORS.primary,
     fontWeight: "500",
   },
   disabledButton: {
-    backgroundColor: "#93c5fd",
+    backgroundColor: COLORS.disabled,
   },
 });
