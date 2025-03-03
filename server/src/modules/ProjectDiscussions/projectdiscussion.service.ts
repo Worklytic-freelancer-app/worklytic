@@ -28,6 +28,10 @@ class ProjectDiscussionService {
     async delete(id: string): Promise<Result<ProjectDiscussions>> {
         return await ProjectDiscussion.delete({ id });
     }
+
+    async getByProjectFeatureId(projectFeatureId: string): Promise<Result<ProjectDiscussions[]>> {
+        return await ProjectDiscussion.findByProjectFeatureId(projectFeatureId);
+    }
 }
 
 export const Service = new ProjectDiscussionService();

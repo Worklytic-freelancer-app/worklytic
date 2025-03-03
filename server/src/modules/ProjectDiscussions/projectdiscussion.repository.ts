@@ -45,13 +45,31 @@ export class ProjectDiscussionRepository {
     findAll = async (): Promise<Result<ProjectDiscussions[]>> => {
         try {
             const collection = await this.getCollection();
-            const docs = await collection
-                .find({})
-                .toArray() as ProjectDiscussions[];
+            const docs = await collection.aggregate([
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "senderId",
+                        foreignField: "_id",
+                        as: "sender"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: "$sender",
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $addFields: {
+                        sender: { $ifNull: ["$sender", {}] }
+                    }
+                }
+            ]).toArray();
                 
             return {
                 success: true,
-                data: docs.map(doc => new ProjectDiscussion(doc) as ProjectDiscussions)
+                data: docs as ProjectDiscussions[]
             };
         } catch (error) {
             console.log(error)
@@ -62,8 +80,30 @@ export class ProjectDiscussionRepository {
     findById = async ({ id }: ProjectDiscussionId): Promise<Result<ProjectDiscussions>> => {
         try {
             const collection = await this.getCollection();
-            const doc = await collection
-                .findOne({ _id: new ObjectId(id) }) as ProjectDiscussions | null;
+            const [doc] = await collection.aggregate([
+                {
+                    $match: { _id: new ObjectId(id) }
+                },
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "senderId",
+                        foreignField: "_id",
+                        as: "sender"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: "$sender",
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $addFields: {
+                        sender: { $ifNull: ["$sender", {}] }
+                    }
+                }
+            ]).toArray();
                 
             if (!doc) {
                 throw new Error("ProjectDiscussion not found");
@@ -71,7 +111,7 @@ export class ProjectDiscussionRepository {
             
             return {
                 success: true,
-                data: new ProjectDiscussion(doc) as ProjectDiscussions
+                data: doc as ProjectDiscussions
             };
         } catch (error) {
             throw new Error(error instanceof Error ? error.message : "Failed to find projectdiscussion");
@@ -97,10 +137,36 @@ export class ProjectDiscussionRepository {
                 throw new Error("ProjectDiscussion not found");
             }
             
+            // Ambil data dengan sender
+            const [updatedDoc] = await collection.aggregate([
+                {
+                    $match: { _id: new ObjectId(id) }
+                },
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "senderId",
+                        foreignField: "_id",
+                        as: "sender"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: "$sender",
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $addFields: {
+                        sender: { $ifNull: ["$sender", []] }
+                    }
+                }
+            ]).toArray();
+            
             return {
                 success: true,
                 message: "ProjectDiscussion updated successfully",
-                data: new ProjectDiscussion(result) as ProjectDiscussions
+                data: updatedDoc as ProjectDiscussions
             };
         } catch (error) {
             throw new Error(error instanceof Error ? error.message : "Failed to update projectdiscussion");
@@ -110,8 +176,30 @@ export class ProjectDiscussionRepository {
     delete = async ({ id }: ProjectDiscussionId): Promise<Result<ProjectDiscussions>> => {
         try {
             const collection = await this.getCollection();
-            const doc = await collection
-                .findOne({ _id: new ObjectId(id) });
+            const [doc] = await collection.aggregate([
+                {
+                    $match: { _id: new ObjectId(id) }
+                },
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "senderId",
+                        foreignField: "_id",
+                        as: "sender"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: "$sender",
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $addFields: {
+                        sender: { $ifNull: ["$sender", []] }
+                    }
+                }
+            ]).toArray();
                 
             if (!doc) {
                 throw new Error("ProjectDiscussion not found");
@@ -122,10 +210,51 @@ export class ProjectDiscussionRepository {
             return {
                 success: true,
                 message: "ProjectDiscussion deleted successfully",
-                data: new ProjectDiscussion(doc) as ProjectDiscussions
+                data: doc as ProjectDiscussions
             };
         } catch (error) {
             throw new Error(error instanceof Error ? error.message : "Failed to delete projectdiscussion");
+        }
+    };
+
+    findByProjectFeatureId = async (projectFeatureId: string): Promise<Result<ProjectDiscussions[]>> => {
+        try {
+            const collection = await this.getCollection();
+            const docs = await collection.aggregate([
+                {
+                    $match: { projectFeatureId: new ObjectId(projectFeatureId) }
+                },
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "senderId",
+                        foreignField: "_id",
+                        as: "sender"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: "$sender",
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $addFields: {
+                        sender: { $ifNull: ["$sender", {}] }
+                    }
+                },
+                {
+                    $sort: { createdAt: -1 } // Urutkan dari yang terbaru
+                }
+            ]).toArray();
+                
+            return {
+                success: true,
+                data: docs as ProjectDiscussions[]
+            };
+        } catch (error) {
+            console.log(error);
+            throw new Error("Failed to fetch discussions for this project feature");
         }
     };
 }

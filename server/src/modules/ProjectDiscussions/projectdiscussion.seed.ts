@@ -10,6 +10,7 @@ export async function seed() {
         const values = sampleData.map(data => ({
             _id: new ObjectId(), // generate ObjectId baru
             ...data,
+            senderId: new ObjectId(data.senderId),
             projectFeatureId: new ObjectId(data.projectFeatureId),
             createdAt: new Date(),
             updatedAt: new Date()

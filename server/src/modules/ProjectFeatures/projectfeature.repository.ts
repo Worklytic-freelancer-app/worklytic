@@ -49,21 +49,21 @@ export class ProjectFeatureRepository {
             // Gunakan MongoDB Aggregate untuk join collections
             const projectFeatures = await collection.aggregate([
                 // Lookup untuk mendapatkan data project
-                // {
-                //     $lookup: {
-                //         from: "Projects",
-                //         localField: "projectId",
-                //         foreignField: "_id",
-                //         as: "project"
-                //     }
-                // },
-                // // Unwind project array (mengubah array menjadi object)
-                // {
-                //     $unwind: {
-                //         path: "$project",
-                //         preserveNullAndEmptyArrays: true
-                //     }
-                // },
+                {
+                    $lookup: {
+                        from: "Projects",
+                        localField: "projectId",
+                        foreignField: "_id",
+                        as: "project"
+                    }
+                },
+                // Unwind project array (mengubah array menjadi object)
+                {
+                    $unwind: {
+                        path: "$project",
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
                 // Lookup untuk mendapatkan data freelancer
                 {
                     $lookup: {
@@ -81,14 +81,14 @@ export class ProjectFeatureRepository {
                     }
                 },
                 // Lookup untuk mendapatkan project discussions
-                {
-                    $lookup: {
-                        from: "ProjectDiscussions",
-                        localField: "_id",
-                        foreignField: "projectFeatureId",
-                        as: "discussions"
-                    }
-                }
+                // {
+                //     $lookup: {
+                //         from: "ProjectDiscussions",
+                //         localField: "_id",
+                //         foreignField: "projectFeatureId",
+                //         as: "discussions"
+                //     }
+                // }
             ]).toArray() as ProjectFeatures[];
             
             console.log(`Found ${projectFeatures.length} project features with related data`);
@@ -146,14 +146,14 @@ export class ProjectFeatureRepository {
                     }
                 },
                 // Lookup untuk mendapatkan project discussions
-                {
-                    $lookup: {
-                        from: "ProjectDiscussions",
-                        localField: "_id",
-                        foreignField: "projectFeatureId",
-                        as: "discussions"
-                    }
-                }
+                // {
+                //     $lookup: {
+                //         from: "ProjectDiscussions",
+                //         localField: "_id",
+                //         foreignField: "projectFeatureId",
+                //         as: "discussions"
+                //     }
+                // }
             ]).toArray() as ProjectFeatures[];
             
             if (!projectFeature) {
