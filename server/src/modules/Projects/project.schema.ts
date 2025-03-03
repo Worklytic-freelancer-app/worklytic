@@ -14,8 +14,8 @@ const ProjectSchema = z.object({
     budget: z.number(),
     category: z.string(),
     location: z.string(),
-    completedDate: z.date(),
-    status: z.string(),
+    completedDate: z.string().transform((val) => new Date(val)),
+    status: z.string().default("Open"),
     requirements: z.array(z.string()),
     image: z.array(z.string()),
 })

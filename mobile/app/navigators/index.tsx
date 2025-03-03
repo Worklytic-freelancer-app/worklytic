@@ -17,11 +17,12 @@ import ServiceDetails from "@/screens/services/serviceDetails";
 import Projects from "@/screens/projects";
 import EditProfile from "@/screens/profile/settings/editProfile";
 import ChooseFreelancer from "@/screens/workspace/chooseFreelancer";
+import Payment from "@/screens/payment";
 import { useEffect, useState } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { SecureStoreUtils } from "@/utils/SecureStore";
 
-const Stack = createStackNavigator();
+const Stack = createStackNavigator<RootStackParamList>();
 
 export type RootStackParamList = {
   BottomTab: { screen: string } | undefined;
@@ -49,6 +50,7 @@ export type RootStackParamList = {
   };
   EditProfile: undefined;
   ChooseFreelancer: { projectId: string };
+  Payment: { projectId: string };
 };
 
 export default function AppNavigator() {
@@ -81,6 +83,7 @@ export default function AppNavigator() {
   return (
     <Stack.Navigator
       initialRouteName={isAuthenticated ? "BottomTab" : "SignIn"}
+      // initialRouteName="Payment"
       screenOptions={{
         headerShown: false,
       }}
@@ -114,6 +117,7 @@ export default function AppNavigator() {
       <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
       <Stack.Screen name="EditProfile" component={EditProfile} />
       <Stack.Screen name="ChooseFreelancer" component={ChooseFreelancer} />
+      <Stack.Screen name="Payment" component={Payment} />
     </Stack.Navigator>
   );
 }

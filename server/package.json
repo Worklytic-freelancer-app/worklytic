@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "rm -rf dist && next build",
+    "build": "rm -rf .next && next build",
     "start": "next start",
     "lint": "next lint",
     "reset": "bun kontas unseed --all && bun kontas seed --all"
@@ -35,6 +35,5 @@
     "kontas-types": "^1.0.9",
     "tailwindcss": "^4",
     "typescript": "^5"
-  },
-  "main": "dist/index.js"
+  }
 }
