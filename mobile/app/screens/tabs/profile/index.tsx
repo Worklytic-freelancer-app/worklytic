@@ -1,4 +1,4 @@
-import { View, StyleSheet, ScrollView, ActivityIndicator, Text } from "react-native";
+import { View, StyleSheet, ScrollView, ActivityIndicator, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "./components/Header";
 import ProfileInfo from "./components/ProfileInfo";
@@ -7,25 +7,26 @@ import Stats from "./components/Stats";
 import About from "./components/About";
 import Skills from "./components/Skills";
 import Services from "./components/Services";
-import { useUser } from "@/hooks/useUser";
+import { useUser } from "@/hooks/tanstack/useUser";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
+import { RefreshCcw } from "lucide-react-native";
 
 export default function Profile() {
-  const { user, loading, error, refetch } = useUser();
+  const { data: user, isLoading, error, refetch } = useUser();
 
   // Gunakan useFocusEffect untuk merefresh data setiap kali layar mendapat fokus
   useFocusEffect(
     useCallback(() => {
-      // Refetch data user dari SecureStore ketika layar mendapat fokus
+      // Refetch data user ketika layar mendapat fokus
       refetch();
       return () => {
         // Cleanup jika diperlukan
       };
-    }, [])
+    }, [refetch])
   );
 
-  if (loading) {
+  if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#2563eb" />
@@ -37,7 +38,13 @@ export default function Profile() {
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>Tidak dapat memuat data profil</Text>
-        <Text style={styles.errorDescription}>{error}</Text>
+        <Text style={styles.errorDescription}>
+          {error instanceof Error ? error.message : 'Terjadi kesalahan'}
+        </Text>
+        <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
+          <RefreshCcw size={16} color="#ffffff" />
+          <Text style={styles.retryButtonText}>Coba Lagi</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -112,6 +119,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B7280',
     textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: '#2563eb',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  retryButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '500',
+    marginLeft: 8,
   },
   emptyContainer: {
     alignItems: 'center',

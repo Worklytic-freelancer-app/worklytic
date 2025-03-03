@@ -4,10 +4,8 @@ import { Clock, CheckCircle2, XCircle } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
-import { useState, useEffect } from "react";
-import { baseUrl } from "@/constant/baseUrl";
-import { SecureStoreUtils } from "@/utils/SecureStore";
-import { useUser } from "@/hooks/useUser";
+import { useFetch } from "@/hooks/tanstack/useFetch";
+import { useUser } from "@/hooks/tanstack/useUser";
 
 interface ProjectFeature {
     _id: string;
@@ -41,58 +39,22 @@ type ProjectStatus = "pending" | "in progress" | "completed";
 export default function FreelancerWorkspace() {
     const insets = useSafeAreaInsets();
     const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [myProjects, setMyProjects] = useState<ProjectFeature[]>([]);
-    const { user } = useUser();
+    const { data: user, isLoading: userLoading } = useUser();
 
-    useEffect(() => {
-        if (user?._id) {
-            fetchMyProjects();
-        }
-    }, [user]);
+    // Fetch project features
+    const { 
+        data: allFeatures = [], 
+        isLoading: featuresLoading, 
+        error: featuresError,
+        refetch: refetchFeatures
+    } = useFetch<ProjectFeature[]>({
+        endpoint: 'projectfeatures',
+        requiresAuth: true,
+        enabled: !!user?._id
+    });
 
-    const fetchMyProjects = async () => {
-        if (!user?._id) return;
-        
-        try {
-            setLoading(true);
-            const token = await SecureStoreUtils.getToken();
-            
-            if (!token) {
-                throw new Error('Token tidak ditemukan');
-            }
-            
-            // Ambil semua project features
-            const response = await fetch(`${baseUrl}/api/projectfeatures`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Error: ${response.status}`);
-            }
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                // Filter project features yang dimiliki oleh freelancer yang sedang login
-                const freelancerProjects = Array.isArray(result.data) 
-                    ? result.data.filter((feature: ProjectFeature) => feature.freelancerId === user._id)
-                    : [];
-                
-                setMyProjects(freelancerProjects);
-            } else {
-                throw new Error(result.message || 'Gagal mengambil data project features');
-            }
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Terjadi kesalahan saat mengambil data');
-            console.error('Error fetching project features:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
+    // Filter project features yang dimiliki oleh freelancer yang sedang login
+    const myProjects = allFeatures.filter(feature => feature.freelancerId === user?._id);
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
@@ -204,7 +166,10 @@ export default function FreelancerWorkspace() {
         </TouchableOpacity>
     );
 
-    if (loading) {
+    const isLoading = userLoading || featuresLoading;
+    const error = featuresError;
+
+    if (isLoading) {
         return (
             <View style={[styles.container, { paddingTop: insets.top }]}>
                 <View style={styles.header}>
@@ -224,8 +189,8 @@ export default function FreelancerWorkspace() {
                     <Text style={styles.headerTitle}>My Projects</Text>
                 </View>
                 <View style={styles.errorContainer}>
-                    <Text style={styles.errorText}>{error}</Text>
-                    <TouchableOpacity style={styles.retryButton} onPress={fetchMyProjects}>
+                    <Text style={styles.errorText}>{(error as Error).message || "Terjadi kesalahan"}</Text>
+                    <TouchableOpacity style={styles.retryButton} onPress={() => refetchFeatures()}>
                         <Text style={styles.retryButtonText}>Coba Lagi</Text>
                     </TouchableOpacity>
                 </View>
@@ -245,8 +210,8 @@ export default function FreelancerWorkspace() {
                 keyExtractor={(item) => item._id.toString()} 
                 contentContainerStyle={styles.projectsList} 
                 showsVerticalScrollIndicator={false}
-                refreshing={loading}
-                onRefresh={fetchMyProjects}
+                refreshing={isLoading}
+                onRefresh={() => refetchFeatures()}
                 ListEmptyComponent={
                     <View style={styles.emptyContainer}>
                         <Text style={styles.emptyText}>Kamu belum memiliki proyek</Text>

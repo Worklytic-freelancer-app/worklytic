@@ -1,13 +1,12 @@
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Dimensions, Animated, NativeScrollEvent, NativeSyntheticEvent, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Dimensions, Animated, NativeScrollEvent, NativeSyntheticEvent, ActivityIndicator, RefreshControl } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ChevronLeft, Clock, DollarSign, MapPin, MessageCircle } from "lucide-react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
-import { baseUrl } from "@/constant/baseUrl";
-import { SecureStoreUtils } from "@/utils/SecureStore";
 import ProjectDiscussion from "./projectDiscussion";
+import { useFetch } from "@/hooks/tanstack/useFetch";
 
 interface ProjectDetails {
   _id: string;
@@ -32,56 +31,34 @@ type ProjectDetailsRouteProp = RouteProp<RootStackParamList, 'ProjectDetails'>;
 
 export default function ProjectDetails() {
   const [activeSlide, setActiveSlide] = useState(0);
-  const [project, setProject] = useState<ProjectDetails | null>(null);
-  const [loading, setLoading] = useState(true);
   const scrollViewRef = useRef<ScrollView>(null);
   const scrollY = useRef(new Animated.Value(0)).current;
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const route = useRoute<ProjectDetailsRouteProp>();
   const [showTerms, setShowTerms] = useState(false);
-  const [client, setClient] = useState<any>(null);
 
-  useEffect(() => {
-    fetchProjectDetails();
-    fetchClientDetails();
-  }, []);
+  // Menggunakan useFetch untuk mendapatkan detail project
+  const { 
+    data: project, 
+    isLoading: projectLoading, 
+    error: projectError,
+    refetch: refetchProject
+  } = useFetch<ProjectDetails>({
+    endpoint: `projects/${route.params.projectId}`,
+    requiresAuth: true
+  });
 
-  const fetchProjectDetails = async () => {
-    try {
-      const token = await SecureStoreUtils.getToken();
-      const response = await fetch(`${baseUrl}/api/projects/${route.params.projectId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      const result = await response.json();
-      if (result.success) {
-        setProject(result.data);
-      }
-    } catch (error) {
-      console.error('Error fetching project details:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchClientDetails = async () => {
-    try {
-      const token = await SecureStoreUtils.getToken();
-      const response = await fetch(`${baseUrl}/api/users/${route.params.clientId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      const result = await response.json();
-      if (result.success) {
-        setClient(result.data);
-      }
-    } catch (error) {
-      console.error('Error fetching client details:', error);
-    }
-  };
+  // Menggunakan useFetch untuk mendapatkan detail client
+  const { 
+    data: client, 
+    isLoading: clientLoading, 
+    error: clientError,
+    refetch: refetchClient
+  } = useFetch<any>({
+    endpoint: `users/${route.params.clientId}`,
+    requiresAuth: true
+  });
 
   const headerOpacity = scrollY.interpolate({
     inputRange: [250, 300],
@@ -107,7 +84,32 @@ export default function ProjectDetails() {
     scrollY.setValue(offsetY);
   };
 
-  if (loading || !project) {
+  // Gabungkan status loading dan error
+  const isLoading = projectLoading || clientLoading;
+  const error = projectError || clientError;
+
+  // Handle error jika ada
+  if (error) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.errorText}>
+          {error instanceof Error ? error.message : "Terjadi kesalahan saat memuat data"}
+        </Text>
+        <TouchableOpacity 
+          style={styles.retryButton} 
+          onPress={() => {
+            refetchProject();
+            refetchClient();
+          }}
+        >
+          <Text style={styles.retryButtonText}>Coba Lagi</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // Handle loading state
+  if (isLoading || !project) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#2563eb" />
@@ -144,7 +146,22 @@ export default function ProjectDetails() {
         </View>
       </Animated.View>
 
-      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} onScroll={handleMainScroll} scrollEventThrottle={16} contentContainerStyle={{ paddingTop: 0 }}>
+      <ScrollView 
+        style={{ flex: 1 }} 
+        showsVerticalScrollIndicator={false} 
+        onScroll={handleMainScroll} 
+        scrollEventThrottle={16} 
+        contentContainerStyle={{ paddingTop: 0 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={isLoading}
+            onRefresh={() => {
+              refetchProject();
+              refetchClient();
+            }}
+          />
+        }
+      >
         <View style={styles.carouselContainer}>
           <ScrollView ref={scrollViewRef} horizontal pagingEnabled showsHorizontalScrollIndicator={false} onMomentumScrollEnd={handleScroll}>
             {project.image.map((image, index) => (
@@ -212,7 +229,9 @@ export default function ProjectDetails() {
               {project.features.map((feature, index) => (
                 <View key={index} style={styles.requirementItem}>
                   <View style={styles.bullet} />
-                  <Text style={styles.requirementText}>{feature}</Text>
+                  <Text style={styles.requirementText}>
+                    {typeof feature === 'string' ? feature : JSON.stringify(feature)}
+                  </Text>
                 </View>
               ))}
             </View>
@@ -493,5 +512,22 @@ const styles = StyleSheet.create({
   clientLocation: {
     fontSize: 14,
     color: '#6b7280',
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#ef4444',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  retryButton: {
+    backgroundColor: '#2563eb',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '500',
   },
 });

@@ -4,18 +4,51 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ChevronLeft, Camera, X, Globe, Briefcase, Mail, Phone } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from 'expo-image-picker';
-import { baseUrl } from "@/constant/baseUrl";
 import { SecureStoreUtils } from "@/utils/SecureStore";
+import { useMutation } from "@/hooks/tanstack/useMutation";
 
 const DEFAULT_IMAGE = "https://via.placeholder.com/150";
+
+// Definisikan tipe untuk data user
+interface User {
+    _id: string;
+    fullName: string;
+    email: string;
+    profileImage: string;
+    location: string;
+    about: string;
+    phone: string;
+    website: string;
+    skills: string[];
+    companyName: string;
+    industry: string;
+    role: string;
+}
+
+// Tipe untuk update profile request
+interface UpdateProfileRequest {
+    fullName: string;
+    location: string;
+    about: string;
+    phone: string;
+    website: string;
+    skills: string[];
+    companyName: string;
+    industry: string;
+}
+
+// Tipe untuk update image request
+interface UpdateImageRequest {
+    image: string;
+}
 
 export default function EditProfile() {
     const insets = useSafeAreaInsets();
     const navigation = useNavigation();
-    const [loading, setLoading] = useState(false);
     const [imageLoading, setImageLoading] = useState(false);
     
     const [formData, setFormData] = useState({
+        _id: "",
         fullName: "",
         email: "",
         profileImage: DEFAULT_IMAGE,
@@ -31,6 +64,59 @@ export default function EditProfile() {
     const [newSkill, setNewSkill] = useState("");
     const [userRole, setUserRole] = useState("freelancer");
 
+    // Mutation untuk update profile
+    const updateProfile = useMutation<User, UpdateProfileRequest>({
+        endpoint: `users/${formData._id || ''}`,
+        method: 'PUT',
+        requiresAuth: true,
+        onSuccess: async (data) => {
+            // Update data user di SecureStore
+            const token = await SecureStoreUtils.getToken();
+            const userData = await SecureStoreUtils.getUserData();
+            
+            await SecureStoreUtils.setAuthData({
+                token: token || "",
+                user: {
+                    ...userData,
+                    ...formData
+                }
+            });
+            
+            Alert.alert("Sukses", "Profil berhasil diperbarui", [
+                { text: "OK", onPress: () => navigation.goBack() }
+            ]);
+        },
+        invalidateQueries: ['user']
+    });
+
+    // Mutation untuk update profile image
+    const updateProfileImage = useMutation<User, UpdateImageRequest>({
+        endpoint: `users/${formData._id || ''}`,
+        method: 'PATCH',
+        requiresAuth: true,
+        onSuccess: async (data) => {
+            // Update profileImage di formData dengan URL dari server
+            setFormData(prev => ({
+                ...prev,
+                profileImage: data.profileImage,
+            }));
+            
+            // Update data user di SecureStore
+            const token = await SecureStoreUtils.getToken();
+            const currentUserData = await SecureStoreUtils.getUserData();
+            await SecureStoreUtils.setAuthData({
+                token: token || "",
+                user: {
+                    ...currentUserData,
+                    profileImage: data.profileImage
+                }
+            });
+            
+            Alert.alert("Sukses", "Foto profil berhasil diperbarui");
+        },
+        invalidateQueries: ['user']
+    });
+
     useEffect(() => {
         loadUserData();
     }, []);
@@ -40,6 +126,7 @@ export default function EditProfile() {
             const userData = await SecureStoreUtils.getUserData();
             if (userData) {
                 setFormData({
+                    ...userData,
                     fullName: userData.fullName || "",
                     email: userData.email || "",
                     profileImage: userData.profileImage || DEFAULT_IMAGE,
@@ -88,7 +175,6 @@ export default function EditProfile() {
 
             if (!result.canceled && result.assets && result.assets.length > 0 && result.assets[0].base64) {
                 setImageLoading(true);
-                const token = await SecureStoreUtils.getToken();
                 const userData = await SecureStoreUtils.getUserData();
                 
                 // Tampilkan gambar yang dipilih sementara
@@ -98,43 +184,10 @@ export default function EditProfile() {
                 }));
 
                 try {
-                    // Kirim gambar ke server dengan PATCH request
-                    const response = await fetch(`${baseUrl}/api/users/${userData._id}`, {
-                        method: 'PATCH',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`,
-                        },
-                        body: JSON.stringify({
-                            image: `data:image/jpeg;base64,${result.assets[0].base64}`,
-                        }),
+                    // Gunakan mutation untuk update gambar
+                    await updateProfileImage.mutateAsync({
+                        image: `data:image/jpeg;base64,${result.assets[0].base64}`,
                     });
-
-                    const data = await response.json();
-
-                    if (data.success) {
-                        // Update profileImage di formData dengan URL dari server
-                        setFormData(prev => ({
-                            ...prev,
-                            profileImage: data.data.profileImage,
-                        }));
-                        
-                        // Update data user di SecureStore
-                        const currentUserData = await SecureStoreUtils.getUserData();
-                        await SecureStoreUtils.setAuthData({
-                            token: token || "",
-                            user: {
-                                ...currentUserData,
-                                profileImage: data.data.profileImage
-                            }
-                        });
-                        
-                        Alert.alert("Sukses", "Foto profil berhasil diperbarui");
-                    } else {
-                        Alert.alert("Error", "Gagal mengupload foto profil");
-                        // Kembalikan gambar profil ke yang sebelumnya
-                        loadUserData();
-                    }
                 } catch (error) {
                     console.error("Error uploading image:", error);
                     Alert.alert("Error", "Gagal mengupload foto profil");
@@ -149,55 +202,17 @@ export default function EditProfile() {
         }
     };
 
-    const handleSaveProfile = async () => {
-        try {
-            setLoading(true);
-            const token = await SecureStoreUtils.getToken();
-            const userData = await SecureStoreUtils.getUserData();
-            
-            // Kirim data profil ke server dengan PUT request
-            const response = await fetch(`${baseUrl}/api/users/${userData._id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    fullName: formData.fullName,
-                    location: formData.location,
-                    about: formData.about,
-                    phone: formData.phone,
-                    website: formData.website,
-                    skills: formData.skills,
-                    companyName: formData.companyName,
-                    industry: formData.industry,
-                }),
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                // Update data user di SecureStore
-                await SecureStoreUtils.setAuthData({
-                    token: token || "",
-                    user: {
-                        ...userData,
-                        ...formData
-                    }
-                });
-                
-                Alert.alert("Sukses", "Profil berhasil diperbarui", [
-                    { text: "OK", onPress: () => navigation.goBack() }
-                ]);
-            } else {
-                Alert.alert("Error", "Gagal memperbarui profil");
-            }
-        } catch (error) {
-            console.error("Error saving profile:", error);
-            Alert.alert("Error", "Gagal menyimpan profil");
-        } finally {
-            setLoading(false);
-        }
+    const handleSaveProfile = () => {
+        updateProfile.mutate({
+            fullName: formData.fullName,
+            location: formData.location,
+            about: formData.about,
+            phone: formData.phone,
+            website: formData.website,
+            skills: formData.skills,
+            companyName: formData.companyName,
+            industry: formData.industry,
+        });
     };
 
     return (
@@ -210,8 +225,8 @@ export default function EditProfile() {
                     <ChevronLeft size={24} color="#374151" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Edit Profile</Text>
-                <TouchableOpacity onPress={handleSaveProfile} disabled={loading}>
-                    {loading ? (
+                <TouchableOpacity onPress={handleSaveProfile} disabled={updateProfile.isPending}>
+                    {updateProfile.isPending ? (
                         <ActivityIndicator size="small" color="#2563eb" />
                     ) : (
                         <Text style={styles.saveButton}>Simpan</Text>

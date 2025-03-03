@@ -5,9 +5,8 @@ import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
-import { baseUrl } from "@/constant/baseUrl";
 import { Alert } from "react-native";
-import { SecureStoreUtils } from "@/utils/SecureStore";
+import { useAuth } from "@/hooks/tanstack/useAuth";
 
 type SignUpScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -26,43 +25,7 @@ export default function SignUpForm({ role }: SignUpFormProps) {
     role: role,
   });
 
-  async function signUp() {
-    try {
-      const response = await fetch(`${baseUrl}/api/auth/sign-up`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fullName: form.name,
-          email: form.email,
-          password: form.password,
-          role: form.role
-        }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        // Simpan token dan data user
-        await SecureStoreUtils.setAuthData({
-          token: result.data.token,
-          user: result.data.user
-        });
-
-        // Reset navigasi ke BottomTab agar tidak bisa kembali ke SignUp
-        navigation.reset({
-          index: 0,
-          routes: [{ name: "BottomTab" }],
-        });
-      } else {
-        Alert.alert("Error", result.message || "Gagal melakukan registrasi");
-      }
-    } catch (error) {
-      console.error("Signup error:", error);
-      Alert.alert("Error", "Terjadi kesalahan saat proses registrasi");
-    }
-  }
+  const { signUp, isSigningUp } = useAuth();
 
   const validateForm = () => {
     if (!form.name.trim()) {
@@ -93,7 +56,25 @@ export default function SignUpForm({ role }: SignUpFormProps) {
 
   const handleSignUp = () => {
     if (validateForm()) {
-      signUp();
+      signUp(
+        {
+          fullName: form.name,
+          email: form.email,
+          password: form.password,
+          role: form.role
+        },
+        {
+          onSuccess: () => {
+            navigation.reset({
+              index: 0,
+              routes: [{ name: "BottomTab" }],
+            });
+          },
+          onError: (error) => {
+            Alert.alert("Error", error.message || "Gagal melakukan registrasi");
+          }
+        }
+      );
     }
   };
 
@@ -124,8 +105,14 @@ export default function SignUpForm({ role }: SignUpFormProps) {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
-            <Text style={styles.signUpButtonText}>Create Account</Text>
+          <TouchableOpacity 
+            style={[styles.signUpButton, isSigningUp && styles.disabledButton]} 
+            onPress={handleSignUp}
+            disabled={isSigningUp}
+          >
+            <Text style={styles.signUpButtonText}>
+              {isSigningUp ? "Creating Account..." : "Create Account"}
+            </Text>
           </TouchableOpacity>
 
           <View style={styles.divider}>
@@ -258,5 +245,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#2563eb",
     fontWeight: "500",
+  },
+  disabledButton: {
+    backgroundColor: "#93c5fd",
   },
 });

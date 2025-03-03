@@ -5,10 +5,8 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 
-import { useEffect, useState } from "react";
-import { SecureStoreUtils } from "@/utils/SecureStore";
-import { baseUrl } from "@/constant/baseUrl";
 import TopFreelancer from "../TopFreelancer";
+import { useFetch } from "@/hooks/tanstack/useFetch";
 
 type ClientScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -43,45 +41,23 @@ interface Section {
 export default function Client() {
     const navigation = useNavigation<ClientScreenNavigationProp>();
     const insets = useSafeAreaInsets();
-    const [topFreelancers, setTopFreelancers] = useState<ApiFreelancer[]>([]);
-    const [freelancersLoading, setFreelancersLoading] = useState(true);
-    const [freelancersError, setFreelancersError] = useState<string | null>(null);
+    
+    // Gunakan useFetch untuk mendapatkan data freelancer
+    const { 
+        data: topFreelancers = [], 
+        isLoading: freelancersLoading, 
+        error: freelancersError,
+        refetch: fetchTopFreelancers
+    } = useFetch<ApiFreelancer[]>({
+        endpoint: 'users',
+        requiresAuth: true
+    });
 
-    useEffect(() => {
-        fetchTopFreelancers();
-    }, []);
-
-    const fetchTopFreelancers = async () => {
-        try {
-            setFreelancersLoading(true);
-            const token = await SecureStoreUtils.getToken();
-            
-            const response = await fetch(`${baseUrl}/api/users`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                // Filter hanya freelancer dan urutkan berdasarkan rating tertinggi
-                const topFreelancers = result.data
-                    .filter((user: ApiFreelancer) => user.role === 'freelancer')
-                    .sort((a: ApiFreelancer, b: ApiFreelancer) => b.rating - a.rating)
-                    .slice(0, 10); // Ambil 10 teratas
-                
-                setTopFreelancers(topFreelancers);
-            } else {
-                setFreelancersError(result.message || 'Failed to fetch freelancers');
-            }
-        } catch (err) {
-            setFreelancersError(err instanceof Error ? err.message : 'An error occurred');
-            console.error('Error fetching freelancers:', err);
-        } finally {
-            setFreelancersLoading(false);
-        }
-    };
+    // Filter hanya freelancer dan urutkan berdasarkan rating tertinggi
+    const filteredFreelancers = topFreelancers
+        .filter(user => user.role === 'freelancer')
+        .sort((a, b) => b.rating - a.rating)
+        .slice(0, 10); // Ambil 10 teratas
 
     // Popular services data (commented out for now)
     /*
@@ -132,7 +108,7 @@ export default function Client() {
             id: "freelancers",
             type: "freelancers",
             title: "Top Freelancers",
-            data: topFreelancers,
+            data: filteredFreelancers,
         },
     ];
 
@@ -204,9 +180,9 @@ export default function Client() {
             case "freelancers":
                 return (
                     <TopFreelancer
-                        freelancers={topFreelancers}
+                        freelancers={filteredFreelancers}
                         loading={freelancersLoading}
-                        error={freelancersError}
+                        error={freelancersError ? (freelancersError as Error).message : null}
                         onRetry={fetchTopFreelancers}
                         title={item.title || "Top Freelancers"}
                     />

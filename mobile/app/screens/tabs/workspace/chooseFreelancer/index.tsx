@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndicator, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ChevronLeft, Star, Calendar, MapPin, DollarSign, CheckCircle, XCircle } from "lucide-react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
-import { baseUrl } from "@/constant/baseUrl";
-import { SecureStoreUtils } from "@/utils/SecureStore";
+import { useFetch } from "@/hooks/tanstack/useFetch";
+import { useMutation } from "@/hooks/tanstack/useMutation";
 
 interface User {
     _id: string;
@@ -40,109 +40,95 @@ interface Project {
     image: string[];
 }
 
+// Tipe untuk update status request
+interface UpdateStatusRequest {
+    status: "in progress";
+}
+
+// Tipe untuk reject request (kosong, tapi bukan void)
+interface RejectRequest {
+    // Kosong, tapi bukan void
+}
+
 export default function ChooseFreelancer() {
     const insets = useSafeAreaInsets();
     const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
     const route = useRoute();
     const { projectId } = route.params as { projectId: string };
     
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [applicants, setApplicants] = useState<ProjectFeature[]>([]);
-    const [project, setProject] = useState<Project | null>(null);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-    useEffect(() => {
-        fetchProjectAndApplicants();
-    }, [projectId]);
+    // Fetch project details
+    const { 
+        data: project, 
+        isLoading: projectLoading, 
+        error: projectError,
+        refetch: refetchProject
+    } = useFetch<Project>({
+        endpoint: `projects/${projectId}`,
+        requiresAuth: true
+    });
 
-    const fetchProjectAndApplicants = async () => {
-        setLoading(true);
-        setError(null);
-        
-        try {
-            const token = await SecureStoreUtils.getToken();
-            
-            if (!token) {
-                throw new Error('Token tidak ditemukan');
-            }
-            
-            // Fetch project details
-            const projectResponse = await fetch(`${baseUrl}/api/projects/${projectId}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            
-            if (!projectResponse.ok) {
-                throw new Error(`Error: ${projectResponse.status}`);
-            }
-            
-            const projectResult = await projectResponse.json();
-            
-            if (!projectResult.success) {
-                throw new Error(projectResult.message || 'Gagal mengambil data proyek');
-            }
-            
-            setProject(projectResult.data);
-            
-            // Fetch project features (applicants)
-            const featuresResponse = await fetch(`${baseUrl}/api/projectfeatures`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            
-            if (!featuresResponse.ok) {
-                throw new Error(`Error: ${featuresResponse.status}`);
-            }
-            
-            const featuresResult = await featuresResponse.json();
-            
-            if (!featuresResult.success) {
-                throw new Error(featuresResult.message || 'Gagal mengambil data pelamar');
-            }
-            
-            // Filter features for this project
-            const projectFeatures = featuresResult.data.filter(
-                (feature: ProjectFeature) => feature.projectId === projectId
-            );
-            
-            // Fetch freelancer details for each feature
-            const featuresWithFreelancers = await Promise.all(
-                projectFeatures.map(async (feature: ProjectFeature) => {
-                    try {
-                        const userResponse = await fetch(`${baseUrl}/api/users/${feature.freelancerId}`, {
-                            headers: {
-                                'Authorization': `Bearer ${token}`
-                            }
-                        });
-                        
-                        if (userResponse.ok) {
-                            const userResult = await userResponse.json();
-                            if (userResult.success) {
-                                return {
-                                    ...feature,
-                                    freelancer: userResult.data
-                                };
-                            }
-                        }
-                        return feature;
-                    } catch (err) {
-                        console.error('Error fetching freelancer details:', err);
-                        return feature;
-                    }
-                })
-            );
-            
-            setApplicants(featuresWithFreelancers);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Terjadi kesalahan saat mengambil data');
-            console.error('Error fetching data:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
+    // Fetch project features (applicants)
+    const { 
+        data: allFeatures = [], 
+        isLoading: featuresLoading, 
+        error: featuresError,
+        refetch: refetchFeatures
+    } = useFetch<ProjectFeature[]>({
+        endpoint: 'projectfeatures',
+        requiresAuth: true
+    });
+
+    // Fetch freelancer details for each feature
+    const { 
+        data: users = [], 
+        isLoading: usersLoading, 
+        error: usersError,
+        refetch: refetchUsers
+    } = useFetch<User[]>({
+        endpoint: 'users',
+        requiresAuth: true
+    });
+
+    // Filter features for this project and add freelancer data
+    const applicants = allFeatures
+        .filter((feature) => feature.projectId === projectId)
+        .map(feature => {
+            const freelancer = users.find(user => user._id === feature.freelancerId);
+            return {
+                ...feature,
+                freelancer
+            };
+        });
+
+    // Mutation untuk menerima freelancer
+    const acceptFreelancer = useMutation<ProjectFeature, UpdateStatusRequest>({
+        endpoint: 'projectfeatures',
+        method: 'PATCH',
+        requiresAuth: true,
+        onSuccess: () => {
+            // Refresh data
+            refetchFeatures();
+            Alert.alert('Sukses', 'Freelancer berhasil diterima');
+            setActionLoading(null);
+        },
+        invalidateQueries: ['projectfeatures']
+    });
+
+    // Mutation untuk menolak freelancer - gunakan RejectRequest bukan void
+    const rejectFreelancer = useMutation<ProjectFeature, RejectRequest>({
+        endpoint: 'projectfeatures',
+        method: 'DELETE',
+        requiresAuth: true,
+        onSuccess: () => {
+            // Refresh data
+            refetchFeatures();
+            Alert.alert('Sukses', 'Freelancer berhasil ditolak');
+            setActionLoading(null);
+        },
+        invalidateQueries: ['projectfeatures']
+    });
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
@@ -163,80 +149,19 @@ export default function ChooseFreelancer() {
         }
     };
 
-    const handleAcceptFreelancer = async (featureId: string) => {
-        try {
-            setActionLoading(featureId);
-            const token = await SecureStoreUtils.getToken();
-            
-            if (!token) {
-                throw new Error('Token tidak ditemukan');
-            }
-            
-            const response = await fetch(`${baseUrl}/api/projectfeatures/${featureId}`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ status: 'in progress' })
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Error: ${response.status}`);
-            }
-            
-            const result = await response.json();
-            
-            if (!result.success) {
-                throw new Error(result.message || 'Gagal menerima freelancer');
-            }
-            
-            // Refresh data
-            fetchProjectAndApplicants();
-            Alert.alert('Sukses', 'Freelancer berhasil diterima');
-        } catch (err) {
-            Alert.alert('Error', err instanceof Error ? err.message : 'Gagal menerima freelancer');
-            console.error('Error accepting freelancer:', err);
-        } finally {
-            setActionLoading(null);
-        }
+    const handleAcceptFreelancer = (featureId: string) => {
+        setActionLoading(featureId);
+        acceptFreelancer.mutate({ 
+            status: 'in progress',
+            customEndpoint: `projectfeatures/${featureId}`
+        });
     };
 
-    const handleRejectFreelancer = async (featureId: string) => {
-        try {
-            setActionLoading(featureId);
-            const token = await SecureStoreUtils.getToken();
-            
-            if (!token) {
-                throw new Error('Token tidak ditemukan');
-            }
-            
-            const response = await fetch(`${baseUrl}/api/projectfeatures/${featureId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Error: ${response.status}`);
-            }
-            
-            const result = await response.json();
-            
-            if (!result.success) {
-                throw new Error(result.message || 'Gagal menolak freelancer');
-            }
-            
-            // Refresh data
-            fetchProjectAndApplicants();
-            Alert.alert('Sukses', 'Freelancer berhasil ditolak');
-        } catch (err) {
-            Alert.alert('Error', err instanceof Error ? err.message : 'Gagal menolak freelancer');
-            console.error('Error rejecting freelancer:', err);
-        } finally {
-            setActionLoading(null);
-        }
+    const handleRejectFreelancer = (featureId: string) => {
+        setActionLoading(featureId);
+        rejectFreelancer.mutate({ 
+            customEndpoint: `projectfeatures/${featureId}`
+        });
     };
 
     const renderApplicant = ({ item }: { item: ProjectFeature }) => {
@@ -324,7 +249,10 @@ export default function ChooseFreelancer() {
         );
     };
 
-    if (loading) {
+    const isLoading = projectLoading || featuresLoading || usersLoading;
+    const error = projectError || featuresError || usersError;
+
+    if (isLoading) {
         return (
             <View style={[styles.loadingContainer, { paddingTop: insets.top }]}>
                 <ActivityIndicator size="large" color="#2563EB" />
@@ -335,8 +263,15 @@ export default function ChooseFreelancer() {
     if (error) {
         return (
             <View style={[styles.errorContainer, { paddingTop: insets.top }]}>
-                <Text style={styles.errorText}>{error}</Text>
-                <TouchableOpacity style={styles.retryButton} onPress={fetchProjectAndApplicants}>
+                <Text style={styles.errorText}>{(error as Error).message || "Terjadi kesalahan"}</Text>
+                <TouchableOpacity 
+                    style={styles.retryButton} 
+                    onPress={() => {
+                        refetchProject();
+                        refetchFeatures();
+                        refetchUsers();
+                    }}
+                >
                     <Text style={styles.retryButtonText}>Coba Lagi</Text>
                 </TouchableOpacity>
             </View>
@@ -373,8 +308,12 @@ export default function ChooseFreelancer() {
                     keyExtractor={(item) => item._id}
                     contentContainerStyle={styles.listContainer}
                     showsVerticalScrollIndicator={false}
-                    refreshing={loading}
-                    onRefresh={fetchProjectAndApplicants}
+                    refreshing={isLoading}
+                    onRefresh={() => {
+                        refetchProject();
+                        refetchFeatures();
+                        refetchUsers();
+                    }}
                 />
             )}
         </View>

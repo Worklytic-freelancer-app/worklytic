@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { baseUrl } from "@/constant/baseUrl";
 import { SecureStoreUtils } from "@/utils/SecureStore";
 import { useUser } from "@/hooks/useUser";
+import { useFetch } from "@/hooks/tanstack/useFetch";
 
 interface ProjectFeature {
     _id: string;
@@ -37,54 +38,21 @@ interface Project {
 export default function ClientWorkspace() {
     const insets = useSafeAreaInsets();
     const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [projects, setProjects] = useState<Project[]>([]);
     const { user } = useUser();
 
-    useEffect(() => {
-        fetchProjects();
-    }, [user]);
+    // Gunakan useFetch untuk mendapatkan data proyek
+    const { 
+        data: allProjects = [], 
+        isLoading: loading, 
+        error,
+        refetch: fetchProjects
+    } = useFetch<Project[]>({
+        endpoint: 'projects',
+        requiresAuth: true
+    });
 
-    const fetchProjects = async () => {
-        if (!user?._id) return;
-        
-        try {
-            setLoading(true);
-            const token = await SecureStoreUtils.getToken();
-            
-            if (!token) {
-                throw new Error('Token tidak ditemukan');
-            }
-            
-            const response = await fetch(`${baseUrl}/api/projects`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Error: ${response.status}`);
-            }
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                // Filter proyek yang dimiliki oleh client yang sedang login
-                const clientProjects = Array.isArray(result.data) 
-                    ? result.data.filter((project: Project) => project.client?._id === user._id)
-                    : [];
-                setProjects(clientProjects);
-            } else {
-                throw new Error(result.message || 'Gagal mengambil data proyek');
-            }
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Terjadi kesalahan saat mengambil data');
-            console.error('Error fetching projects:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
+    // Filter proyek yang dimiliki oleh client yang sedang login
+    const projects = allProjects.filter(project => project.client?._id === user?._id);
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
@@ -169,20 +137,16 @@ export default function ClientWorkspace() {
                         </View>
                     </View>
                     <Text style={styles.projectBudget}>
-                        Rp {item.budget.toLocaleString('id-ID')}
+                        Rp{item.budget.toLocaleString('id-ID')}
                     </Text>
                     <View style={styles.projectMeta}>
                         <View style={styles.metaItem}>
                             <Clock size={16} color="#6b7280" />
-                            <Text style={styles.metaText}>
-                                Posted {formatDate(item.createdAt)}
-                            </Text>
+                            <Text style={styles.metaText}>{formatDate(item.createdAt)}</Text>
                         </View>
                         <View style={styles.metaItem}>
                             <Users size={16} color="#6b7280" />
-                            <Text style={styles.metaText}>
-                                {featuresCount} {featuresCount === 1 ? 'freelancer' : 'freelancers'}
-                            </Text>
+                            <Text style={styles.metaText}>{featuresCount} freelancers</Text>
                         </View>
                     </View>
                 </View>
@@ -192,7 +156,7 @@ export default function ClientWorkspace() {
 
     if (loading) {
         return (
-            <View style={styles.loadingContainer}>
+            <View style={[styles.container, styles.loadingContainer]}>
                 <ActivityIndicator size="large" color="#2563eb" />
             </View>
         );
@@ -200,9 +164,11 @@ export default function ClientWorkspace() {
 
     if (error) {
         return (
-            <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>{error}</Text>
-                <TouchableOpacity style={styles.retryButton} onPress={fetchProjects}>
+            <View style={[styles.container, styles.errorContainer]}>
+                <Text style={styles.errorText}>
+                    {(error as Error).message || "Terjadi kesalahan saat memuat data"}
+                </Text>
+                <TouchableOpacity style={styles.retryButton} onPress={() => fetchProjects()}>
                     <Text style={styles.retryButtonText}>Coba Lagi</Text>
                 </TouchableOpacity>
             </View>
@@ -217,7 +183,7 @@ export default function ClientWorkspace() {
                     style={styles.addButton}
                     onPress={() => navigation.navigate('PostProject')}
                 >
-                    <Plus size={20} color="#fff" />
+                    <Plus size={24} color="#fff" />
                 </TouchableOpacity>
             </View>
             
@@ -240,6 +206,8 @@ export default function ClientWorkspace() {
                     keyExtractor={(item) => item._id}
                     contentContainerStyle={styles.projectList}
                     showsVerticalScrollIndicator={false}
+                    onRefresh={fetchProjects}
+                    refreshing={loading}
                 />
             )}
         </View>

@@ -6,8 +6,7 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 import { Alert } from "react-native";
-import { baseUrl } from "@/constant/baseUrl";
-import { SecureStoreUtils } from "@/utils/SecureStore";
+import { useAuth } from "@/hooks/tanstack/useAuth";
 
 type SignInScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -19,31 +18,22 @@ export default function SignIn() {
     email: "",
     password: "",
   });
+  
+  const { signIn, isSigningIn, signInError } = useAuth();
 
   async function handleSignIn() {
     try {
-      const response = await fetch(`${baseUrl}/api/auth/sign-in`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      signIn(form, {
+        onSuccess: () => {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "BottomTab" }],
+          });
         },
-        body: JSON.stringify(form),
+        onError: (error) => {
+          Alert.alert("Error", error.message || "Gagal melakukan login");
+        }
       });
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        await SecureStoreUtils.setAuthData({
-          token: result.data.token,
-          user: result.data.user
-        });
-        
-        navigation.reset({
-          index: 0,
-          routes: [{ name: "BottomTab" }],
-        });
-      } else {
-        Alert.alert("Error", result.message || "Gagal melakukan login");
-      }
     } catch (error) {
       console.error("Error signing in:", error);
       Alert.alert("Error", "Terjadi kesalahan saat proses login");
@@ -73,8 +63,14 @@ export default function SignIn() {
           <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.signInButton} onPress={handleSignIn}>
-          <Text style={styles.signInButtonText}>Sign In</Text>
+        <TouchableOpacity 
+          style={[styles.signInButton, isSigningIn && styles.disabledButton]} 
+          onPress={handleSignIn}
+          disabled={isSigningIn}
+        >
+          <Text style={styles.signInButtonText}>
+            {isSigningIn ? "Signing In..." : "Sign In"}
+          </Text>
         </TouchableOpacity>
 
         <View style={styles.divider}>
@@ -212,5 +208,8 @@ const styles = StyleSheet.create({
     marginTop: 20,
     color: "#2563eb",
     fontWeight: "500",
+  },
+  disabledButton: {
+    backgroundColor: "#93c5fd",
   },
 });

@@ -4,7 +4,8 @@ import { Paperclip, Send, Image as ImageIcon, FileText, X } from "lucide-react-n
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 
-interface Attachment {
+// Export interface Attachment agar bisa digunakan di file lain
+export interface Attachment {
     id: string;
     type: 'image' | 'document';
     url: string;

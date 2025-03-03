@@ -4,10 +4,8 @@ import { Search, Bell, MapPin, Star, Briefcase, FileText, MessageSquare, Clock }
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
-import { baseUrl } from "@/constant/baseUrl";
-import { useEffect, useState } from "react";
-import { SecureStoreUtils } from "@/utils/SecureStore";
 import TopFreelancer from "../TopFreelancer";
+import { useFetch } from "@/hooks/tanstack/useFetch";
 
 type FreelancerScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -41,77 +39,36 @@ interface Section {
   data?: Project[] | ApiFreelancer[];
 }
 
-interface ApiResponse<T> {
-  success: boolean;
-  message?: string;
-  data: T;
-}
-
 export default function Freelancer() {
   const navigation = useNavigation<FreelancerScreenNavigationProp>();
   const insets = useSafeAreaInsets();
-  const [recommendedProjects, setRecommendedProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [topFreelancers, setTopFreelancers] = useState<ApiFreelancer[]>([]);
-  const [freelancersLoading, setFreelancersLoading] = useState(true);
-  const [freelancersError, setFreelancersError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchProjects();
-    fetchTopFreelancers();
-  }, []);
-
-  const fetchProjects = async () => {
-    try {
-      const token = await SecureStoreUtils.getToken();
-      const response = await fetch(`${baseUrl}/api/projects/recommendations`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      const result = await response.json() as ApiResponse<Project[]>;
-      
-      if (result.success) {
-        setRecommendedProjects(result.data);
-      }
-    } catch (error) {
-      console.error('Error fetching projects:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchTopFreelancers = async () => {
-    try {
-      setFreelancersLoading(true);
-      const token = await SecureStoreUtils.getToken();
-      
-      const response = await fetch(`${baseUrl}/api/users`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      const result = await response.json() as ApiResponse<ApiFreelancer[]>;
-      
-      if (result.success) {
-        // Filter hanya freelancer dan urutkan berdasarkan rating tertinggi
-        const topFreelancers = result.data
-          .filter((user: ApiFreelancer) => user.role === 'freelancer')
-          .sort((a: ApiFreelancer, b: ApiFreelancer) => b.rating - a.rating)
-          .slice(0, 10); // Ambil 10 teratas
-        
-        setTopFreelancers(topFreelancers);
-      } else {
-        setFreelancersError(result.message || 'Failed to fetch freelancers');
-      }
-    } catch (err) {
-      setFreelancersError(err instanceof Error ? err.message : 'An error occurred');
-      console.error('Error fetching freelancers:', err);
-    } finally {
-      setFreelancersLoading(false);
-    }
-  };
+  
+  // Gunakan useFetch untuk mendapatkan data proyek
+  const { 
+    data: recommendedProjects = [], 
+    isLoading: loading,
+    error: projectsError
+  } = useFetch<Project[]>({
+    endpoint: 'projects/recommendations',
+    requiresAuth: true
+  });
+  
+  // Gunakan useFetch untuk mendapatkan data freelancer
+  const { 
+    data: users = [], 
+    isLoading: freelancersLoading, 
+    error: freelancersError,
+    refetch: fetchTopFreelancers
+  } = useFetch<ApiFreelancer[]>({
+    endpoint: 'users',
+    requiresAuth: true
+  });
+  
+  // Filter hanya freelancer dan urutkan berdasarkan rating tertinggi
+  const topFreelancers = users
+    .filter(user => user.role === 'freelancer')
+    .sort((a, b) => b.rating - a.rating)
+    .slice(0, 10); // Ambil 10 teratas
 
   const sections: Section[] = [
     {
@@ -179,14 +136,26 @@ export default function Freelancer() {
                 <Text style={styles.seeAllButton}>See All</Text>
               </TouchableOpacity>
             </View>
-            <FlatList<Project> 
-              data={item.data as Project[]} 
-              renderItem={renderProject} 
-              keyExtractor={(item) => item._id} 
-              horizontal 
-              showsHorizontalScrollIndicator={false} 
-              contentContainerStyle={styles.projectsScroll} 
-            />
+            {loading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#2563eb" />
+              </View>
+            ) : projectsError ? (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>
+                  {(projectsError as Error).message || "Failed to load projects"}
+                </Text>
+              </View>
+            ) : (
+              <FlatList<Project> 
+                data={item.data as Project[]} 
+                renderItem={renderProject} 
+                keyExtractor={(item) => item._id} 
+                horizontal 
+                showsHorizontalScrollIndicator={false} 
+                contentContainerStyle={styles.projectsScroll} 
+              />
+            )}
           </View>
         );
 
@@ -195,7 +164,7 @@ export default function Freelancer() {
           <TopFreelancer
             freelancers={topFreelancers}
             loading={freelancersLoading}
-            error={freelancersError}
+            error={freelancersError ? (freelancersError as Error).message : null}
             onRetry={fetchTopFreelancers}
             title={item.title || "Top Freelancers"}
           />

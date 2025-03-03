@@ -6,9 +6,8 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 import { useUser } from "@/hooks/useUser";
-import { baseUrl } from "@/constant/baseUrl";
-import { SecureStoreUtils } from "@/utils/SecureStore";
 import { debounce } from "lodash";
+import { useFetch } from "@/hooks/tanstack/useFetch";
 
 // Update interfaces
 interface Project {
@@ -49,78 +48,33 @@ export default function Search(): JSX.Element {
   const { user } = useUser();
   
   const [searchQuery, setSearchQuery] = useState("");
-  const [allResults, setAllResults] = useState<SearchResult[]>([]);
   const [filteredResults, setFilteredResults] = useState<SearchResult[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  // Fetch initial data when component mounts
-  useEffect(() => {
-    fetchInitialData();
-  }, [user]);
+  // Tentukan endpoint berdasarkan role user
+  const endpoint = user?.role === 'client' ? 'users' : 'projects';
+  
+  // Gunakan hook useFetch untuk mendapatkan data
+  const { data, isLoading, error, refetch } = useFetch<SearchResult[]>({
+    endpoint,
+    requiresAuth: true
+  });
 
-  // Filter results when search query changes
+  // Filter results when search query or data changes
   useEffect(() => {
+    if (!data) return;
+    
     if (searchQuery.trim() === "") {
-      setFilteredResults(allResults);
+      setFilteredResults(data);
       return;
     }
     
     debouncedSearch(searchQuery);
-  }, [searchQuery, allResults]);
-
-  const fetchInitialData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const token = await SecureStoreUtils.getToken();
-      
-      if (!token) {
-        setError("Sesi login tidak valid. Silakan login kembali.");
-        return;
-      }
-      
-      if (!user) {
-        setError("Data pengguna tidak tersedia.");
-        return;
-      }
-      
-      // Jika client, cari freelancers; jika freelancer, cari projects
-      const endpoint = user.role === 'client' ? 'users' : 'projects';
-      
-      const response = await fetch(`${baseUrl}/api/${endpoint}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        let data = result.data;
-        
-        // Jika client, filter hanya freelancer
-        if (user.role === 'client') {
-          data = data.filter((item: any) => item.role === 'freelancer');
-        }
-        
-        setAllResults(data);
-        setFilteredResults(data);
-      } else {
-        setError(result.message || "Gagal memuat data");
-      }
-    } catch (error) {
-      console.error('Error fetching search results:', error);
-      setError("Terjadi kesalahan saat memuat data");
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [searchQuery, data]);
 
   // Fungsi pencarian dengan debounce
   const filterResults = (query: string) => {
-    if (!query.trim()) {
-      setFilteredResults(allResults);
+    if (!data || !query.trim()) {
+      setFilteredResults(data || []);
       return;
     }
     
@@ -128,7 +82,7 @@ export default function Search(): JSX.Element {
     
     if (user?.role === 'client') {
       // Filter freelancers
-      const filtered = allResults.filter((item) => {
+      const filtered = data.filter((item) => {
         // Type guard untuk memastikan item adalah Freelancer
         if (!('fullName' in item)) return false;
         
@@ -145,7 +99,7 @@ export default function Search(): JSX.Element {
       setFilteredResults(filtered);
     } else {
       // Filter projects
-      const filtered = allResults.filter((item) => {
+      const filtered = data.filter((item) => {
         // Type guard untuk memastikan item adalah Project
         if (!('title' in item)) return false;
         
@@ -161,7 +115,7 @@ export default function Search(): JSX.Element {
     }
   };
 
-  const debouncedSearch = useCallback(debounce(filterResults, 300), [allResults, user]);
+  const debouncedSearch = useCallback(debounce(filterResults, 300), [data, user]);
 
   const clearSearch = () => {
     setSearchQuery("");
@@ -257,7 +211,7 @@ export default function Search(): JSX.Element {
   };
 
   const renderEmptyList = () => {
-    if (loading) {
+    if (isLoading) {
       return (
         <View style={styles.emptyContainer}>
           <ActivityIndicator size="large" color="#2563eb" />
@@ -269,8 +223,8 @@ export default function Search(): JSX.Element {
     if (error) {
       return (
         <View style={styles.emptyContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={fetchInitialData}>
+          <Text style={styles.errorText}>{(error as Error).message || "Terjadi kesalahan saat memuat data"}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
             <Text style={styles.retryButtonText}>Coba Lagi</Text>
           </TouchableOpacity>
         </View>
@@ -319,6 +273,8 @@ export default function Search(): JSX.Element {
         contentContainerStyle={styles.resultsList}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={renderEmptyList}
+        onRefresh={refetch}
+        refreshing={isLoading}
       />
     </View>
   );

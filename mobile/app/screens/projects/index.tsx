@@ -1,12 +1,11 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndicator, RefreshControl } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Search, Filter, ChevronLeft } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
-import { useEffect, useState } from "react";
-import { baseUrl } from "@/constant/baseUrl";
-import { SecureStoreUtils } from "@/utils/SecureStore";
+import { useFetch } from "@/hooks/tanstack/useFetch";
+
 type ProjectsScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
 interface AssignedFreelancer {
@@ -51,48 +50,39 @@ interface ProjectWithClient extends Project {
 export default function Projects() {
   const navigation = useNavigation<ProjectsScreenNavigationProp>();
   const insets = useSafeAreaInsets();
-  const [projects, setProjects] = useState<ProjectWithClient[]>([]);
-
-  useEffect(() => {
-    fetchProjects();
-  }, []);
-
-  const fetchProjects = async () => {
-    try {
-      const token = await SecureStoreUtils.getToken();  
-      const response = await fetch(`${baseUrl}/api/projects`,{
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      const result = await response.json();
-      if (result.success) {
-        // Fetch client details for each project
-        const projectsWithClients = await Promise.all(
-          result.data.map(async (project: Project) => {
-            try {
-              const clientResponse = await fetch(`${baseUrl}/api/users/${project.clientId}`, {
-                headers: {
-                  'Authorization': `Bearer ${token}`
-                }
-              });
-              const clientResult = await clientResponse.json();
-              return {
-                ...project,
-                client: clientResult.success ? clientResult.data : undefined
-              };
-            } catch (error) {
-              console.error('Error fetching client:', error);
-              return project;
-            }
-          })
-        );
-        setProjects(projectsWithClients);
-      }
-    } catch (error) {
-      console.error("Error fetching projects:", error);
-    }
-  };
+  
+  // Fetch projects dengan TanStack Query
+  const { 
+    data: projects = [], 
+    isLoading: projectsLoading, 
+    error: projectsError,
+    refetch: refetchProjects
+  } = useFetch<Project[]>({
+    endpoint: 'projects',
+    requiresAuth: true
+  });
+  
+  // Fetch users untuk mendapatkan data client
+  const { 
+    data: users = [], 
+    isLoading: usersLoading,
+    error: usersError
+  } = useFetch<Client[]>({
+    endpoint: 'users',
+    requiresAuth: true
+  });
+  
+  // Gabungkan data projects dengan client
+  const projectsWithClients: ProjectWithClient[] = projects.map(project => {
+    const client = users.find(user => user._id === project.clientId);
+    return {
+      ...project,
+      client
+    };
+  });
+  
+  const isLoading = projectsLoading || usersLoading;
+  const error = projectsError || usersError;
 
   const formatBudget = (budget: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -222,13 +212,40 @@ export default function Projects() {
         <Text style={styles.searchPlaceholder}>Search projects</Text>
       </View>
 
-      <FlatList
-        data={projects}
-        renderItem={renderProject}
-        keyExtractor={(item) => item._id}
-        contentContainerStyle={styles.projectsList}
-        showsVerticalScrollIndicator={false}
-      />
+      {isLoading && projectsWithClients.length === 0 ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#2563EB" />
+        </View>
+      ) : error ? (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>
+            {(error as Error).message || "Terjadi kesalahan saat memuat data"}
+          </Text>
+          <TouchableOpacity style={styles.retryButton} onPress={() => refetchProjects()}>
+            <Text style={styles.retryButtonText}>Coba Lagi</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <FlatList
+          data={projectsWithClients}
+          renderItem={renderProject}
+          keyExtractor={(item) => item._id}
+          contentContainerStyle={styles.projectsList}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={() => refetchProjects()}
+              colors={["#2563EB"]}
+            />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>Belum ada project yang tersedia</Text>
+            </View>
+          }
+        />
+      )}
     </View>
   );
 }
@@ -415,5 +432,43 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#111827',
     marginBottom: 2,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#ef4444',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  retryButton: {
+    backgroundColor: '#2563eb',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  emptyContainer: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#6b7280',
+    textAlign: 'center',
   },
 });

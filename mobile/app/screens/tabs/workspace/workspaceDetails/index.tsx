@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator, Alert, Keyboard } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator, Alert, Keyboard, RefreshControl } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context"; 
 import { ChevronLeft, Calendar, Clock, MessageSquare, ChevronRight, ImageIcon, FileText, Download } from "lucide-react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
-import { useUser } from "@/hooks/useUser";
+import { useUser } from "@/hooks/tanstack/useUser";
 import { baseUrl } from "@/constant/baseUrl";
 import { SecureStoreUtils } from "@/utils/SecureStore";
-import Input from "./Input";
+import Input, { Attachment } from "./Input";
+import { useFetch } from "@/hooks/tanstack/useFetch";
+import { useMutation } from "@/hooks/tanstack/useMutation";
 
 // Definisikan tipe untuk data dari API
 interface ProjectFeatureResponse {
@@ -54,50 +56,13 @@ interface ProjectFeatureResponse {
     }>;
 }
 
-interface Attachment {
-    id: string;
-    type: 'image' | 'document';
-    url: string;
-    name: string;
-    date: string;
-    size?: string;
-}
-
-interface Update {
-    id: string;
-    user: {
-        id: string;
-        name: string;
-        avatar: string;
-        role: 'client' | 'freelancer';
-    };
-    content: string;
-    date: string;
-    attachments: Attachment[];
-}
-
-interface ProjectDetails {
-    id: string;
-    title: string;
+// Tipe untuk request diskusi baru
+interface NewDiscussionRequest {
+    projectFeatureId: string;
+    senderId: string;
     description: string;
-    client: {
-        id: string;
-        name: string;
-        avatar: string;
-        role: 'client' | 'freelancer';
-    };
-    freelancer: {
-        id: string;
-        name: string;
-        avatar: string;
-        role: 'client' | 'freelancer';
-    };
-    startDate: string;
-    dueDate: string;
-    status: string;
-    budget: string;
-    updates: Update[];
-    clientId: string;
+    images: string[];
+    files: string[];
 }
 
 // Definisikan tipe untuk navigasi
@@ -109,139 +74,78 @@ export default function WorkspaceDetails() {
     const navigation = useNavigation<WorkspaceDetailsNavigationProp>();
     const route = useRoute<WorkspaceDetailsRouteProp>();
     const { projectId, freelancerId } = route.params;
-    const { user } = useUser();
+    const { data: user } = useUser();
     
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [projectFeature, setProjectFeature] = useState<ProjectFeatureResponse | null>(null);
+    const [featureId, setFeatureId] = useState<string | null>(null);
     const [sendingUpdate, setSendingUpdate] = useState(false);
 
-    useEffect(() => {
-        fetchProjectFeature();
-    }, [projectId, freelancerId]);
+    // Fetch semua project features untuk menemukan yang sesuai
+    const { 
+        data: allFeatures = [], 
+        isLoading: featuresLoading,
+        refetch: refetchAllFeatures
+    } = useFetch<any[]>({
+        endpoint: 'projectfeatures',
+        requiresAuth: true,
+        enabled: !!projectId && !!freelancerId
+    });
 
-    const fetchProjectFeature = async () => {
-        setLoading(true);
-        setError(null);
-        
-        try {
-            const token = await SecureStoreUtils.getToken();
-            
-            if (!token) {
-                throw new Error('Token tidak ditemukan');
-            }
-            
-            // Fetch semua project features
-            const response = await fetch(`${baseUrl}/api/projectfeatures`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Error: ${response.status}`);
-            }
-            
-            const result = await response.json();
-            
-            if (!result.success) {
-                throw new Error(result.message || 'Gagal mengambil data project features');
-            }
-            
-            // Filter project feature berdasarkan projectId dan freelancerId
-            const feature = result.data.find((f: {projectId: string, freelancerId: string}) => 
+    // Cari feature ID yang sesuai dengan projectId dan freelancerId
+    useEffect(() => {
+        if (allFeatures.length > 0 && !featureId) {
+            const feature = allFeatures.find(f => 
                 f.projectId === projectId && f.freelancerId === freelancerId
             );
             
-            if (!feature) {
-                throw new Error('Project feature tidak ditemukan untuk project dan freelancer ini');
+            if (feature) {
+                setFeatureId(feature._id);
             }
-            
-            // Ambil detail project feature dengan discussions
-            const featureResponse = await fetch(`${baseUrl}/api/projectfeatures/${feature._id}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            
-            if (!featureResponse.ok) {
-                throw new Error(`Error: ${featureResponse.status}`);
-            }
-            
-            const featureResult = await featureResponse.json();
-            
-            if (!featureResult.success) {
-                throw new Error(featureResult.message || 'Gagal mengambil detail project feature');
-            }
-            
-            setProjectFeature(featureResult.data);
-        } catch (err) {
-            console.error('Error fetching project details:', err);
-            setError(err instanceof Error ? err.message : "Failed to load project details. Please try again.");
-        } finally {
-            setLoading(false);
         }
-    };
+    }, [allFeatures, projectId, freelancerId]);
+
+    // Fetch detail project feature dengan discussions
+    const {
+        data: projectFeature,
+        isLoading: detailLoading,
+        error: detailError,
+        refetch: refetchProjectFeature
+    } = useFetch<ProjectFeatureResponse>({
+        endpoint: `projectfeatures/${featureId}`,
+        requiresAuth: true,
+        enabled: !!featureId
+    });
+
+    // Mutation untuk mengirim diskusi baru
+    const sendDiscussion = useMutation<any, NewDiscussionRequest>({
+        endpoint: 'projectdiscussions',
+        method: 'POST',
+        requiresAuth: true,
+        onSuccess: () => {
+            // Refresh data setelah berhasil mengirim diskusi
+            refetchProjectFeature();
+            Keyboard.dismiss();
+        },
+        invalidateQueries: [`projectfeatures/${featureId}`]
+    });
 
     const handleSendUpdate = async (content: string, attachments: Attachment[]) => {
         if (!content.trim() && attachments.length === 0) return;
+        if (!featureId || !user?._id) {
+            Alert.alert('Error', 'Data tidak lengkap untuk mengirim update');
+            return;
+        }
         
         setSendingUpdate(true);
         
         try {
-            const token = await SecureStoreUtils.getToken();
-            
-            if (!token || !projectFeature || !user) {
-                throw new Error('Data tidak lengkap untuk mengirim update');
-            }
-            
-            // Konversi ID ke format yang benar
-            const projectFeatureId = projectFeature._id;
-            const senderId = user._id;
-            
-            // Pastikan ID dalam format yang benar (string 24 karakter hex)
-            if (!/^[0-9a-fA-F]{24}$/.test(projectFeatureId) || !/^[0-9a-fA-F]{24}$/.test(senderId)) {
-                throw new Error('Format ID tidak valid');
-            }
-            
-            // Buat request ke API untuk membuat diskusi baru
-            const response = await fetch(`${baseUrl}/api/projectdiscussions`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    projectFeatureId: projectFeatureId,
-                    senderId: senderId,
-                    description: content,
-                    images: attachments.filter(att => att.type === 'image').map(att => att.url),
-                    files: attachments.filter(att => att.type === 'document').map(att => att.url)
-                })
+            // Kirim diskusi baru menggunakan mutation
+            await sendDiscussion.mutateAsync({
+                projectFeatureId: featureId,
+                senderId: user._id,
+                description: content,
+                images: attachments.filter(att => att.type === 'image').map(att => att.url),
+                files: attachments.filter(att => att.type === 'document').map(att => att.url)
             });
-            
-            // Log response untuk debugging
-            const responseText = await response.text();
-            console.log('Response:', responseText);
-            
-            if (!response.ok) {
-                throw new Error(`Error: ${response.status} - ${responseText}`);
-            }
-            
-            let result;
-            try {
-                result = JSON.parse(responseText);
-            } catch (e) {
-                throw new Error(`Invalid JSON response: ${responseText}`);
-            }
-            
-            if (!result.success) {
-                throw new Error(result.message || 'Gagal mengirim update');
-            }
-            
-            // Refresh data
-            Keyboard.dismiss();
-            fetchProjectFeature();
         } catch (err) {
             console.error('Error sending update:', err);
             Alert.alert('Error', err instanceof Error ? err.message : 'Gagal mengirim update');
@@ -256,6 +160,13 @@ export default function WorkspaceDetails() {
                 projectId: projectFeature.project._id, 
                 clientId: projectFeature.project.clientId 
             });
+        }
+    };
+
+    const refreshData = () => {
+        refetchAllFeatures();
+        if (featureId) {
+            refetchProjectFeature();
         }
     };
 
@@ -287,8 +198,10 @@ export default function WorkspaceDetails() {
         );
     };
 
-    // Render loading state
-    if (loading) {
+    const isLoading = featuresLoading || (!!featureId && detailLoading);
+    const error = detailError;
+
+    if (isLoading && !projectFeature) {
         return (
             <View style={[styles.container, styles.loadingContainer]}>
                 <ActivityIndicator size="large" color="#2563EB" />
@@ -296,12 +209,11 @@ export default function WorkspaceDetails() {
         );
     }
 
-    // Render error state
     if (error) {
         return (
             <View style={[styles.container, styles.errorContainer]}>
-                <Text style={styles.errorText}>{error}</Text>
-                <TouchableOpacity style={styles.retryButton} onPress={fetchProjectFeature}>
+                <Text style={styles.errorText}>{(error as Error).message || "Terjadi kesalahan"}</Text>
+                <TouchableOpacity style={styles.retryButton} onPress={refreshData}>
                     <Text style={styles.retryButtonText}>Coba Lagi</Text>
                 </TouchableOpacity>
             </View>
@@ -313,7 +225,7 @@ export default function WorkspaceDetails() {
         return (
             <View style={[styles.container, styles.errorContainer]}>
                 <Text style={styles.errorText}>Data project tidak ditemukan</Text>
-                <TouchableOpacity style={styles.retryButton} onPress={fetchProjectFeature}>
+                <TouchableOpacity style={styles.retryButton} onPress={refreshData}>
                     <Text style={styles.retryButtonText}>Coba Lagi</Text>
                 </TouchableOpacity>
             </View>
@@ -381,6 +293,13 @@ export default function WorkspaceDetails() {
                 <ScrollView 
                     style={styles.updatesList}
                     keyboardShouldPersistTaps="handled"
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={isLoading}
+                            onRefresh={refreshData}
+                            colors={["#2563EB"]}
+                        />
+                    }
                 >
                     {discussions && discussions.length > 0 ? (
                         discussions.map((discussion) => (
