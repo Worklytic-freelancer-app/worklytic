@@ -1,65 +1,20 @@
 [
     {
+        "_id": "67c09e7ea8bf2bcd8d03f111",
         "projectId": "67c09e7ea8bf2bcd8d03f800",
         "freelancerId": "66d064e5e913892a850e1234",
-        "status": "pending",
-        "content": [
-            {
-                "title": "Halaman Utama",
-                "description": "Halaman utama adalah halaman pertama yang akan ditampilkan ketika user membuka aplikasi.",
-                "images": [
-                    "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
-                    "https://images.unsplash.com/photo-1559028012-481c04fa702d",
-                    "https://images.unsplash.com/photo-1531403009284-440f080d1e12"
-                ],
-                "files": [
-                    "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
-                    "https://images.unsplash.com/photo-1559028012-481c04fa702d",
-                    "https://images.unsplash.com/photo-1531403009284-440f080d1e12"
-                ]
-            }
-        ]
+        "status": "pending"
     },
     {
+        "_id": "67c09e7ea8bf2bcd8d03f222",
         "projectId": "67c09e7ea8bf2bcd8d03f801",
         "freelancerId": "66d064e5e913892a850e1236",
-        "status": "in progress",
-        "content": [
-            {
-                "title": "Halaman Utama",
-                "description": "Halaman utama adalah halaman pertama yang akan ditampilkan ketika user membuka aplikasi.",
-                "images": [
-                    "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
-                    "https://images.unsplash.com/photo-1559028012-481c04fa702d",
-                    "https://images.unsplash.com/photo-1531403009284-440f080d1e12"
-                ],
-                "files": [
-                    "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
-                    "https://images.unsplash.com/photo-1559028012-481c04fa702d",
-                    "https://images.unsplash.com/photo-1531403009284-440f080d1e12"
-                ]
-            }
-        ]
+        "status": "in progress"
     },
     {
+        "_id": "67c09e7ea8bf2bcd8d03f333",
         "projectId": "67c09e7ea8bf2bcd8d03f802",
         "freelancerId": "66d064e5e913892a850e1237",
-        "status": "pending",
-        "content": [
-            {
-                "title": "Halaman Utama",
-                "description": "Halaman utama adalah halaman pertama yang akan ditampilkan ketika user membuka aplikasi.",
-                "images": [
-                    "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
-                    "https://images.unsplash.com/photo-1559028012-481c04fa702d",
-                    "https://images.unsplash.com/photo-1531403009284-440f080d1e12"
-                ],
-                "files": [
-                    "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
-                    "https://images.unsplash.com/photo-1559028012-481c04fa702d",
-                    "https://images.unsplash.com/photo-1531403009284-440f080d1e12"
-                ]
-            }
-        ]
+        "status": "pending"
     }
 ]

@@ -45,16 +45,60 @@ export class ProjectFeatureRepository {
     findAll = async (): Promise<Result<ProjectFeatures[]>> => {
         try {
             const collection = await this.getCollection();
-            const docs = await collection
-                .find({})
-                .toArray() as ProjectFeatures[];
+            
+            // Gunakan MongoDB Aggregate untuk join collections
+            const projectFeatures = await collection.aggregate([
+                // Lookup untuk mendapatkan data project
+                // {
+                //     $lookup: {
+                //         from: "Projects",
+                //         localField: "projectId",
+                //         foreignField: "_id",
+                //         as: "project"
+                //     }
+                // },
+                // // Unwind project array (mengubah array menjadi object)
+                // {
+                //     $unwind: {
+                //         path: "$project",
+                //         preserveNullAndEmptyArrays: true
+                //     }
+                // },
+                // Lookup untuk mendapatkan data freelancer
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "freelancerId",
+                        foreignField: "_id",
+                        as: "freelancer"
+                    }
+                },
+                // Unwind freelancer array
+                {
+                    $unwind: {
+                        path: "$freelancer",
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                // Lookup untuk mendapatkan project discussions
+                {
+                    $lookup: {
+                        from: "ProjectDiscussions",
+                        localField: "_id",
+                        foreignField: "projectFeatureId",
+                        as: "discussions"
+                    }
+                }
+            ]).toArray() as ProjectFeatures[];
+            
+            console.log(`Found ${projectFeatures.length} project features with related data`);
                 
             return {
                 success: true,
-                data: docs.map(doc => new ProjectFeature(doc) as ProjectFeatures)
+                data: projectFeatures
             };
         } catch (error) {
-            console.log(error)
+            console.log(error);
             throw new Error("Failed to fetch projectfeatures");
         }
     };
@@ -62,16 +106,63 @@ export class ProjectFeatureRepository {
     findById = async ({ id }: ProjectFeatureId): Promise<Result<ProjectFeatures>> => {
         try {
             const collection = await this.getCollection();
-            const doc = await collection
-                .findOne({ _id: new ObjectId(id) }) as ProjectFeatures | null;
-                
-            if (!doc) {
+            const objectId = new ObjectId(id);
+            
+            const [projectFeature] = await collection.aggregate([
+                // Match by ID
+                {
+                    $match: { _id: objectId }
+                },
+                // Lookup untuk mendapatkan data project
+                {
+                    $lookup: {
+                        from: "Projects",
+                        localField: "projectId",
+                        foreignField: "_id",
+                        as: "project"
+                    }
+                },
+                // Unwind project array
+                {
+                    $unwind: {
+                        path: "$project",
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                // Lookup untuk mendapatkan data freelancer
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "freelancerId",
+                        foreignField: "_id",
+                        as: "freelancer"
+                    }
+                },
+                // Unwind freelancer array
+                {
+                    $unwind: {
+                        path: "$freelancer",
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                // Lookup untuk mendapatkan project discussions
+                {
+                    $lookup: {
+                        from: "ProjectDiscussions",
+                        localField: "_id",
+                        foreignField: "projectFeatureId",
+                        as: "discussions"
+                    }
+                }
+            ]).toArray() as ProjectFeatures[];
+            
+            if (!projectFeature) {
                 throw new Error("ProjectFeature not found");
             }
             
             return {
                 success: true,
-                data: new ProjectFeature(doc) as ProjectFeatures
+                data: projectFeature
             };
         } catch (error) {
             throw new Error(error instanceof Error ? error.message : "Failed to find projectfeature");

@@ -11,12 +11,6 @@ const ProjectFeatureSchema = z.object({
     projectId: z.instanceof(ObjectId),
     freelancerId: z.instanceof(ObjectId),
     status: z.enum(["pending", "in progress", "completed"]),
-    content: z.array(z.object({
-        title: z.string(),
-        description: z.string(),
-        images: z.array(z.string()),
-        files: z.array(z.string()),
-    })),
 })
 
 const WithIdSchema = z.object({

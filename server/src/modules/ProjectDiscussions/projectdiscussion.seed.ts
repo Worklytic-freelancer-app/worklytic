@@ -1,23 +1,23 @@
 import { db } from "../../config";
 import { ObjectId } from "mongodb";
-import sampleData from "../../data/projectfeatures.json";
+import sampleData from "../../data/projectdiscussions.json";
 
 export async function seed() {
     try {
-        const collection = await db.collection("ProjectFeatures");
+        const collection = await db.collection("ProjectDiscussions");
         
         // Transform data dari json ke format MongoDB
         const values = sampleData.map(data => ({
+            _id: new ObjectId(), // generate ObjectId baru
             ...data,
-            _id: new ObjectId(data._id),
-            projectId: new ObjectId(data.projectId),
+            projectFeatureId: new ObjectId(data.projectFeatureId),
             createdAt: new Date(),
             updatedAt: new Date()
         }));
 
         await collection.insertMany(values);
         
-        console.log('✅ Seeding ProjectFeature completed successfully');
+        console.log('✅ Seeding ProjectDiscussion completed successfully');
     } catch (error) {
         console.error('❌ Seeding failed:', error);
         throw error;
@@ -26,10 +26,10 @@ export async function seed() {
 
 export async function unseed() {
     try {
-        const collection = await db.collection("ProjectFeatures");
+        const collection = await db.collection("ProjectDiscussions");
         await collection.deleteMany({});
         
-        console.log('✅ Unseeding ProjectFeature completed successfully');
+        console.log('✅ Unseeding ProjectDiscussion completed successfully');
     } catch (error) {
         console.error('❌ Unseeding failed:', error);
         throw error;
