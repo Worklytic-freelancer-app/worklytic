@@ -8,8 +8,8 @@ export class ProjectDiscussion {
 }
 
 const ProjectDiscussionSchema = z.object({
-    projectFeatureId: z.instanceof(ObjectId),
-    senderId: z.instanceof(ObjectId),
+    projectFeatureId: z.string().transform((val) => new ObjectId(val)),
+    senderId: z.string().transform((val) => new ObjectId(val)),
     description: z.string(),
     images: z.array(z.string()).optional(),
     files: z.array(z.string()).optional()

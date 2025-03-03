@@ -8,8 +8,8 @@ export class ProjectFeature {
 }
 
 const ProjectFeatureSchema = z.object({
-    projectId: z.instanceof(ObjectId),
-    freelancerId: z.instanceof(ObjectId),
+    projectId: z.string().transform((val) => new ObjectId(val)),
+    freelancerId: z.string().transform((val) => new ObjectId(val)),
     status: z.enum(["pending", "in progress", "completed"]),
 })
 

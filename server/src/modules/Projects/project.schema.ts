@@ -8,7 +8,7 @@ export class Project {
 }
 
 const ProjectSchema = z.object({
-    clientId: z.instanceof(ObjectId),
+    clientId: z.string().transform((val) => new ObjectId(val)),
     title: z.string(),
     description: z.string(),
     budget: z.number(),

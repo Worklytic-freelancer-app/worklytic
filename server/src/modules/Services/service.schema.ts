@@ -8,7 +8,7 @@ export class Service {
 }
 
 const ServiceSchema = z.object({
-    freelancerId: z.string(),
+    freelancerId: z.string().transform((val) => new ObjectId(val)),
     title: z.string(),
     description: z.string(),
     price: z.number(),

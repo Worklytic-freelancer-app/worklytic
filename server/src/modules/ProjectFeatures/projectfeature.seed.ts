@@ -11,6 +11,7 @@ export async function seed() {
             ...data,
             _id: new ObjectId(data._id),
             projectId: new ObjectId(data.projectId),
+            freelancerId: new ObjectId(data.freelancerId),
             createdAt: new Date(),
             updatedAt: new Date()
         }));
