@@ -164,14 +164,12 @@ export default function ServiceDetails() {
               </View>
               <TouchableOpacity
                 style={styles.chatButton}
-                onPress={() =>
-                  navigation.navigate("DirectMessage", {
-                    userId: freelancer._id,
-                    userName: freelancer.fullName,
-                    userImage: freelancer.profileImage,
-                    chatId: `service_${service._id}`
-                  })
-                }
+                onPress={() => navigation.navigate("DirectMessage", {
+                  userId: freelancer._id,
+                  userName: freelancer.fullName,
+                  userImage: freelancer.profileImage,
+                  chatId: `freelancer_${freelancer._id}`
+                })} 
               >
                 <MessageCircle size={20} color="#ffffff" />
               </TouchableOpacity>
