@@ -22,6 +22,7 @@ import Payment from "@/screens/payment";
 import { useEffect, useState } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { SecureStoreUtils } from "@/utils/SecureStore";
+
 const Stack = createStackNavigator<RootStackParamList>();
 
 export type RootStackParamList = {
