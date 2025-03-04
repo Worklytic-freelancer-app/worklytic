@@ -7,7 +7,7 @@
         "budget": 75000000,
         "category": "Web Development",
         "location": "Surabaya, Indonesia",
-        "completedDate": "2026-02-27T17:18:54.570Z",
+        "completedDate": "2024-06-27T17:18:54.570Z",
         "status": "Open",
         "requirements": [
             "Pengalaman minimal 5 tahun dalam pengembangan ERP",
@@ -24,46 +24,420 @@
     },
     {
         "_id": "67c09e7ea8bf2bcd8d03f801",
-        "clientId": "66d064e5e913892a850e1239",
-        "title": "Redesign Website Perusahaan",
-        "description": "Mencari UI/UX designer untuk melakukan redesign website perusahaan dengan fokus pada user experience dan konversi yang lebih baik. Website harus responsif dan modern.",
-        "budget": 25000000,
+        "clientId": "66d064e5e913892a850e1241",
+        "title": "Redesign Aplikasi Mobile Banking",
+        "description": "Mencari UI/UX designer untuk melakukan redesign aplikasi mobile banking dengan fokus pada peningkatan user experience dan keamanan. Design harus modern dan mengikuti standar material design.",
+        "budget": 45000000,
         "category": "UI/UX Design",
-        "location": "Remote",
-        "completedDate": "2026-02-27T17:18:54.570Z",
-        "status": "In Progress",
+        "location": "Jakarta Selatan, Indonesia",
+        "completedDate": "2024-05-15T00:00:00.000Z",
+        "status": "Open",
         "requirements": [
-            "Portfolio desain website B2B",
-            "Kemampuan UI/UX research",
-            "Familiar dengan Figma",
-            "Pengalaman dalam design system"
+            "Pengalaman dalam desain aplikasi fintech",
+            "Portofolio UI/UX design mobile apps",
+            "Familiar dengan Figma dan Adobe XD",
+            "Pemahaman tentang UX Research"
         ],
         "image": [
-            "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8"
+            "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d"
         ],
-        "createdAt": "2024-01-15T10:30:00.000Z",
-        "updatedAt": "2024-02-20T15:45:00.000Z"
+        "createdAt": "2024-03-01T09:00:00.000Z",
+        "updatedAt": "2024-03-01T09:00:00.000Z"
     },
     {
         "_id": "67c09e7ea8bf2bcd8d03f802",
-        "clientId": "66d064e5e913892a850e1235",
-        "title": "Pengembangan Aplikasi Mobile Internal",
-        "description": "Membutuhkan pengembangan aplikasi mobile untuk manajemen internal perusahaan. Aplikasi harus dapat digunakan di iOS dan Android.",
-        "budget": 45000000,
+        "clientId": "66d064e5e913892a850e1244",
+        "title": "Pengembangan Aplikasi E-commerce Mobile",
+        "description": "Membutuhkan mobile developer untuk mengembangkan aplikasi e-commerce dengan fitur live shopping, chat, dan payment gateway terintegrasi.",
+        "budget": 60000000,
         "category": "Mobile Development",
-        "location": "Surabaya, Indonesia",
-        "completedDate": "2026-02-27T17:18:54.570Z",
+        "location": "Tangerang, Indonesia",
+        "completedDate": "2024-07-30T00:00:00.000Z",
         "status": "Open",
         "requirements": [
-            "Pengalaman React Native/Flutter",
-            "Kemampuan backend integration",
-            "Understanding of mobile UI/UX",
-            "Knowledge of mobile security best practices"
+            "Menguasai Flutter atau React Native",
+            "Pengalaman integrasi payment gateway",
+            "Familiar dengan push notification",
+            "Pemahaman tentang state management"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1472393365320-db77a5abbecc"
+        ],
+        "createdAt": "2024-03-02T10:30:00.000Z",
+        "updatedAt": "2024-03-02T10:30:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f803",
+        "clientId": "66d064e5e913892a850e1246",
+        "title": "Konten Marketing dan SEO Website",
+        "description": "Mencari content writer untuk menghasilkan konten blog dan artikel SEO-friendly untuk website perusahaan. Fokus pada topik digital marketing dan teknologi.",
+        "budget": 25000000,
+        "category": "Content Writing",
+        "location": "Jakarta Pusat, Indonesia",
+        "completedDate": "2024-06-15T00:00:00.000Z",
+        "status": "Open",
+        "requirements": [
+            "Pengalaman menulis konten teknologi",
+            "Pemahaman SEO dan keyword research",
+            "Kemampuan menulis dalam Bahasa Indonesia dan Inggris",
+            "Portfolio artikel yang sudah dipublikasikan"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1455390582262-044cdead277a"
+        ],
+        "createdAt": "2024-03-03T13:45:00.000Z",
+        "updatedAt": "2024-03-03T13:45:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f804",
+        "clientId": "66d064e5e913892a850e1248",
+        "title": "Implementasi DevOps dan Cloud Infrastructure",
+        "description": "Mencari DevOps Engineer untuk mengimplementasikan CI/CD pipeline dan migrasi infrastruktur ke cloud AWS.",
+        "budget": 85000000,
+        "category": "DevOps",
+        "location": "Bekasi, Indonesia",
+        "completedDate": "2024-08-30T00:00:00.000Z",
+        "status": "Open",
+        "requirements": [
+            "Berpengalaman dengan AWS Services",
+            "Menguasai Docker dan Kubernetes",
+            "Familiar dengan Jenkins dan GitLab CI",
+            "Pemahaman tentang security best practices"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1451187580459-43490279c0fa"
+        ],
+        "createdAt": "2024-03-04T11:20:00.000Z",
+        "updatedAt": "2024-03-04T11:20:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f805",
+        "clientId": "66d064e5e913892a850e1251",
+        "title": "Pengembangan Website Company Profile",
+        "description": "Membutuhkan frontend developer untuk membuat website company profile yang modern dan responsif dengan animasi smooth.",
+        "budget": 35000000,
+        "category": "Frontend Development",
+        "location": "Depok, Indonesia",
+        "completedDate": "2024-05-30T00:00:00.000Z",
+        "status": "Open",
+        "requirements": [
+            "Menguasai React.js dan Next.js",
+            "Familiar dengan Tailwind CSS",
+            "Pengalaman dengan animasi web",
+            "Portfolio website yang sudah dikerjakan"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1467232004584-a241de8bcf5d"
+        ],
+        "createdAt": "2024-03-05T14:15:00.000Z",
+        "updatedAt": "2024-03-05T14:15:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f806",
+        "clientId": "66d064e5e913892a850e1235",
+        "title": "Pengembangan Backend API Microservices",
+        "description": "Mencari backend developer untuk mengembangkan API microservices menggunakan Node.js dan Python.",
+        "budget": 70000000,
+        "category": "Backend Development",
+        "location": "Surabaya, Indonesia",
+        "completedDate": "2024-07-15T00:00:00.000Z",
+        "status": "Open",
+        "requirements": [
+            "Menguasai Node.js dan Python",
+            "Pengalaman dengan microservices architecture",
+            "Familiar dengan MongoDB dan PostgreSQL",
+            "Pemahaman tentang API security"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1558494949-ef010cbdcc31"
+        ],
+        "createdAt": "2024-03-06T09:30:00.000Z",
+        "updatedAt": "2024-03-06T09:30:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f807",
+        "clientId": "66d064e5e913892a850e1246",
+        "title": "Kampanye Digital Marketing",
+        "description": "Mencari digital marketing specialist untuk menjalankan kampanye marketing di social media dan Google Ads.",
+        "budget": 40000000,
+        "category": "Digital Marketing",
+        "location": "Jakarta Pusat, Indonesia",
+        "completedDate": "2024-06-30T00:00:00.000Z",
+        "status": "Open",
+        "requirements": [
+            "Pengalaman mengelola kampanye ads",
+            "Familiar dengan Google Analytics",
+            "Kemampuan analisis data marketing",
+            "Portfolio kampanye sebelumnya"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07"
+        ],
+        "createdAt": "2024-03-07T15:45:00.000Z",
+        "updatedAt": "2024-03-07T15:45:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f808",
+        "clientId": "66d064e5e913892a850e1244",
+        "title": "Desain UI/UX Aplikasi Fintech",
+        "description": "Membutuhkan UI/UX designer untuk merancang aplikasi fintech dengan fokus pada user experience yang simpel dan aman.",
+        "budget": 55000000,
+        "category": "UI/UX Design",
+        "location": "Tangerang, Indonesia",
+        "completedDate": "2024-06-15T00:00:00.000Z",
+        "status": "Open",
+        "requirements": [
+            "Pengalaman desain aplikasi financial",
+            "Menguasai Figma dan Prototyping",
+            "Familiar dengan design system",
+            "Portfolio desain fintech"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1559028012-481c04fa702d"
+        ],
+        "createdAt": "2024-03-08T10:20:00.000Z",
+        "updatedAt": "2024-03-08T10:20:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f809",
+        "clientId": "66d064e5e913892a850e1248",
+        "title": "Pengembangan Aplikasi IoT",
+        "description": "Mencari full stack developer untuk mengembangkan aplikasi monitoring IoT dengan dashboard realtime.",
+        "budget": 65000000,
+        "category": "Web Development",
+        "location": "Bekasi, Indonesia",
+        "completedDate": "2024-08-15T00:00:00.000Z",
+        "status": "Open",
+        "requirements": [
+            "Pengalaman dengan IoT development",
+            "Menguasai React.js dan Node.js",
+            "Familiar dengan WebSocket",
+            "Pemahaman tentang MQTT"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1518770660439-4636190af475"
+        ],
+        "createdAt": "2024-03-09T13:40:00.000Z",
+        "updatedAt": "2024-03-09T13:40:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f810",
+        "clientId": "66d064e5e913892a850e1251",
+        "title": "Pengembangan E-learning Platform",
+        "description": "Membutuhkan tim developer untuk mengembangkan platform e-learning dengan fitur video streaming dan quiz interaktif.",
+        "budget": 90000000,
+        "category": "Web Development",
+        "location": "Depok, Indonesia",
+        "completedDate": "2024-09-30T00:00:00.000Z",
+        "status": "Open",
+        "requirements": [
+            "Pengalaman dengan video streaming",
+            "Menguasai React dan Node.js",
+            "Familiar dengan WebRTC",
+            "Pemahaman tentang learning management system"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1516321318423-f06f85e504b3"
+        ],
+        "createdAt": "2024-03-10T11:25:00.000Z",
+        "updatedAt": "2024-03-10T11:25:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f811",
+        "clientId": "66d064e5e913892a850e1241",
+        "title": "Pengembangan Mobile App Cross-platform",
+        "description": "Mencari mobile developer untuk mengembangkan aplikasi cross-platform menggunakan Flutter.",
+        "budget": 50000000,
+        "category": "Mobile Development",
+        "location": "Jakarta Selatan, Indonesia",
+        "completedDate": "2024-07-30T00:00:00.000Z",
+        "status": "Open",
+        "requirements": [
+            "Menguasai Flutter dan Dart",
+            "Pengalaman dengan state management",
+            "Familiar dengan Firebase",
+            "Portfolio aplikasi mobile"
         ],
         "image": [
             "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c"
         ],
-        "createdAt": "2024-02-25T09:00:00.000Z",
-        "updatedAt": "2024-02-25T09:00:00.000Z"
+        "createdAt": "2024-03-11T14:50:00.000Z",
+        "updatedAt": "2024-03-11T14:50:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f812",
+        "clientId": "66d064e5e913892a850e1246",
+        "title": "Desain Grafis untuk Brand Identity",
+        "description": "Membutuhkan graphic designer untuk merancang brand identity lengkap termasuk logo, guidelines, dan marketing materials.",
+        "budget": 30000000,
+        "category": "Graphic Design",
+        "location": "Jakarta Pusat, Indonesia",
+        "completedDate": "2024-05-30T00:00:00.000Z",
+        "status": "Open",
+        "requirements": [
+            "Pengalaman dalam branding design",
+            "Menguasai Adobe Creative Suite",
+            "Portfolio desain brand identity",
+            "Pemahaman tentang brand guidelines"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1572044162444-ad60f128bdea"
+        ],
+        "createdAt": "2024-03-12T09:15:00.000Z",
+        "updatedAt": "2024-03-12T09:15:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f813",
+        "clientId": "66d064e5e913892a850e1235",
+        "title": "Pengembangan Sistem Manajemen Warehouse",
+        "description": "Mencari full stack developer untuk mengembangkan sistem manajemen warehouse dengan fitur tracking realtime.",
+        "budget": 80000000,
+        "category": "Web Development",
+        "location": "Surabaya, Indonesia",
+        "completedDate": "2024-08-30T00:00:00.000Z",
+        "status": "Open",
+        "requirements": [
+            "Pengalaman dengan sistem inventory",
+            "Menguasai React.js dan Node.js",
+            "Familiar dengan barcode/QR integration",
+            "Pemahaman tentang warehouse management"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1553413077-190dd305871c"
+        ],
+        "createdAt": "2024-03-13T16:30:00.000Z",
+        "updatedAt": "2024-03-13T16:30:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f814",
+        "clientId": "66d064e5e913892a850e1244",
+        "title": "Pengembangan Chatbot AI",
+        "description": "Membutuhkan developer untuk mengembangkan chatbot AI untuk customer service menggunakan NLP.",
+        "budget": 70000000,
+        "category": "Backend Development",
+        "location": "Tangerang, Indonesia",
+        "completedDate": "2024-07-15T00:00:00.000Z",
+        "status": "Open",
+        "requirements": [
+            "Pengalaman dengan NLP dan AI",
+            "Menguasai Python dan TensorFlow",
+            "Familiar dengan chat systems",
+            "Pemahaman tentang machine learning"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1531746790731-6c087fecd65a"
+        ],
+        "createdAt": "2024-03-14T10:45:00.000Z",
+        "updatedAt": "2024-03-14T10:45:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f815",
+        "clientId": "66d064e5e913892a850e1248",
+        "title": "Pengembangan Dashboard Analytics",
+        "description": "Mencari frontend developer untuk mengembangkan dashboard analytics dengan visualisasi data interaktif.",
+        "budget": 45000000,
+        "category": "Frontend Development",
+        "location": "Bekasi, Indonesia",
+        "completedDate": "2024-06-30T00:00:00.000Z",
+        "status": "Open",
+        "requirements": [
+            "Pengalaman dengan data visualization",
+            "Menguasai React.js dan D3.js",
+            "Familiar dengan chart libraries",
+            "Portfolio dashboard projects"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1551288049-bebda4e38f71"
+        ],
+        "createdAt": "2024-03-15T13:20:00.000Z",
+        "updatedAt": "2024-03-15T13:20:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f816",
+        "clientId": "66d064e5e913892a850e1251",
+        "title": "Content Creation untuk Social Media",
+        "description": "Membutuhkan content creator untuk membuat konten social media yang engaging dan SEO-friendly.",
+        "budget": 25000000,
+        "category": "Content Writing",
+        "location": "Depok, Indonesia",
+        "completedDate": "2024-05-15T00:00:00.000Z",
+        "status": "Open",
+        "requirements": [
+            "Pengalaman content social media",
+            "Kemampuan copywriting",
+            "Familiar dengan trend social media",
+            "Portfolio konten yang viral"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07"
+        ],
+        "createdAt": "2024-03-16T15:40:00.000Z",
+        "updatedAt": "2024-03-16T15:40:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f817",
+        "clientId": "66d064e5e913892a850e1241",
+        "title": "Pengembangan Game Mobile Edukasi",
+        "description": "Mencari mobile developer untuk mengembangkan game edukasi interaktif untuk anak-anak.",
+        "budget": 55000000,
+        "category": "Mobile Development",
+        "location": "Jakarta Selatan, Indonesia",
+        "completedDate": "2024-07-30T00:00:00.000Z",
+        "status": "Open",
+        "requirements": [
+            "Pengalaman dengan game development",
+            "Menguasai Unity atau Flutter",
+            "Familiar dengan animasi mobile",
+            "Portfolio game mobile"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1556438064-2d7646166914"
+        ],
+        "createdAt": "2024-03-17T11:55:00.000Z",
+        "updatedAt": "2024-03-17T11:55:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f818",
+        "clientId": "66d064e5e913892a850e1246",
+        "title": "Digital Marketing Campaign B2B",
+        "description": "Membutuhkan digital marketing specialist untuk menjalankan kampanye B2B di LinkedIn dan Email.",
+        "budget": 35000000,
+        "category": "Digital Marketing",
+        "location": "Jakarta Pusat, Indonesia",
+        "completedDate": "2024-06-15T00:00:00.000Z",
+        "status": "Open",
+        "requirements": [
+            "Pengalaman marketing B2B",
+            "Familiar dengan LinkedIn Ads",
+            "Kemampuan email marketing",
+            "Portfolio kampanye B2B"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1460925895917-afdab827c52f"
+        ],
+        "createdAt": "2024-03-18T14:25:00.000Z",
+        "updatedAt": "2024-03-18T14:25:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f819",
+        "clientId": "66d064e5e913892a850e1239",
+        "title": "UI/UX Design Sistem Healthcare",
+        "description": "Mencari UI/UX designer untuk merancang sistem informasi healthcare yang user-friendly dan accessible.",
+        "budget": 60000000,
+        "category": "UI/UX Design",
+        "location": "Jakarta, Indonesia",
+        "completedDate": "2024-08-15T00:00:00.000Z",
+        "status": "Open",
+        "requirements": [
+            "Pengalaman desain healthcare",
+            "Menguasai Figma dan Adobe XD",
+            "Familiar dengan accessibility",
+            "Portfolio desain medical apps"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d"
+        ],
+        "createdAt": "2024-03-19T09:35:00.000Z",
+        "updatedAt": "2024-03-19T09:35:00.000Z"
     }
 ]

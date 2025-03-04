@@ -2,7 +2,7 @@
     {
         "freelancerId": "66d064e5e913892a850e1236",
         "title": "UI/UX Design untuk Website dan Mobile Apps",
-        "description": "Jasa desain UI/UX profesional untuk website dan aplikasi mobile dengan fokus pada user experience dan accessibility. Termasuk user research, wireframing, dan prototype interaktif.",
+        "description": "Jasa desain UI/UX profesional menggunakan Figma dan Adobe XD. Spesialisasi dalam user research, wireframing, dan prototype interaktif dengan fokus pada user experience.",
         "price": 750000,
         "deliveryTime": "7 hari",
         "category": "UI/UX Design",
@@ -31,8 +31,8 @@
     },
     {
         "freelancerId": "66d064e5e913892a850e1237",
-        "title": "Pengembangan Aplikasi Mobile Android & iOS",
-        "description": "Jasa pembuatan aplikasi mobile untuk platform Android dan iOS menggunakan React Native atau Flutter. Termasuk integrasi API dan testing.",
+        "title": "Pengembangan Aplikasi Mobile Cross-Platform",
+        "description": "Jasa pembuatan aplikasi mobile menggunakan React Native dan Flutter. Pengalaman dalam pengembangan aplikasi e-commerce, edukasi, dan enterprise.",
         "price": 2500000,
         "deliveryTime": "14 hari",
         "category": "Mobile Development",
@@ -60,12 +60,12 @@
         "updatedAt": "2024-02-27T00:20:10.466Z"
     },
     {
-        "freelancerId": "66d064e5e913892a850e1236",
-        "title": "Design System Development",
-        "description": "Pembuatan design system komprehensif untuk produk digital Anda. Mencakup komponen UI, guidelines, dan dokumentasi lengkap.",
-        "price": 1200000,
-        "deliveryTime": "10 hari",
-        "category": "UI/UX Design",
+        "freelancerId": "66d064e5e913892a850e1240",
+        "title": "Content Writing dan SEO Optimization",
+        "description": "Jasa pembuatan konten berkualitas dengan optimasi SEO. Spesialisasi dalam artikel blog, copywriting, dan konten social media yang engaging.",
+        "price": 500000,
+        "deliveryTime": "5 hari",
+        "category": "Content Writing",
         "images": [
             "https://images.unsplash.com/photo-1561070791-2526d30994b5",
             "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e",
@@ -74,25 +74,25 @@
         "rating": 4.9,
         "reviews": 35,
         "includes": [
-            "Component library",
-            "Style guide",
-            "Documentation",
-            "Implementation guide",
-            "Figma files"
+            "Keyword research",
+            "SEO optimization",
+            "Content strategy",
+            "Social media plan",
+            "Analytics report"
         ],
         "requirements": [
-            "Brand guidelines",
-            "Existing design files",
-            "Use case scenarios",
-            "Technical requirements"
+            "Topic brief",
+            "Target audience",
+            "Brand voice guide",
+            "Keyword preferences"
         ],
         "createdAt": "2024-02-25T08:30:11.256Z",
         "updatedAt": "2024-02-27T15:41:19.724Z"
     },
     {
-        "freelancerId": "66d064e5e913892a850e1234",
+        "freelancerId": "66d064e5e913892a850e1242",
         "title": "Backend Development dengan Node.js",
-        "description": "Pengembangan REST API dan sistem backend menggunakan Node.js, Express, dan MongoDB. Termasuk authentication dan authorization.",
+        "description": "Pengembangan REST API dan sistem backend menggunakan Node.js dan Python. Spesialisasi dalam arsitektur mikroservis dan database optimization.",
         "price": 1800000,
         "deliveryTime": "12 hari",
         "category": "Backend Development",
@@ -120,12 +120,12 @@
         "updatedAt": "2024-02-27T12:20:10.466Z"
     },
     {
-        "freelancerId": "66d064e5e913892a850e1238",
-        "title": "Mobile App UI Prototyping",
-        "description": "Pembuatan prototype interaktif untuk aplikasi mobile dengan fokus pada user experience dan micro-interactions.",
+        "freelancerId": "66d064e5e913892a850e1243",
+        "title": "Graphic Design dan Branding",
+        "description": "Jasa desain grafis profesional menggunakan Adobe Creative Suite. Spesialisasi dalam branding, marketing materials, dan social media assets.",
         "price": 900000,
         "deliveryTime": "5 hari",
-        "category": "UI/UX Design",
+        "category": "Graphic Design",
         "images": [
             "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
             "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d",
@@ -134,28 +134,28 @@
         "rating": 4.8,
         "reviews": 28,
         "includes": [
-            "Interactive prototype",
-            "Micro-interactions",
-            "User flow",
-            "Design assets",
-            "Prototype testing"
+            "Logo design",
+            "Brand identity",
+            "Marketing materials",
+            "Social media kit",
+            "Source files"
         ],
         "requirements": [
-            "App requirements",
-            "User stories",
-            "Brand assets",
-            "Competition analysis"
+            "Brand brief",
+            "Color preferences",
+            "Target audience",
+            "Competitor analysis"
         ],
         "createdAt": "2024-02-24T14:48:11.256Z",
         "updatedAt": "2024-02-27T18:41:19.724Z"
     },
     {
-        "freelancerId": "66d064e5e913892a850e1234",
-        "title": "Full-Stack Web Application",
-        "description": "Pengembangan aplikasi web full-stack menggunakan MERN stack (MongoDB, Express, React, Node.js) dengan fitur real-time.",
+        "freelancerId": "66d064e5e913892a850e1245",
+        "title": "DevOps dan Cloud Infrastructure",
+        "description": "Jasa implementasi DevOps dan cloud infrastructure menggunakan AWS dan Docker. Spesialisasi dalam CI/CD pipeline, container orchestration, dan cloud optimization.",
         "price": 3500000,
-        "deliveryTime": "21 hari",
-        "category": "Full-Stack Development",
+        "deliveryTime": "14 hari",
+        "category": "DevOps",
         "images": [
             "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7",
             "https://images.unsplash.com/photo-1547658719-da2b51169166",
@@ -164,17 +164,17 @@
         "rating": 4.9,
         "reviews": 31,
         "includes": [
-            "Frontend development",
-            "Backend development",
-            "Database integration",
-            "Real-time features",
-            "Deployment setup"
+            "Infrastructure setup",
+            "CI/CD pipeline",
+            "Container orchestration",
+            "Monitoring setup",
+            "Documentation"
         ],
         "requirements": [
-            "Detailed requirements",
-            "Design mockups",
-            "API specifications",
-            "Hosting preferences"
+            "Infrastructure requirements",
+            "Current setup details",
+            "Security requirements",
+            "Scaling expectations"
         ],
         "createdAt": "2024-02-23T09:30:50.692Z",
         "updatedAt": "2024-02-27T16:20:10.466Z"
