@@ -40,10 +40,6 @@ export default function WorklyticAI() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>AI Match</Text>
-        <TouchableOpacity style={styles.scanButton}>
-          <Brain size={20} color="#fff" />
-          <Text style={styles.scanButtonText}>Scan Profile</Text>
-        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
