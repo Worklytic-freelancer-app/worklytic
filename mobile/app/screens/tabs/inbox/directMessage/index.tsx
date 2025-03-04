@@ -143,8 +143,15 @@ export default function DirectMessage() {
           data={messages}
           renderItem={renderMessage}
           keyExtractor={(item) => item.id || Math.random().toString()}
-          contentContainerStyle={styles.messagesList}
-          inverted={false}
+          contentContainerStyle={[
+            styles.messagesList,
+            { flexGrow: 1, justifyContent: 'flex-end' }
+          ]}
+          inverted={true}
+          maintainVisibleContentPosition={{
+            minIndexForVisible: 0,
+            autoscrollToTopThreshold: 10
+          }}
         />
       )}
 
@@ -212,6 +219,7 @@ const styles = StyleSheet.create({
   },
   messagesList: {
     padding: 16,
+    flexGrow: 1,
   },
   messageContainer: {
     maxWidth: "80%",

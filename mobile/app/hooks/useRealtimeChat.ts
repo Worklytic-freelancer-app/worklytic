@@ -19,7 +19,9 @@ export const useRealtimeChat = (userId?: string, chatId?: string) => {
           console.log("Setting up messages listener for chatId:", chatId);
           const unsubscribe = await realtimeChatService.getMessages(chatId, (newMessages) => {
             console.log("Received messages update:", newMessages.length);
-            setMessages(newMessages);
+            // Urutkan pesan dari yang terlama ke terbaru
+            const sortedMessages = newMessages.sort((a, b) => b.createdAt - a.createdAt);
+            setMessages(sortedMessages);
             setLoading(false);
             
             // Clear timeout if we got a response
@@ -29,7 +31,7 @@ export const useRealtimeChat = (userId?: string, chatId?: string) => {
           });
           cleanup = unsubscribe;
           
-          // Safety timeout - jika tidak ada respons dalam 3 detik, set loading ke false
+          // Safety timeout
           timeoutId = setTimeout(() => {
             console.log("Messages safety timeout triggered");
             setLoading(false);
@@ -40,7 +42,6 @@ export const useRealtimeChat = (userId?: string, chatId?: string) => {
           setLoading(false);
         }
       } else {
-        // Jika tidak ada chatId, set loading ke false
         console.log("No chatId provided, skipping messages listener");
         setLoading(false);
       }
