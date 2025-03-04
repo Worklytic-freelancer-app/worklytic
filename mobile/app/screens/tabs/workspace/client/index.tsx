@@ -1,13 +1,16 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndicator, Modal, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Clock, Users, Plus, Calendar } from "lucide-react-native";
+import { Clock, Users, Plus, Calendar, MoreVertical, Edit2, Trash2, Info } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 import { useUser } from "@/hooks/tanstack/useUser";
 import { useFetch } from "@/hooks/tanstack/useFetch";
+import { useMutation } from "@/hooks/tanstack/useMutation";
 import Header from "@/components/Header";
 import { COLORS } from "@/constant/color";
+import { useState } from "react";
+import Confirmation from "@/components/Confirmation";
 
 interface ProjectFeature {
     _id: string;
@@ -53,6 +56,33 @@ export default function ClientWorkspace() {
     // Filter proyek yang dimiliki oleh client yang sedang login
     const projects = allProjects.filter(project => project.client?._id === user?._id);
 
+    const [selectedProject, setSelectedProject] = useState<string | null>(null);
+    const [showOptions, setShowOptions] = useState(false);
+
+    // Tambahkan mutation untuk delete project
+    const { mutate: deleteProject, isPending: isDeleting } = useMutation<Record<string, unknown>, { customEndpoint: string }>({
+        endpoint: 'projects',
+        method: 'DELETE',
+        invalidateQueries: ['projects'],
+    });
+
+    // State untuk konfirmasi
+    const [confirmation, setConfirmation] = useState<{
+        visible: boolean;
+        title: string;
+        message: string;
+        type: 'success' | 'error' | 'warning' | 'confirm';
+        onConfirm?: () => void;
+    }>({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'confirm',
+    });
+    
+    // Ubah state untuk dropdown
+    const [dropdownVisible, setDropdownVisible] = useState<string | null>(null);
+
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         const now = new Date();
@@ -85,8 +115,8 @@ export default function ClientWorkspace() {
         switch (status.toLowerCase()) {
             case 'open':
                 return {
-                    bg: 'rgba(16, 185, 129, 0.08)',
-                    text: COLORS.success
+                    bg: 'rgba(8, 145, 178, 0.08)',
+                    text: COLORS.primary
                 };
             case 'in progress':
                 return {
@@ -106,6 +136,82 @@ export default function ClientWorkspace() {
         }
     };
 
+    const handleMoreOptions = (projectId: string) => {
+        // Toggle dropdown
+        setDropdownVisible(dropdownVisible === projectId ? null : projectId);
+    };
+
+    const handleCloseOptions = () => {
+        setShowOptions(false);
+        setSelectedProject(null);
+    };
+
+    const handleViewDetails = (projectId: string) => {
+        setDropdownVisible(null);
+        
+        // Pastikan projectId valid sebelum navigasi
+        if (projectId && projectId.length === 24) {
+            navigation.navigate('ProjectDetails', { 
+                projectId,
+                clientId: user?._id // Tambahkan clientId jika diperlukan oleh ProjectDetails
+            });
+        } else {
+            // Tampilkan pesan error jika ID tidak valid
+            setConfirmation({
+                visible: true,
+                title: 'Error',
+                message: 'ID proyek tidak valid. Silakan coba lagi nanti.',
+                type: 'error',
+                onConfirm: () => setConfirmation(prev => ({ ...prev, visible: false })),
+            });
+        }
+    };
+
+    const handleDeleteProject = (projectId: string) => {
+        setDropdownVisible(null);
+        setConfirmation({
+            visible: true,
+            title: 'Hapus Proyek',
+            message: 'Apakah kamu yakin ingin menghapus proyek ini? Tindakan ini tidak dapat dibatalkan.',
+            type: 'warning',
+            onConfirm: () => confirmDeleteProject(projectId),
+        });
+    };
+    
+    const confirmDeleteProject = (projectId: string) => {
+        setConfirmation(prev => ({ ...prev, visible: false }));
+        
+        // Gunakan customEndpoint untuk mengarahkan ke endpoint yang benar
+        const endpoint = `projects/${projectId}`;
+        console.log("DELETE request to endpoint:", endpoint);
+        
+        deleteProject(
+            { customEndpoint: endpoint },
+            {
+                onSuccess: (data) => {
+                    console.log("Delete success response:", data);
+                    setConfirmation({
+                        visible: true,
+                        title: 'Berhasil',
+                        message: 'Proyek berhasil dihapus',
+                        type: 'success',
+                        onConfirm: () => setConfirmation(prev => ({ ...prev, visible: false })),
+                    });
+                },
+                onError: (error) => {
+                    console.error("Delete error:", error);
+                    setConfirmation({
+                        visible: true,
+                        title: 'Gagal',
+                        message: error.message || "Gagal menghapus proyek",
+                        type: 'error',
+                        onConfirm: () => setConfirmation(prev => ({ ...prev, visible: false })),
+                    });
+                }
+            }
+        );
+    };
+
     const renderProject = ({ item }: { item: Project }) => {
         const statusColor = getStatusColor(item.status);
         const featuresCount = item.featuresCount || (item.features?.length || 0);
@@ -113,39 +219,81 @@ export default function ClientWorkspace() {
         return (
             <TouchableOpacity
                 style={styles.projectCard}
-                onPress={() => navigation.navigate('WorkspaceDetails', { projectId: item._id })}
+                onPress={() => navigation.navigate('ChooseFreelancer', { projectId: item._id })}
             >
-                <Image
-                    source={{ 
-                        uri: item.image && item.image.length > 0 
-                            ? item.image[0] 
-                            : 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d' 
-                    }}
-                    style={styles.projectImage}
-                    resizeMode="cover"
-                />
-                <View style={styles.projectInfo}>
-                    <View style={styles.projectHeader}>
-                        <Text style={styles.projectTitle} numberOfLines={2}>
-                            {item.title}
-                        </Text>
-                        <View style={[styles.statusBadge, { backgroundColor: statusColor.bg }]}>
-                            <Text style={[styles.statusText, { color: statusColor.text }]}>
-                                {item.status}
+                <View style={styles.cardContent}>
+                    <View style={styles.cardRow}>
+                        <View style={styles.imageContainer}>
+                            <Image
+                                source={{ 
+                                    uri: item.image && item.image.length > 0 
+                                        ? item.image[0] 
+                                        : 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d' 
+                                }}
+                                style={styles.projectImage}
+                                resizeMode="cover"
+                            />
+                        </View>
+                        
+                        <View style={styles.projectInfo}>
+                            <Text style={styles.projectTitle} numberOfLines={2}>
+                                {item.title}
                             </Text>
+                            
+                            <Text style={styles.projectBudget}>
+                                Rp{item.budget.toLocaleString('id-ID')}
+                            </Text>
+                            
+                            <View style={styles.projectMeta}>
+                                <View style={styles.metaItem}>
+                                    <Calendar size={14} color={COLORS.gray} />
+                                    <Text style={styles.metaText}>{formatDate(item.createdAt)}</Text>
+                                </View>
+                                <View style={styles.metaItem}>
+                                    <Users size={14} color={COLORS.gray} />
+                                    <Text style={styles.metaText}>{featuresCount}</Text>
+                                </View>
+                            </View>
                         </View>
-                    </View>
-                    <Text style={styles.projectBudget}>
-                        Rp{item.budget.toLocaleString('id-ID')}
-                    </Text>
-                    <View style={styles.projectMeta}>
-                        <View style={styles.metaItem}>
-                            <Calendar size={16} color={COLORS.gray} />
-                            <Text style={styles.metaText}>{formatDate(item.createdAt)}</Text>
-                        </View>
-                        <View style={styles.metaItem}>
-                            <Users size={16} color={COLORS.gray} />
-                            <Text style={styles.metaText}>{featuresCount} freelancers</Text>
+                        
+                        <View style={styles.rightContainer}>
+                            <View style={styles.moreButtonContainer}>
+                                <TouchableOpacity 
+                                    style={styles.moreButton}
+                                    onPress={() => handleMoreOptions(item._id)}
+                                >
+                                    <MoreVertical size={18} color={COLORS.gray} />
+                                </TouchableOpacity>
+                                
+                                {dropdownVisible === item._id && (
+                                    <View style={styles.dropdownMenu}>
+                                        <TouchableOpacity 
+                                            style={styles.dropdownItem}
+                                            onPress={() => handleViewDetails(item._id)}
+                                        >
+                                            <Info size={16} color={COLORS.primary} />
+                                            <Text style={styles.dropdownItemText}>Detail</Text>
+                                        </TouchableOpacity>
+                                        
+                                        <TouchableOpacity 
+                                            style={[styles.dropdownItem, { borderBottomWidth: 0 }]}
+                                            onPress={() => handleDeleteProject(item._id)}
+                                            disabled={isDeleting}
+                                        >
+                                            <Trash2 size={16} color={COLORS.error} />
+                                            <Text style={[styles.dropdownItemText, {color: COLORS.error}]}>
+                                                {isDeleting ? "Menghapus..." : "Hapus"}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
+                            </View>
+                            
+                            <View style={[styles.statusBadge, { backgroundColor: statusColor.bg }]}>
+                                <Text style={[styles.statusText, { color: statusColor.text }]}>
+                                    {item.status}
+                                </Text>
+                            </View>
                         </View>
                     </View>
                 </View>
@@ -219,6 +367,23 @@ export default function ClientWorkspace() {
                     refreshing={loading}
                 />
             )}
+
+            <Confirmation
+                visible={confirmation.visible}
+                title={confirmation.title}
+                message={confirmation.message}
+                type={confirmation.type}
+                onConfirm={confirmation.onConfirm}
+                onCancel={() => setConfirmation(prev => ({ ...prev, visible: false }))}
+                loading={isDeleting && confirmation.type === 'warning'}
+                confirmText={
+                    confirmation.type === 'success' || confirmation.type === 'error' 
+                        ? 'OK' 
+                        : confirmation.type === 'warning' 
+                            ? 'Hapus' 
+                            : 'Konfirmasi'
+                }
+            />
         </View>
     );
 }
@@ -242,69 +407,122 @@ const styles = StyleSheet.create({
         elevation: 3,
     },
     projectList: {
-        padding: 20,
+        padding: 16,
     },
     projectCard: {
         backgroundColor: COLORS.background,
-        borderRadius: 16,
-        marginBottom: 20,
+        borderRadius: 12,
+        marginBottom: 12,
         shadowColor: COLORS.black,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.08,
-        shadowRadius: 8,
-        elevation: 3,
-        overflow: "hidden",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 3,
+        elevation: 2,
         borderWidth: 1,
-        borderColor: COLORS.border,
+        borderColor: 'rgba(0,0,0,0.04)',
+    },
+    cardContent: {
+        padding: 12,
+    },
+    cardRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        position: "relative",
+    },
+    imageContainer: {
+        width: 70,
+        height: 70,
+        borderRadius: 8,
+        overflow: "hidden",
+        marginRight: 12,
     },
     projectImage: {
         width: "100%",
-        height: 160,
+        height: "100%",
     },
     projectInfo: {
-        padding: 16,
+        flex: 1,
+        paddingRight: 12,
     },
-    projectHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "flex-start",
-        marginBottom: 12,
+    rightContainer: {
+        width: 50,
+        height: 70,
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
     },
     projectTitle: {
-        flex: 1,
-        fontSize: 18,
-        fontWeight: "700",
-        color: COLORS.black,
-        marginRight: 12,
-    },
-    statusBadge: {
-        paddingHorizontal: 10,
-        paddingVertical: 6,
-        borderRadius: 12,
-    },
-    statusText: {
-        fontSize: 12,
+        fontSize: 16,
         fontWeight: "600",
+        color: COLORS.black,
+        marginBottom: 4,
     },
     projectBudget: {
-        fontSize: 18,
+        fontSize: 15,
         fontWeight: "700",
         color: COLORS.success,
-        marginBottom: 16,
+        marginBottom: 6,
     },
     projectMeta: {
         flexDirection: "row",
-        justifyContent: "space-between",
+        alignItems: "center",
     },
     metaItem: {
         flexDirection: "row",
         alignItems: "center",
+        marginRight: 12,
     },
     metaText: {
-        fontSize: 14,
+        fontSize: 12,
         color: COLORS.gray,
-        marginLeft: 6,
+        marginLeft: 4,
         fontWeight: "500",
+    },
+    moreButtonContainer: {
+        position: 'relative',
+    },
+    moreButton: {
+        padding: 4,
+    },
+    dropdownMenu: {
+        position: 'absolute',
+        top: 30,
+        right: 0,
+        width: 120,
+        backgroundColor: COLORS.background,
+        borderRadius: 8,
+        shadowColor: COLORS.black,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+        zIndex: 10,
+        borderWidth: 1,
+        borderColor: 'rgba(0,0,0,0.05)',
+    },
+    dropdownItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(0,0,0,0.05)',
+    },
+    dropdownItemText: {
+        fontSize: 14,
+        marginLeft: 8,
+        color: COLORS.darkGray,
+        fontWeight: '500',
+    },
+    statusBadge: {
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 6,
+        minWidth: 50,
+        alignItems: 'center',
+    },
+    statusText: {
+        fontSize: 10,
+        fontWeight: "600",
     },
     loadingContainer: {
         flex: 1,

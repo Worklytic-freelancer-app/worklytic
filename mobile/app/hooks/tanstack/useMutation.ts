@@ -17,7 +17,7 @@ interface WithCustomEndpoint {
 }
 
 // Hook untuk melakukan mutation data dengan TanStack Query
-export const useMutation = <TData, TVariables = unknown>({
+export const useMutation = <TData, TVariables extends Record<string, unknown> = Record<string, unknown>>({
     endpoint,
     method = 'POST',
     requiresAuth = true,
@@ -26,15 +26,17 @@ export const useMutation = <TData, TVariables = unknown>({
 }: MutationOptions<TData>) => {
     const queryClient = useQueryClient();
 
-    return useTanstackMutation<TData, Error, TVariables & WithCustomEndpoint>({
+    return useTanstackMutation<TData, Error, TVariables & Partial<WithCustomEndpoint>>({
         mutationFn: async (variables) => {
             try {
                 // Gunakan customEndpoint jika disediakan dalam variables
-                const finalEndpoint = variables?.customEndpoint || endpoint;
+                const finalEndpoint = variables.customEndpoint || endpoint;
                 const url = `${baseUrl}/api/${finalEndpoint}`;
                 
+                console.log(`${method} request to: ${url}`);
+                
                 // Hapus customEndpoint dari variables sebelum dikirim
-                const { customEndpoint, ...restVariables } = variables as any;
+                const { customEndpoint, ...restVariables } = variables;
                 
                 // Set headers
                 const headers: Record<string, string> = {
@@ -57,13 +59,32 @@ export const useMutation = <TData, TVariables = unknown>({
                     body: method !== 'DELETE' ? JSON.stringify(restVariables) : undefined,
                 });
                 
-                const result = await response.json();
+                // Cek jika respons kosong untuk DELETE request
+                if (method === 'DELETE' && response.status === 204) {
+                    console.log("DELETE successful with no content");
+                    return {} as TData; // Return empty object for successful DELETE with no content
+                }
                 
-                if (!result.success) {
+                // Coba parse response sebagai JSON
+                let result;
+                try {
+                    const text = await response.text();
+                    console.log(`Response text: ${text}`);
+                    result = text ? JSON.parse(text) : {};
+                } catch (parseError) {
+                    console.error("Error parsing JSON:", parseError);
+                    // Jika parsing gagal tapi response OK, anggap sukses
+                    if (response.ok) {
+                        return {} as TData;
+                    }
+                    throw new Error("Respons server tidak valid");
+                }
+                
+                if (!result.success && !response.ok) {
                     throw new Error(result.message || 'Terjadi kesalahan saat memproses data');
                 }
                 
-                return result.data as TData;
+                return (result.data || result) as TData;
             } catch (error) {
                 console.error(`Error ${method} data:`, error);
                 throw error;

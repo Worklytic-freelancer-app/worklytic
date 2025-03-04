@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image, Platform, Alert } from "react-native";
 import { Paperclip, Send, Image as ImageIcon, FileText, X } from "lucide-react-native";
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
+import { COLORS } from "@/constant/color";
 
 // Export interface Attachment agar bisa digunakan di file lain
 export interface Attachment {
@@ -15,56 +17,104 @@ export interface Attachment {
 }
 
 interface InputProps {
-    userRole: 'client' | 'freelancer';
-    onSendUpdate: (content: string, attachments: Attachment[]) => void;
-    sendingUpdate: boolean;
+    onSend: (content: string, attachments: Attachment[]) => Promise<void>;
+    loading: boolean;
 }
 
-export default function Input({ userRole, onSendUpdate, sendingUpdate }: InputProps) {
+export default function Input({ onSend, loading }: InputProps) {
     const [newUpdate, setNewUpdate] = useState('');
     const [attachments, setAttachments] = useState<Attachment[]>([]);
 
     const pickImage = async () => {
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            quality: 1,
-        });
+        try {
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: "images",
+                allowsEditing: true,
+                quality: 0.5, // Kurangi kualitas untuk mengurangi ukuran
+                base64: true, // Gunakan base64 langsung dari ImagePicker
+            });
 
-        if (!result.canceled && result.assets && result.assets.length > 0) {
-            const asset = result.assets[0];
-            const newAttachment: Attachment = {
-                id: `temp-img-${Date.now()}`,
-                type: 'image',
-                url: asset.uri,
-                name: asset.fileName || `image-${Date.now()}.jpg`,
-                date: new Date().toLocaleDateString(),
-            };
-            setAttachments([...attachments, newAttachment]);
+            if (!result.canceled && result.assets && result.assets.length > 0) {
+                const asset = result.assets[0];
+                
+                if (!asset.base64) {
+                    Alert.alert("Error", "Gagal mendapatkan data gambar");
+                    return;
+                }
+                
+                // Buat base64 string dengan format yang benar
+                const base64Image = `data:image/jpeg;base64,${asset.base64}`;
+                
+                const newAttachment: Attachment = {
+                    id: `temp-img-${Date.now()}`,
+                    type: 'image',
+                    url: base64Image,
+                    name: asset.fileName || `image-${Date.now()}.jpg`,
+                    date: new Date().toLocaleDateString(),
+                };
+                
+                setAttachments(prev => [...prev, newAttachment]);
+            }
+        } catch (error) {
+            console.error('Error picking image:', error);
+            Alert.alert("Error", "Gagal memilih gambar");
         }
     };
 
     const pickDocument = async () => {
         try {
+            // Izinkan PDF dan ZIP
             const result = await DocumentPicker.getDocumentAsync({
-                type: '*/*',
+                type: ["application/pdf", "application/zip", "application/x-zip-compressed"],
                 copyToCacheDirectory: true,
             });
 
             if (result.canceled === false && result.assets && result.assets.length > 0) {
                 const asset = result.assets[0];
-                const newAttachment: Attachment = {
-                    id: `temp-doc-${Date.now()}`,
-                    type: 'document',
-                    url: asset.uri,
-                    name: asset.name,
-                    date: new Date().toLocaleDateString(),
-                    size: formatFileSize(asset.size || 0),
-                };
-                setAttachments([...attachments, newAttachment]);
+                
+                // Periksa ukuran file (batasi hingga 5MB)
+                if (asset.size && asset.size > 5 * 1024 * 1024) {
+                    Alert.alert("File terlalu besar", "Ukuran file maksimal adalah 5MB");
+                    return;
+                }
+                
+                try {
+                    // Baca file sebagai base64
+                    const base64 = await FileSystem.readAsStringAsync(asset.uri, {
+                        encoding: FileSystem.EncodingType.Base64,
+                    });
+                    
+                    // Tentukan tipe MIME berdasarkan ekstensi file
+                    const fileExtension = asset.name.split('.').pop()?.toLowerCase() || '';
+                    let mimeType = 'application/octet-stream'; // Default
+                    
+                    if (fileExtension === 'pdf') {
+                        mimeType = 'application/pdf';
+                    } else if (fileExtension === 'zip') {
+                        mimeType = 'application/zip';
+                    }
+                    
+                    // Buat base64 string dengan format yang benar
+                    const base64File = `data:${mimeType};base64,${base64}`;
+                    
+                    const newAttachment: Attachment = {
+                        id: `temp-doc-${Date.now()}`,
+                        type: 'document',
+                        url: base64File,
+                        name: asset.name,
+                        date: new Date().toLocaleDateString(),
+                        size: formatFileSize(asset.size || 0),
+                    };
+                    
+                    setAttachments(prev => [...prev, newAttachment]);
+                } catch (readError) {
+                    console.error('Error reading file:', readError);
+                    Alert.alert("Error", "Gagal membaca file");
+                }
             }
         } catch (error) {
             console.error('Error picking document:', error);
+            Alert.alert("Error", "Gagal memilih dokumen");
         }
     };
 
@@ -80,11 +130,19 @@ export default function Input({ userRole, onSendUpdate, sendingUpdate }: InputPr
         setAttachments(attachments.filter(attachment => attachment.id !== id));
     };
 
-    const handleSendUpdate = () => {
+    const handleSendUpdate = async () => {
         if (newUpdate.trim() || attachments.length > 0) {
-            onSendUpdate(newUpdate, attachments);
-            setNewUpdate('');
-            setAttachments([]);
+            try {
+                await onSend(newUpdate, attachments);
+                setNewUpdate('');
+                setAttachments([]);
+            } catch (error) {
+                console.error('Error sending update:', error);
+                Alert.alert(
+                    "Gagal Mengirim", 
+                    "Terjadi kesalahan saat mengirim pesan. Silakan coba lagi."
+                );
+            }
         }
     };
 
@@ -92,9 +150,13 @@ export default function Input({ userRole, onSendUpdate, sendingUpdate }: InputPr
         <View key={attachment.id} style={styles.attachmentItem}>
             <View style={styles.attachmentContent}>
                 {attachment.type === 'image' ? (
-                    <ImageIcon size={20} color="#4B5563" />
+                    <View style={styles.attachmentIconContainer}>
+                        <ImageIcon size={20} color={COLORS.primary} />
+                    </View>
                 ) : (
-                    <FileText size={20} color="#4B5563" />
+                    <View style={styles.attachmentIconContainer}>
+                        <FileText size={20} color={COLORS.primary} />
+                    </View>
                 )}
                 <View style={styles.attachmentDetails}>
                     <Text style={styles.attachmentName} numberOfLines={1}>{attachment.name}</Text>
@@ -113,34 +175,6 @@ export default function Input({ userRole, onSendUpdate, sendingUpdate }: InputPr
         </View>
     );
 
-    // Render input berdasarkan userRole
-    if (userRole === 'client') {
-        return (
-            <View style={styles.clientInputContainer}>
-                <View style={styles.clientInputWrapper}>
-                    <TextInput
-                        style={styles.clientInput}
-                        placeholder="Tulis pesan..."
-                        multiline
-                        value={newUpdate}
-                        onChangeText={setNewUpdate}
-                    />
-                    <TouchableOpacity 
-                        style={[
-                            styles.clientSendButton, 
-                            !newUpdate.trim() || sendingUpdate ? styles.sendButtonDisabled : {}
-                        ]} 
-                        onPress={handleSendUpdate}
-                        disabled={!newUpdate.trim() || sendingUpdate}
-                    >
-                        <Send size={20} color="#FFFFFF" />
-                    </TouchableOpacity>
-                </View>
-            </View>
-        );
-    }
-
-    // Render input untuk freelancer (dengan attachment)
     return (
         <View style={styles.addUpdateContainer}>
             {attachments.length > 0 && (
@@ -161,20 +195,20 @@ export default function Input({ userRole, onSendUpdate, sendingUpdate }: InputPr
                 <View style={styles.inputActions}>
                     <View style={styles.attachButtons}>
                         <TouchableOpacity style={styles.attachButton} onPress={pickImage}>
-                            <ImageIcon size={20} color="#6B7280" />
+                            <ImageIcon size={20} color={COLORS.gray} />
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.attachButton} onPress={pickDocument}>
-                            <Paperclip size={20} color="#6B7280" />
+                            <Paperclip size={20} color={COLORS.gray} />
                         </TouchableOpacity>
                     </View>
                     
                     <TouchableOpacity 
                         style={[
                             styles.sendButton, 
-                            (!newUpdate.trim() && attachments.length === 0) || sendingUpdate ? styles.sendButtonDisabled : {}
+                            (!newUpdate.trim() && attachments.length === 0) || loading ? styles.sendButtonDisabled : {}
                         ]} 
                         onPress={handleSendUpdate}
-                        disabled={(!newUpdate.trim() && attachments.length === 0) || sendingUpdate}
+                        disabled={(!newUpdate.trim() && attachments.length === 0) || loading}
                     >
                         <Send size={20} color="#FFFFFF" />
                     </TouchableOpacity>
@@ -185,42 +219,7 @@ export default function Input({ userRole, onSendUpdate, sendingUpdate }: InputPr
 }
 
 const styles = StyleSheet.create({
-    // Styles untuk client input (simpel dengan tombol send di sebelah kanan)
-    clientInputContainer: {
-        borderTopWidth: 1,
-        borderTopColor: "#E5E7EB",
-        padding: 16,
-    },
-    clientInputWrapper: {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#F9FAFB",
-        borderRadius: 24,
-        borderWidth: 1,
-        borderColor: "#E5E7EB",
-        paddingLeft: 16,
-        paddingRight: 4,
-        paddingVertical: 4,
-    },
-    clientInput: {
-        flex: 1,
-        fontSize: 14,
-        paddingVertical: 8,
-    },
-    clientSendButton: {
-        backgroundColor: "#2563EB",
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        justifyContent: "center",
-        alignItems: "center",
-        marginLeft: 8,
-    },
-    
-    // Styles untuk freelancer input (dengan attachment)
     addUpdateContainer: {
-        borderTopWidth: 1,
-        borderTopColor: "#E5E7EB",
         padding: 16,
     },
     selectedAttachments: {
@@ -231,8 +230,8 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        backgroundColor: "#FFFFFF",
-        borderRadius: 8,
+        backgroundColor: 'rgba(243, 244, 246, 0.7)',
+        borderRadius: 12,
         padding: 12,
         borderWidth: 1,
         borderColor: "#E5E7EB",
@@ -242,6 +241,14 @@ const styles = StyleSheet.create({
         alignItems: "center",
         flex: 1,
     },
+    attachmentIconContainer: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: 'rgba(8, 145, 178, 0.08)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     attachmentDetails: {
         marginLeft: 12,
         flex: 1,
@@ -249,11 +256,11 @@ const styles = StyleSheet.create({
     attachmentName: {
         fontSize: 14,
         fontWeight: "500",
-        color: "#111827",
+        color: COLORS.black,
     },
     attachmentMeta: {
         fontSize: 12,
-        color: "#6B7280",
+        color: COLORS.gray,
     },
     removeButton: {
         padding: 4,
@@ -287,7 +294,7 @@ const styles = StyleSheet.create({
         padding: 4,
     },
     sendButton: {
-        backgroundColor: "#2563EB",
+        backgroundColor: COLORS.primary,
         width: 40,
         height: 40,
         borderRadius: 20,

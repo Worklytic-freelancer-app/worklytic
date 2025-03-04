@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator, Alert, Keyboard, RefreshControl } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator, Alert, Keyboard, RefreshControl, KeyboardAvoidingView, Platform, EmitterSubscription } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context"; 
 import { ChevronLeft, Calendar, Clock, MessageSquare, ChevronRight, ImageIcon, FileText, Download } from "lucide-react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
@@ -9,49 +9,64 @@ import { useUser } from "@/hooks/tanstack/useUser";
 import Input, { Attachment } from "./Input";
 import { useFetch } from "@/hooks/tanstack/useFetch";
 import { useMutation } from "@/hooks/tanstack/useMutation";
+import { COLORS } from "@/constant/color";
+import Confirmation from "@/components/Confirmation";
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import * as MediaLibrary from 'expo-media-library';
+import { getMimeTypeFromFilename } from "@/utils/fileHelper";
 
 // Definisikan tipe untuk data dari API
-interface ProjectFeatureResponse {
+interface User {
+    _id: string;
+    fullName: string;
+    email: string;
+    role: string;
+    profileImage: string;
+    location: string;
+}
+
+interface Discussion {
+    _id: string;
+    projectFeatureId: string;
+    senderId: string;
+    title: string;
+    description: string;
+    images: string[];
+    files: string[];
+    createdAt: string;
+    updatedAt: string;
+    sender: User;
+}
+
+interface Project {
+    _id: string;
+    clientId: string;
+    title: string;
+    description: string;
+    budget: number;
+    category: string;
+    location: string;
+    completedDate: string;
+    status: string;
+    requirements: string[];
+    image: string[];
+    createdAt: string;
+    updatedAt: string;
+}
+
+interface ProjectFeature {
     _id: string;
     projectId: string;
     freelancerId: string;
     status: string;
     createdAt: string;
     updatedAt: string;
-    project: {
-        _id: string;
-        clientId: string;
-        title: string;
-        description: string;
-        budget: number;
-        category: string;
-        location: string;
-        completedDate: string;
-        status: string;
-        requirements: string[];
-        image: string[];
-        createdAt: string;
-        updatedAt: string;
-    };
-    discussions: Array<{
-        _id: string;
-        projectFeatureId: string;
-        senderId: string;
-        title: string;
-        description: string;
-        images: string[];
-        files: string[];
-        createdAt: string;
-        updatedAt: string;
-        sender: {
-            _id: string;
-            fullName: string;
-            email: string;
-            role: string;
-            profileImage: string;
-            location: string;
-        };
-    }>;
+}
+
+interface ProjectFeatureResponse extends ProjectFeature {
+    project: Project;
+    discussions: Discussion[];
 }
 
 // Tipe untuk request diskusi baru
@@ -78,13 +93,27 @@ export default function WorkspaceDetails() {
     
     const [featureId, setFeatureId] = useState<string | null>(null);
     const [sendingUpdate, setSendingUpdate] = useState(false);
+    
+    // State untuk konfirmasi
+    const [confirmation, setConfirmation] = useState<{
+        visible: boolean;
+        title: string;
+        message: string;
+        type: 'success' | 'error' | 'warning' | 'confirm';
+        onConfirm?: () => void;
+    }>({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'success',
+    });
 
     // Fetch semua project features untuk menemukan yang sesuai
     const { 
         data: allFeatures = [], 
         isLoading: featuresLoading,
         refetch: refetchAllFeatures
-    } = useFetch<any[]>({
+    } = useFetch<ProjectFeature[]>({
         endpoint: 'projectfeatures',
         requiresAuth: true,
         enabled: !!projectId && !!freelancerId
@@ -116,22 +145,108 @@ export default function WorkspaceDetails() {
     });
 
     // Mutation untuk mengirim diskusi baru
-    const sendDiscussion = useMutation<any, NewDiscussionRequest>({
+    const sendDiscussion = useMutation<Discussion, Record<string, unknown>>({
         endpoint: 'projectdiscussions',
         method: 'POST',
         requiresAuth: true,
         onSuccess: () => {
             // Refresh data setelah berhasil mengirim diskusi
             refetchProjectFeature();
-            Keyboard.dismiss();
         },
         invalidateQueries: [`projectfeatures/${featureId}`]
     });
 
+    // State untuk tracking proses download
+    const [downloadingFiles, setDownloadingFiles] = useState<Record<string, boolean>>({});
+    
+    // Request permission untuk menyimpan file
+    const [mediaPermission, requestMediaPermission] = MediaLibrary.usePermissions();
+    
+    // Fungsi untuk mendownload file
+    const handleDownload = async (url: string, filename: string) => {
+        try {
+            // Tandai file sedang didownload
+            setDownloadingFiles(prev => ({ ...prev, [url]: true }));
+            
+            // Request permission jika belum
+            if (!mediaPermission?.granted) {
+                const { granted } = await requestMediaPermission();
+                if (!granted) {
+                    Alert.alert("Izin Diperlukan", "Aplikasi membutuhkan izin untuk menyimpan file");
+                    setDownloadingFiles(prev => ({ ...prev, [url]: false }));
+                    return;
+                }
+            }
+            
+            // Tentukan lokasi penyimpanan di cache
+            const fileUri = `${FileSystem.cacheDirectory}${filename}`;
+            
+            // Download file
+            const downloadResult = await FileSystem.downloadAsync(url, fileUri);
+            
+            if (downloadResult.status === 200) {
+                // Cek apakah file adalah gambar
+                const isImage = filename.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+                
+                if (isImage) {
+                    // Simpan gambar ke galeri
+                    const asset = await MediaLibrary.saveToLibraryAsync(fileUri);
+                    Alert.alert("Berhasil", "Gambar telah disimpan ke galeri");
+                } else {
+                    // Share file lainnya
+                    if (await Sharing.isAvailableAsync()) {
+                        await Sharing.shareAsync(fileUri, {
+                            mimeType: getMimeTypeFromFilename(filename),
+                            dialogTitle: `Bagikan ${filename}`,
+                            UTI: 'public.item'
+                        });
+                    } else {
+                        Alert.alert("Error", "Sharing tidak tersedia di perangkat ini");
+                    }
+                }
+            } else {
+                Alert.alert("Error", "Gagal mengunduh file");
+            }
+        } catch (error) {
+            console.error("Download error:", error);
+            Alert.alert("Error", "Terjadi kesalahan saat mengunduh file");
+        } finally {
+            // Hapus status downloading
+            setDownloadingFiles(prev => ({ ...prev, [url]: false }));
+        }
+    };
+    
+    // Fungsi untuk mendapatkan nama file dari URL
+    const getFilenameFromUrl = (url: string): string => {
+        // Ekstrak nama file dari URL
+        const urlParts = url.split('/');
+        let filename = urlParts[urlParts.length - 1];
+        
+        // Hapus parameter query jika ada
+        if (filename.includes('?')) {
+            filename = filename.split('?')[0];
+        }
+        
+        // Decode URI components
+        try {
+            filename = decodeURIComponent(filename);
+        } catch (e) {
+            // Jika gagal decode, gunakan filename asli
+        }
+        
+        return filename || `file-${Date.now()}`;
+    };
+
     const handleSendUpdate = async (content: string, attachments: Attachment[]) => {
         if (!content.trim() && attachments.length === 0) return;
         if (!featureId || !user?._id) {
-            Alert.alert('Error', 'Data tidak lengkap untuk mengirim update');
+            setConfirmation({
+                visible: true,
+                title: 'Error',
+                message: 'Data tidak lengkap untuk mengirim update',
+                type: 'error',
+                onConfirm: () => setConfirmation(prev => ({ ...prev, visible: false })),
+            });
             return;
         }
         
@@ -146,9 +261,24 @@ export default function WorkspaceDetails() {
                 images: attachments.filter(att => att.type === 'image').map(att => att.url),
                 files: attachments.filter(att => att.type === 'document').map(att => att.url)
             });
+            
+            // Tampilkan konfirmasi sukses
+            setConfirmation({
+                visible: true,
+                title: 'Berhasil',
+                message: 'Update berhasil dikirim',
+                type: 'success',
+                onConfirm: () => setConfirmation(prev => ({ ...prev, visible: false })),
+            });
         } catch (err) {
             console.error('Error sending update:', err);
-            Alert.alert('Error', err instanceof Error ? err.message : 'Gagal mengirim update');
+            setConfirmation({
+                visible: true,
+                title: 'Error',
+                message: err instanceof Error ? err.message : 'Gagal mengirim update',
+                type: 'error',
+                onConfirm: () => setConfirmation(prev => ({ ...prev, visible: false })),
+            });
         } finally {
             setSendingUpdate(false);
         }
@@ -170,30 +300,66 @@ export default function WorkspaceDetails() {
         }
     };
 
-    // Fungsi untuk render attachment
-    const renderAttachment = (attachment: Attachment) => {
-        const isImage = attachment.type === 'image';
+    // Format tanggal untuk tampilan yang lebih baik
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffTime = Math.abs(now.getTime() - date.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 0) {
+            // Format jam
+            return `Today at ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+        } else if (diffDays === 1) {
+            return 'Yesterday';
+        } else if (diffDays < 7) {
+            return `${diffDays} days ago`;
+        } else {
+            // Format tanggal lengkap
+            const options: Intl.DateTimeFormatOptions = { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            };
+            return date.toLocaleDateString('id-ID', options);
+        }
+    };
+
+    // Render attachment dalam diskusi
+    const renderAttachment = (url: string, type: 'image' | 'file') => {
+        const filename = getFilenameFromUrl(url);
+        const isDownloading = downloadingFiles[url] || false;
         
         return (
-            <View key={attachment.id} style={styles.attachmentItem}>
+            <View key={url} style={styles.attachmentItem}>
                 <View style={styles.attachmentContent}>
-                    {isImage ? (
-                        <ImageIcon size={24} color="#4B5563" />
+                    {type === 'image' ? (
+                        <View style={styles.attachmentIconContainer}>
+                            <ImageIcon size={20} color={COLORS.primary} />
+                        </View>
                     ) : (
-                        <FileText size={24} color="#4B5563" />
+                        <View style={styles.attachmentIconContainer}>
+                            <FileText size={20} color={COLORS.primary} />
+                        </View>
                     )}
                     <View style={styles.attachmentDetails}>
-                        <Text style={styles.attachmentName} numberOfLines={1}>{attachment.name}</Text>
+                        <Text style={styles.attachmentName} numberOfLines={1}>{filename}</Text>
                         <Text style={styles.attachmentMeta}>
-                            {attachment.date} {attachment.size && `• ${attachment.size}`}
+                            {type === 'image' ? 'Gambar' : 'Dokumen'}
                         </Text>
                     </View>
                 </View>
-                <View style={styles.attachmentActions}>
-                    <TouchableOpacity style={styles.downloadButton}>
-                        <Download size={20} color="#6B7280" />
-                    </TouchableOpacity>
-                </View>
+                <TouchableOpacity 
+                    style={styles.downloadButton} 
+                    onPress={() => handleDownload(url, filename)}
+                    disabled={isDownloading}
+                >
+                    {isDownloading ? (
+                        <ActivityIndicator size="small" color={COLORS.primary} />
+                    ) : (
+                        <Download size={20} color={COLORS.primary} />
+                    )}
+                </TouchableOpacity>
             </View>
         );
     };
@@ -205,7 +371,7 @@ export default function WorkspaceDetails() {
     if (isLoading && !projectFeature) {
         return (
             <View style={[styles.container, styles.loadingContainer]}>
-                <ActivityIndicator size="large" color="#2563EB" />
+                <ActivityIndicator size="large" color={COLORS.primary} />
             </View>
         );
     }
@@ -221,147 +387,145 @@ export default function WorkspaceDetails() {
         );
     }
 
-    // Jika tidak ada data project feature
-    if (!projectFeature || !projectFeature.project) {
-        return (
-            <View style={[styles.container, styles.errorContainer]}>
-                <Text style={styles.errorText}>Data project tidak ditemukan</Text>
-                <TouchableOpacity style={styles.retryButton} onPress={refreshData}>
-                    <Text style={styles.retryButtonText}>Coba Lagi</Text>
-                </TouchableOpacity>
-            </View>
-        );
-    }
-
-    // Render main content
-    const { project, discussions } = projectFeature;
-    const userRole = user?.role === 'client' ? 'client' : 'freelancer';
-
     return (
-        <View 
-            style={[styles.container, { paddingTop: insets.top }]}
-            onStartShouldSetResponder={() => {
-                Keyboard.dismiss();
-                return false;
-            }}
-        >
+        <View style={[styles.container, { paddingTop: insets.top }]}>
             {/* Header */}
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <ChevronLeft size={24} color="#111827" />
+                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                    <ChevronLeft size={24} color={COLORS.darkGray} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Workspace</Text>
                 <View style={{ width: 24 }} />
             </View>
-            
+
             {/* Project Info */}
-            <View style={styles.projectInfo}>
-                <View style={styles.projectHeader}>
-                    <Text style={styles.projectTitle}>{project.title}</Text>
-                    <TouchableOpacity style={styles.viewProjectButton} onPress={navigateToProjectDetails}>
-                        <Text style={styles.viewProjectText}>Lihat Project</Text>
-                        <ChevronRight size={16} color="#2563EB" />
-                    </TouchableOpacity>
-                </View>
-                
-                <View style={styles.projectMeta}>
-                    <View style={styles.metaItem}>
-                        <Calendar size={16} color="#6B7280" />
-                        <Text style={styles.metaText}>
-                            {new Date(project.createdAt).toLocaleDateString()} - {new Date(project.completedDate).toLocaleDateString()}
-                        </Text>
-                    </View>
-                    <View style={styles.metaItem}>
-                        <Clock size={16} color="#6B7280" />
-                        <Text style={styles.metaText}>
-                            Status: {projectFeature.status}
-                        </Text>
-                    </View>
-                </View>
-                
-                <Text style={styles.projectDescription}>{project.description}</Text>
-            </View>
-            
-            {/* Updates Section */}
-            <View style={styles.updatesSection}>
-                <View style={styles.sectionHeader}>
-                    <View style={styles.sectionTitleContainer}>
-                        <MessageSquare size={20} color="#111827" />
-                        <Text style={styles.sectionTitle}>Updates & Diskusi</Text>
-                    </View>
-                </View>
-                
-                <ScrollView 
-                    style={styles.updatesList}
-                    keyboardShouldPersistTaps="handled"
-                    refreshControl={
-                        <RefreshControl
-                            refreshing={isLoading}
-                            onRefresh={refreshData}
-                            colors={["#2563EB"]}
-                        />
-                    }
+            {projectFeature?.project && (
+                <TouchableOpacity 
+                    style={styles.projectInfoCard}
+                    onPress={navigateToProjectDetails}
                 >
-                    {discussions && discussions.length > 0 ? (
-                        discussions.map((discussion) => (
-                            <View key={discussion._id} style={styles.updateItem}>
-                                <View style={styles.updateHeader}>
-                                    <View style={styles.userInfo}>
-                                        <Image 
-                                            source={{ uri: discussion.sender?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(discussion.sender?.fullName || 'User')}` }} 
-                                            style={styles.userAvatar} 
-                                        />
-                                        <View>
-                                            <Text style={styles.userName}>{discussion.sender?.fullName || 'Unknown User'}</Text>
-                                            <Text style={styles.updateDate}>{new Date(discussion.createdAt).toLocaleDateString()}</Text>
+                    <View style={styles.projectInfoContent}>
+                        <Text style={styles.projectTitle} numberOfLines={1}>
+                            {projectFeature.project.title}
+                        </Text>
+                        <Text style={styles.projectBudget}>
+                            Rp{projectFeature.project.budget.toLocaleString('id-ID')}
+                        </Text>
+                        <View style={styles.projectMeta}>
+                            <View style={styles.metaItem}>
+                                <Calendar size={14} color={COLORS.gray} />
+                                <Text style={styles.metaText}>
+                                    {formatDate(projectFeature.project.createdAt)}
+                                </Text>
+                            </View>
+                            <View style={styles.statusBadge}>
+                                <Text style={styles.statusText}>
+                                    {projectFeature.status}
+                                </Text>
+                            </View>
+                        </View>
+                    </View>
+                    <ChevronRight size={20} color={COLORS.gray} />
+                </TouchableOpacity>
+            )}
+
+            {/* Discussions */}
+            <ScrollView 
+                style={styles.discussionsContainer}
+                contentContainerStyle={[
+                    styles.discussionsContent,
+                    { paddingBottom: 100 }
+                ]}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                refreshControl={
+                    <RefreshControl 
+                        refreshing={isLoading} 
+                        onRefresh={refreshData}
+                        colors={[COLORS.primary]}
+                    />
+                }
+            >
+                {projectFeature?.discussions && projectFeature.discussions.length > 0 ? (
+                    projectFeature.discussions.map((discussion) => (
+                        <View key={discussion._id} style={styles.updateItem}>
+                            <View style={styles.updateHeader}>
+                                <View style={styles.userInfo}>
+                                    <Image 
+                                        source={{ 
+                                            uri: discussion.sender.profileImage || 
+                                                `https://ui-avatars.com/api/?name=${encodeURIComponent(discussion.sender.fullName)}&background=random` 
+                                        }} 
+                                        style={styles.userAvatar} 
+                                    />
+                                    <View>
+                                        <Text style={styles.userName}>{discussion.sender.fullName}</Text>
+                                        <View style={[
+                                            styles.roleBadge, 
+                                            discussion.sender.role === 'client' ? styles.clientBadge : styles.freelancerBadge
+                                        ]}>
+                                            <Text style={[
+                                                styles.roleText,
+                                                { 
+                                                    color: discussion.sender.role === 'client' 
+                                                        ? COLORS.primary 
+                                                        : '#0284c7'
+                                                }
+                                            ]}>
+                                                {discussion.sender.role === 'client' ? 'Client' : 'Freelancer'}
+                                            </Text>
                                         </View>
                                     </View>
-                                    <View style={[
-                                        styles.roleBadge, 
-                                        discussion.sender?.role === 'client' ? styles.clientBadge : styles.freelancerBadge
-                                    ]}>
-                                        <Text style={styles.roleText}>
-                                            {discussion.sender?.role === 'client' ? 'Client' : 'Freelancer'}
-                                        </Text>
-                                    </View>
                                 </View>
-                                
-                                <Text style={styles.updateContent}>{discussion.description}</Text>
-                                
-                                {(discussion.images.length > 0 || discussion.files.length > 0) && (
-                                    <View style={styles.attachmentsContainer}>
-                                        {discussion.images.map((url, index) => renderAttachment({
-                                            id: `img-${discussion._id}-${index}`,
-                                            type: 'image',
-                                            url,
-                                            name: `Image ${index + 1}`,
-                                            date: new Date(discussion.createdAt).toLocaleDateString(),
-                                        }))}
-                                        
-                                        {discussion.files.map((url, index) => renderAttachment({
-                                            id: `file-${discussion._id}-${index}`,
-                                            type: 'document',
-                                            url,
-                                            name: `File ${index + 1}`,
-                                            date: new Date(discussion.createdAt).toLocaleDateString(),
-                                        }))}
-                                    </View>
-                                )}
+                                <Text style={styles.updateDate}>{formatDate(discussion.createdAt)}</Text>
                             </View>
-                        ))
-                    ) : (
-                        <View style={styles.emptyContainer}>
-                            <Text style={styles.emptyText}>Belum ada update atau diskusi</Text>
+                            
+                            {discussion.description && (
+                                <Text style={styles.updateContent}>{discussion.description}</Text>
+                            )}
+                            
+                            {(discussion.images.length > 0 || discussion.files.length > 0) && (
+                                <View style={styles.attachmentsContainer}>
+                                    {discussion.images.map(url => renderAttachment(url, 'image'))}
+                                    {discussion.files.map(url => renderAttachment(url, 'file'))}
+                                </View>
+                            )}
                         </View>
-                    )}
-                </ScrollView>
-            </View>
+                    ))
+                ) : (
+                    <View style={styles.emptyContainer}>
+                        <Text style={styles.emptyText}>
+                            Belum ada diskusi untuk proyek ini. Mulai diskusi dengan mengirim pesan.
+                        </Text>
+                    </View>
+                )}
+            </ScrollView>
+
+            {/* Input dengan KeyboardAvoidingView */}
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'position' : 'height'}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+                style={styles.keyboardAvoidingContainer}
+            >
+                <View style={[
+                    styles.inputContainer, 
+                    { paddingBottom: insets.bottom > 0 ? insets.bottom : 16 }
+                ]}>
+                    <Input 
+                        onSend={handleSendUpdate} 
+                        loading={sendingUpdate} 
+                    />
+                </View>
+            </KeyboardAvoidingView>
             
-            {/* Input Section */}
-            <Input 
-                userRole={userRole} 
-                onSendUpdate={handleSendUpdate} 
-                sendingUpdate={sendingUpdate} 
+            {/* Konfirmasi */}
+            <Confirmation
+                visible={confirmation.visible}
+                title={confirmation.title}
+                message={confirmation.message}
+                type={confirmation.type}
+                onConfirm={confirmation.onConfirm}
+                onCancel={() => setConfirmation(prev => ({ ...prev, visible: false }))}
             />
         </View>
     );
@@ -370,7 +534,7 @@ export default function WorkspaceDetails() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#FFFFFF",
+        backgroundColor: "#F9FAFB",
     },
     header: {
         flexDirection: "row",
@@ -378,97 +542,93 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         paddingHorizontal: 16,
         paddingVertical: 12,
+        backgroundColor: COLORS.background,
         borderBottomWidth: 1,
         borderBottomColor: "#E5E7EB",
+    },
+    backButton: {
+        padding: 4,
     },
     headerTitle: {
         fontSize: 18,
         fontWeight: "600",
-        color: "#111827",
+        color: COLORS.black,
     },
-    projectInfo: {
+    projectInfoCard: {
+        backgroundColor: COLORS.background,
         padding: 16,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
         borderBottomWidth: 1,
         borderBottomColor: "#E5E7EB",
     },
-    projectHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: 12,
+    projectInfoContent: {
+        flex: 1,
+        paddingRight: 12,
     },
     projectTitle: {
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: "700",
-        color: "#111827",
-        flex: 1,
+        color: COLORS.black,
+        marginBottom: 4,
     },
-    viewProjectButton: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
-    viewProjectText: {
-        fontSize: 14,
-        fontWeight: "500",
-        color: "#2563EB",
-        marginRight: 4,
+    projectBudget: {
+        fontSize: 16,
+        fontWeight: "700",
+        color: COLORS.success,
+        marginBottom: 8,
     },
     projectMeta: {
         flexDirection: "row",
-        flexWrap: "wrap",
-        gap: 12,
-        marginBottom: 12,
+        alignItems: "center",
+        justifyContent: "space-between",
     },
     metaItem: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 6,
     },
     metaText: {
-        fontSize: 14,
-        color: "#6B7280",
+        fontSize: 12,
+        color: COLORS.gray,
+        marginLeft: 4,
+        fontWeight: "500",
     },
-    projectDescription: {
-        fontSize: 14,
-        lineHeight: 22,
-        color: "#4B5563",
+    statusBadge: {
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 12,
+        backgroundColor: 'rgba(8, 145, 178, 0.08)',
     },
-    updatesSection: {
-        flex: 1,
-        paddingHorizontal: 16,
-        paddingTop: 16,
-    },
-    sectionHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: 16,
-    },
-    sectionTitleContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 8,
-    },
-    sectionTitle: {
-        fontSize: 18,
+    statusText: {
+        fontSize: 12,
         fontWeight: "600",
-        color: "#111827",
+        color: COLORS.primary,
     },
-    updatesList: {
+    discussionsContainer: {
         flex: 1,
+    },
+    discussionsContent: {
+        padding: 16,
+        paddingBottom: 24,
     },
     updateItem: {
         marginBottom: 20,
-        backgroundColor: "#F9FAFB",
-        borderRadius: 12,
+        backgroundColor: COLORS.background,
+        borderRadius: 16,
         padding: 16,
         borderWidth: 1,
         borderColor: "#E5E7EB",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+        elevation: 2,
     },
     updateHeader: {
         flexDirection: "row",
         justifyContent: "space-between",
-        alignItems: "center",
+        alignItems: "flex-start",
         marginBottom: 12,
     },
     userInfo: {
@@ -480,36 +640,39 @@ const styles = StyleSheet.create({
         width: 40,
         height: 40,
         borderRadius: 20,
+        borderWidth: 2,
+        borderColor: 'rgba(8, 145, 178, 0.1)',
     },
     userName: {
         fontSize: 16,
         fontWeight: "600",
-        color: "#111827",
+        color: COLORS.black,
+        marginBottom: 4,
     },
     updateDate: {
         fontSize: 12,
-        color: "#6B7280",
+        color: COLORS.gray,
     },
     roleBadge: {
         paddingHorizontal: 8,
-        paddingVertical: 4,
+        paddingVertical: 2,
         borderRadius: 12,
     },
     clientBadge: {
-        backgroundColor: "#DBEAFE",
+        backgroundColor: 'rgba(8, 145, 178, 0.08)',
     },
     freelancerBadge: {
-        backgroundColor: "#E0F2FE",
+        backgroundColor: 'rgba(2, 132, 199, 0.08)',
     },
     roleText: {
-        fontSize: 12,
+        fontSize: 11,
         fontWeight: "500",
     },
     updateContent: {
-        fontSize: 14,
+        fontSize: 15,
         lineHeight: 22,
-        color: "#4B5563",
-        marginBottom: 12,
+        color: COLORS.darkGray,
+        marginBottom: 16,
     },
     attachmentsContainer: {
         gap: 8,
@@ -518,8 +681,8 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        backgroundColor: "#FFFFFF",
-        borderRadius: 8,
+        backgroundColor: 'rgba(243, 244, 246, 0.7)',
+        borderRadius: 12,
         padding: 12,
         borderWidth: 1,
         borderColor: "#E5E7EB",
@@ -529,6 +692,14 @@ const styles = StyleSheet.create({
         alignItems: "center",
         flex: 1,
     },
+    attachmentIconContainer: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: 'rgba(8, 145, 178, 0.08)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     attachmentDetails: {
         marginLeft: 12,
         flex: 1,
@@ -536,17 +707,19 @@ const styles = StyleSheet.create({
     attachmentName: {
         fontSize: 14,
         fontWeight: "500",
-        color: "#111827",
+        color: COLORS.black,
     },
     attachmentMeta: {
         fontSize: 12,
-        color: "#6B7280",
-    },
-    attachmentActions: {
-        marginLeft: 8,
+        color: COLORS.gray,
     },
     downloadButton: {
-        padding: 4,
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: 'rgba(8, 145, 178, 0.08)',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     loadingContainer: {
         flex: 1,
@@ -561,20 +734,25 @@ const styles = StyleSheet.create({
     },
     errorText: {
         fontSize: 16,
-        color: "#EF4444",
+        color: COLORS.error,
         marginBottom: 16,
         textAlign: "center",
     },
     retryButton: {
-        backgroundColor: "#2563EB",
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 8,
+        backgroundColor: COLORS.primary,
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius: 12,
+        shadowColor: COLORS.primary,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 2,
     },
     retryButtonText: {
-        color: "#FFFFFF",
-        fontSize: 14,
-        fontWeight: "500",
+        color: COLORS.background,
+        fontSize: 15,
+        fontWeight: "600",
     },
     emptyContainer: {
         padding: 40,
@@ -583,94 +761,20 @@ const styles = StyleSheet.create({
     },
     emptyText: {
         fontSize: 16,
-        color: "#6B7280",
+        color: COLORS.gray,
         textAlign: "center",
+        lineHeight: 24,
     },
-    clientInputContainer: {
-        padding: 16,
-        borderTopWidth: 1,
-        borderTopColor: "#E5E7EB",
-    },
-    clientInputWrapper: {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#F9FAFB",
-        borderRadius: 24,
-        borderWidth: 1,
-        borderColor: "#E5E7EB",
-        paddingLeft: 16,
-        paddingRight: 8,
-    },
-    clientInput: {
-        flex: 1,
-        paddingVertical: 10,
-        fontSize: 14,
-    },
-    clientSendButton: {
-        backgroundColor: "#2563EB",
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    addUpdateContainer: {
-        padding: 16,
-        borderTopWidth: 1,
-        borderTopColor: "#E5E7EB",
-    },
-    selectedAttachments: {
-        marginBottom: 12,
-        gap: 8,
-    },
-    selectedAttachment: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        backgroundColor: "#F3F4F6",
-        borderRadius: 8,
-        padding: 12,
-    },
-    removeButton: {
-        padding: 4,
+    keyboardAvoidingContainer: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
     },
     inputContainer: {
-        backgroundColor: "#F9FAFB",
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: "#E5E7EB",
-        overflow: "hidden",
-    },
-    updateInput: {
-        padding: 12,
-        fontSize: 14,
-        maxHeight: 100,
-    },
-    inputActions: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        paddingHorizontal: 12,
-        paddingVertical: 8,
         borderTopWidth: 1,
         borderTopColor: "#E5E7EB",
-    },
-    attachButtons: {
-        flexDirection: "row",
-        gap: 12,
-    },
-    attachButton: {
-        padding: 4,
-    },
-    sendButton: {
-        backgroundColor: "#2563EB",
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    sendButtonDisabled: {
-        backgroundColor: "#93C5FD",
+        backgroundColor: COLORS.background,
+        width: '100%',
     },
 });

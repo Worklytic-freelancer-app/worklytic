@@ -28,18 +28,18 @@ interface ProjectResponse {
 }
 
 // Definisikan interface untuk request data
-interface CreateProjectRequest {
-    clientId: string;
-    title: string;
-    description: string;
-    budget: number;
-    category: string;
-    location: string;
-    completedDate: Date;
-    status: string;
-    requirements: string[];
-    image: string[];
-}
+// interface CreateProjectRequest {
+//     clientId: string;
+//     title: string;
+//     description: string;
+//     budget: number;
+//     category: string;
+//     location: string;
+//     completedDate: Date;
+//     status: string;
+//     requirements: string[];
+//     image: string[];
+// }
 
 export default function ReviewPostProject() {
     const insets = useSafeAreaInsets();
@@ -49,7 +49,7 @@ export default function ReviewPostProject() {
     const [loading, setLoading] = useState(false);
 
     // Gunakan hook useMutation dengan tipe data yang spesifik
-    const createProjectMutation = useMutation<ProjectResponse, CreateProjectRequest>({
+    const createProjectMutation = useMutation<ProjectResponse, Record<string, unknown>>({
         endpoint: 'projects',
         method: 'POST',
         requiresAuth: true,

@@ -5,12 +5,41 @@ import {
     UpdateProjectValidate 
 } from "./project.schema";
 import type { Result } from "./project.repository";
+import { ZodError } from "zod";
+import { uploadMultipleToCloudinary } from "../../utils/upload";
 // import { Service as UserService } from "../Users/user.service";
 
 class ProjectService {
     async create(data: CreateProject): Promise<Result<Projects>> {
-        const validated = CreateProjectValidate.parse(data);
-        return await Project.create(validated);
+        try {
+            console.log("Validating project data:", JSON.stringify(data, null, 2));
+            
+            // Validasi data
+            const validated = CreateProjectValidate.parse(data);
+            console.log("Validation successful");
+            
+            // Upload gambar ke Cloudinary jika ada
+            if (validated.image && validated.image.length > 0) {
+                console.log("Uploading project images...");
+                const uploadResult = await uploadMultipleToCloudinary(validated.image, {
+                    folder: 'freelancer-app/projects'
+                });
+                
+                // Update data dengan URL gambar dari Cloudinary
+                validated.image = uploadResult.urls;
+            }
+            
+            return await Project.create(validated);
+        } catch (error) {
+            if (error instanceof ZodError) {
+                const errorMessage = error.errors.map(err => 
+                    `${err.path.join('.')}: ${err.message}`
+                ).join(', ');
+                throw new Error(`Validation error: ${errorMessage}`);
+            }
+            console.error("Project creation error:", error);
+            throw error;
+        }
     }
     
     async getAll(): Promise<Result<Projects[]>> {
@@ -22,8 +51,44 @@ class ProjectService {
     }
     
     async update(id: string, data: UpdateProject): Promise<Result<Projects>> {
-        const validated = UpdateProjectValidate.parse(data);
-        return await Project.update({ id }, validated);
+        try {
+            const validated = UpdateProjectValidate.parse(data);
+            
+            // Upload gambar ke Cloudinary jika ada gambar baru
+            if (validated.image && validated.image.length > 0) {
+                // Filter gambar yang perlu diupload (yang belum memiliki URL http/https)
+                const imagesToUpload = validated.image.filter(img => 
+                    !img.startsWith('http://') && !img.startsWith('https://')
+                );
+                
+                if (imagesToUpload.length > 0) {
+                    console.log(`Uploading ${imagesToUpload.length} new project images...`);
+                    const uploadResult = await uploadMultipleToCloudinary(imagesToUpload, {
+                        folder: 'freelancer-app/projects'
+                    });
+                    
+                    // Ganti gambar yang perlu diupload dengan URL dari Cloudinary
+                    // sambil mempertahankan gambar yang sudah memiliki URL
+                    let uploadedIndex = 0;
+                    validated.image = validated.image.map(img => {
+                        if (!img.startsWith('http://') && !img.startsWith('https://')) {
+                            return uploadResult.urls[uploadedIndex++];
+                        }
+                        return img;
+                    });
+                }
+            }
+            
+            return await Project.update({ id }, validated);
+        } catch (error) {
+            if (error instanceof ZodError) {
+                const errorMessage = error.errors.map(err => 
+                    `${err.path.join('.')}: ${err.message}`
+                ).join(', ');
+                throw new Error(`Validation error: ${errorMessage}`);
+            }
+            throw error;
+        }
     }
     
     async delete(id: string): Promise<Result<Projects>> {

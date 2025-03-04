@@ -1,12 +1,14 @@
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Dimensions, Animated, NativeScrollEvent, NativeSyntheticEvent, ActivityIndicator, RefreshControl } from "react-native";
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Dimensions, Animated, NativeScrollEvent, NativeSyntheticEvent, ActivityIndicator, RefreshControl, Share, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ChevronLeft, Clock, DollarSign, MapPin, MessageCircle } from "lucide-react-native";
+import { ChevronLeft, Clock, DollarSign, MapPin, MessageCircle, Share as ShareIcon, Heart, Calendar, Award, Briefcase, ImageIcon } from "lucide-react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import React, { useState, useRef } from "react";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 import ProjectDiscussion from "./projectDiscussion";
 import { useFetch } from "@/hooks/tanstack/useFetch";
+import { useUser } from "@/hooks/tanstack/useUser";
+import { COLORS } from "@/constant/color";
 
 interface ProjectDetails {
   _id: string;
@@ -16,11 +18,10 @@ interface ProjectDetails {
   budget: number;
   category: string;
   location: string;
-  duration: string;
+  completedDate: string;
   status: string;
   requirements: string[];
   image: string[];
-  features: string[];
   assignedFreelancer: any[];
   progress: number;
   createdAt: string;
@@ -37,6 +38,9 @@ export default function ProjectDetails() {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const route = useRoute<ProjectDetailsRouteProp>();
   const [showTerms, setShowTerms] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const { data: user } = useUser();
 
   // Menggunakan useFetch untuk mendapatkan detail project
   const { 
@@ -61,14 +65,20 @@ export default function ProjectDetails() {
   });
 
   const headerOpacity = scrollY.interpolate({
-    inputRange: [250, 300],
-    outputRange: [0, 1],
+    inputRange: [0, 1],
+    outputRange: [1, 1],
     extrapolate: "clamp",
   });
 
   const headerTranslateY = scrollY.interpolate({
     inputRange: [250, 300],
     outputRange: [0, 0],
+    extrapolate: "clamp",
+  });
+
+  const headerBackgroundOpacity = scrollY.interpolate({
+    inputRange: [0, 250],
+    outputRange: [0, 1],
     extrapolate: "clamp",
   });
 
@@ -87,6 +97,118 @@ export default function ProjectDetails() {
   // Gabungkan status loading dan error
   const isLoading = projectLoading || clientLoading;
   const error = projectError || clientError;
+
+  // Cek apakah user adalah client atau pemilik project
+  const isClientOrOwner = user?.role === 'client' || project?.clientId === user?._id;
+
+  // Fungsi untuk menghitung durasi proyek
+  const calculateDuration = (completedDate: string): string => {
+    const now = new Date();
+    const targetDate = new Date(completedDate);
+    
+    // Jika tanggal sudah lewat, kembalikan "Expired"
+    if (targetDate < now) {
+      return "Expired";
+    }
+    
+    // Hitung selisih dalam hari
+    const diffTime = Math.abs(targetDate.getTime() - now.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 30) {
+      return `${diffDays} hari`;
+    } else if (diffDays < 365) {
+      const months = Math.floor(diffDays / 30);
+      return `${months} bulan`;
+    } else {
+      const years = Math.floor(diffDays / 365);
+      const remainingMonths = Math.floor((diffDays % 365) / 30);
+      return remainingMonths > 0 ? `${years} tahun ${remainingMonths} bulan` : `${years} tahun`;
+    }
+  };
+
+  // Fungsi untuk memformat budget dengan lebih baik
+  const formatBudget = (amount: number): string => {
+    if (amount >= 1000000000) {
+      return `Rp${(amount / 1000000000).toFixed(1)} Miliar`;
+    } else if (amount >= 1000000) {
+      return `Rp${(amount / 1000000).toFixed(1)} Juta`;
+    } else if (amount >= 1000) {
+      return `Rp${(amount / 1000).toFixed(1)} Ribu`;
+    } else {
+      return `Rp${amount.toLocaleString('id-ID')}`;
+    }
+  };
+
+  // Format tanggal untuk tampilan yang lebih baik
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+    };
+    return date.toLocaleDateString('id-ID', options);
+  };
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await refetchProject();
+    await refetchClient();
+    setRefreshing(false);
+  }, [refetchProject, refetchClient]);
+
+  // Fungsi untuk berbagi proyek
+  const handleShare = async () => {
+    if (!project) return;
+    
+    try {
+      await Share.share({
+        title: project.title,
+        message: `Check out this project: ${project.title}\n\nBudget: ${formatBudget(project.budget)}\nLocation: ${project.location}\n\nDescription: ${project.description.substring(0, 100)}...`,
+        url: `https://worklytic.com/projects/${project._id}`,
+      });
+    } catch (error) {
+      console.error("Error sharing project:", error);
+    }
+  };
+  
+  // Toggle favorite
+  const toggleFavorite = () => {
+    setIsFavorite(!isFavorite);
+    // Implementasi penyimpanan favorit bisa ditambahkan di sini
+  };
+
+  // Fungsi untuk mendapatkan warna berdasarkan status
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+        case 'open':
+            return {
+                bg: `${COLORS.primary}20`,
+                text: COLORS.primary
+            };
+        case 'in progress':
+            return {
+                bg: `${COLORS.info}20`,
+                text: COLORS.info
+            };
+        case 'completed':
+            return {
+                bg: `${COLORS.success}20`,
+                text: COLORS.success
+            };
+        case 'closed':
+            return {
+                bg: `${COLORS.gray}20`,
+                text: COLORS.gray
+            };
+        default:
+            return {
+                bg: `${COLORS.gray}20`,
+                text: COLORS.gray
+            };
+    }
+  };
 
   // Handle error jika ada
   if (error) {
@@ -112,173 +234,237 @@ export default function ProjectDetails() {
   if (isLoading || !project) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#2563eb" />
+        <ActivityIndicator size="large" color={COLORS.primary} />
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      {/* Animated Header */}
-      <Animated.View
-        style={[
-          styles.animatedHeader,
-          {
-            transform: [{ translateY: headerTranslateY }],
-            opacity: headerOpacity,
-          },
-        ]}
-      >
-        <View
-          style={[
-            styles.headerContent,
-            {
-              paddingTop: insets.top,
-            },
-          ]}
-        >
-          <TouchableOpacity style={styles.headerBackButton} onPress={() => navigation.goBack()}>
-            <ChevronLeft size={24} color="#374151" />
+      {/* Header Sederhana */}
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={styles.headerContent}>
+          <TouchableOpacity 
+            style={styles.backButton} 
+            onPress={() => navigation.goBack()}
+          >
+            <ChevronLeft size={24} color={COLORS.black} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle} numberOfLines={1}>
-            {project.title}
-          </Text>
+          <Text style={styles.headerTitle}>Detail Proyek</Text>
+          <TouchableOpacity 
+            style={styles.shareButton}
+            onPress={handleShare}
+          >
+            <ShareIcon size={22} color={COLORS.black} />
+          </TouchableOpacity>
         </View>
-      </Animated.View>
+      </View>
 
-      <ScrollView 
-        style={{ flex: 1 }} 
-        showsVerticalScrollIndicator={false} 
-        onScroll={handleMainScroll} 
-        scrollEventThrottle={16} 
-        contentContainerStyle={{ paddingTop: 0 }}
+      <ScrollView
+        ref={scrollViewRef}
+        style={styles.scrollView}
+        contentContainerStyle={[
+          styles.scrollViewContent,
+          // Tambahkan padding bottom jika bukan client/owner untuk memberikan ruang untuk footer
+          !isClientOrOwner && { paddingBottom: 80 }
+        ]}
+        showsVerticalScrollIndicator={false}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
         refreshControl={
-          <RefreshControl
-            refreshing={isLoading}
-            onRefresh={() => {
-              refetchProject();
-              refetchClient();
-            }}
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />
         }
       >
+        {/* Image Carousel tanpa status badge */}
         <View style={styles.carouselContainer}>
-          <ScrollView ref={scrollViewRef} horizontal pagingEnabled showsHorizontalScrollIndicator={false} onMomentumScrollEnd={handleScroll}>
-            {project.image.map((image, index) => (
-              <View key={index} style={styles.carouselItemContainer}>
-                <Image source={{ uri: image }} style={styles.carouselImage} />
-              </View>
-            ))}
-          </ScrollView>
-
-          {/* Carousel Back Button */}
-          <TouchableOpacity style={[styles.carouselBackButton, { marginTop: insets.top }]} onPress={() => navigation.goBack()}>
-            <ChevronLeft size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-
-          <View style={styles.paginationContainer}>
-            {project.image.map((_, index) => (
-              <View key={index} style={[styles.paginationDot, index === activeSlide ? styles.paginationDotActive : styles.paginationDotInactive]} />
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.content}>
-          <Text style={styles.title}>{project.title}</Text>
-
-          <View style={styles.statsContainer}>
-            <View style={styles.statItem}>
-              <View style={[styles.statIcon, { backgroundColor: "#e0f2fe" }]}>
-                <DollarSign size={20} color="#0284c7" />
-              </View>
-              <View>
-                <Text style={styles.statLabel}>Budget</Text>
-                <Text style={styles.statValue}>Rp{project.budget.toLocaleString('id-ID')}</Text>
-              </View>
-            </View>
-
-            <View style={styles.statItem}>
-              <View style={[styles.statIcon, { backgroundColor: "#fef3c7" }]}>
-                <Clock size={20} color="#d97706" />
-              </View>
-              <View>
-                <Text style={styles.statLabel}>Duration</Text>
-                <Text style={styles.statValue}>{project.duration}</Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Description</Text>
-            <Text style={styles.description}>{project.description}</Text>
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Requirements</Text>
-            {project.requirements.map((requirement, index) => (
-              <View key={index} style={styles.requirementItem}>
-                <View style={styles.bullet} />
-                <Text style={styles.requirementText}>{requirement}</Text>
-              </View>
-            ))}
-          </View>
-
-          {project.features && project.features.length > 0 ? (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Features</Text>
-              {project.features.map((feature, index) => (
-                <View key={index} style={styles.requirementItem}>
-                  <View style={styles.bullet} />
-                  <Text style={styles.requirementText}>
-                    {typeof feature === 'string' ? feature : JSON.stringify(feature)}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          ) : null}
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Project Owner</Text>
-            {client && (
-              <View style={styles.clientInfo}>
-                <Image 
-                  source={{ uri: client.profileImage }} 
-                  style={styles.clientImage} 
+          <ScrollView
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
+          >
+            {project.image && project.image.length > 0 ? (
+              project.image.map((img, index) => (
+                <Image
+                  key={index}
+                  source={{ uri: img }}
+                  style={styles.carouselImage}
+                  resizeMode="cover"
                 />
-                <View>
-                  <Text style={styles.clientName}>{client.fullName}</Text>
-                  <Text style={styles.clientLocation}>{project.location}</Text>
+              ))
+            ) : (
+              <View style={styles.carouselImage}>
+                <View style={styles.noImageContainer}>
+                  <ImageIcon size={60} color={COLORS.lightGray} />
+                  <Text style={styles.noImageText}>No Image Available</Text>
                 </View>
               </View>
             )}
+          </ScrollView>
+          
+          {/* Pagination dots */}
+          {project.image && project.image.length > 1 && (
+            <View style={styles.paginationContainer}>
+              {project.image.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.paginationDot,
+                    index === activeSlide && styles.paginationDotActive,
+                  ]}
+                />
+              ))}
+            </View>
+          )}
+        </View>
+
+        {/* Project Info */}
+        <View style={styles.infoContainer}>
+          <Text style={styles.projectTitle}>{project.title}</Text>
+          
+          <View style={styles.metaRow}>
+            <View style={styles.metaItem}>
+              <Text style={styles.metaLabel}>Category</Text>
+              <Text style={styles.metaValue}>{project.category}</Text>
+            </View>
+            
+            {/* Status dipindahkan ke sini */}
+            <View style={styles.metaItem}>
+              <Text style={styles.metaLabel}>Status</Text>
+              <View style={[
+                styles.statusBadge, 
+                { backgroundColor: getStatusColor(project.status).bg }
+              ]}>
+                <Text style={[
+                  styles.statusText, 
+                  { color: getStatusColor(project.status).text }
+                ]}>
+                  {project.status}
+                </Text>
+              </View>
+            </View>
           </View>
+
+          {/* Stats Grid - Perbaikan styling */}
+          <View style={styles.statsContainer}>
+            <View style={styles.statsRow}>
+              <View style={styles.statsCard}>
+                <View style={[styles.statsIconContainer, { backgroundColor: `${COLORS.primary}15` }]}>
+                  <DollarSign size={20} color={COLORS.primary} />
+                </View>
+                <View style={styles.statsContent}>
+                  <Text style={styles.statsLabel}>Budget</Text>
+                  <Text style={styles.statsValue}>{formatBudget(project.budget)}</Text>
+                </View>
+              </View>
+              
+              <View style={styles.statsCard}>
+                <View style={[styles.statsIconContainer, { backgroundColor: `${COLORS.info}15` }]}>
+                  <Clock size={20} color={COLORS.info} />
+                </View>
+                <View style={styles.statsContent}>
+                  <Text style={styles.statsLabel}>Duration</Text>
+                  <Text style={styles.statsValue}>{calculateDuration(project.completedDate)}</Text>
+                </View>
+              </View>
+            </View>
+            
+            <View style={styles.statsRow}>
+              <View style={styles.statsCard}>
+                <View style={[styles.statsIconContainer, { backgroundColor: `${COLORS.secondary}15` }]}>
+                  <Calendar size={20} color={COLORS.secondary} />
+                </View>
+                <View style={styles.statsContent}>
+                  <Text style={styles.statsLabel}>Deadline</Text>
+                  <Text style={styles.statsValue}>{formatDate(project.completedDate)}</Text>
+                </View>
+              </View>
+              
+              <View style={styles.statsCard}>
+                <View style={[styles.statsIconContainer, { backgroundColor: `${COLORS.success}15` }]}>
+                  <MapPin size={20} color={COLORS.success} />
+                </View>
+                <View style={styles.statsContent}>
+                  <Text style={styles.statsLabel}>Location</Text>
+                  <Text style={styles.statsValue}>{project.location}</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* Description */}
+          <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>Description</Text>
+            <Text style={styles.description}>
+              {project.description}
+            </Text>
+          </View>
+
+          {/* Requirements */}
+          <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>Requirements</Text>
+            <View style={styles.requirementsList}>
+              {project.requirements.map((req, index) => (
+                <View key={index} style={styles.requirementItem}>
+                  <View style={styles.requirementBullet}>
+                    <Award size={14} color={COLORS.primary} />
+                  </View>
+                  <Text style={styles.requirementText}>{req}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          {/* Client Info */}
+          {client && (
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Posted by</Text>
+              <View style={styles.clientCard}>
+                <Image 
+                  source={{ uri: client.profileImage || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(client.fullName) }} 
+                  style={styles.clientImage} 
+                />
+                <View style={styles.clientInfo}>
+                  <Text style={styles.clientName}>{client.fullName}</Text>
+                  <Text style={styles.clientLocation}>
+                    <MapPin size={14} color={COLORS.gray} style={styles.locationIcon} />
+                    {project.location}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          )}
+          
+          {/* Extra space for footer */}
+          <View style={{ height: 100 }} />
         </View>
       </ScrollView>
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom }]}>
-        <TouchableOpacity
-          style={styles.chatButton}
-          onPress={() => console.log("Chat Button Pressed")}
-        >
-          <MessageCircle size={24} color="#2563eb" />
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={styles.applyButton}
-          onPress={() => setShowTerms(true)}
-        >
-          <Text style={styles.applyButtonText}>
-            Apply Now
-          </Text>
-        </TouchableOpacity>
-      </View>
+      {/* Tampilkan footer dengan tombol aksi hanya jika user bukan client atau pemilik project */}
+      {!isClientOrOwner && (
+        <View style={[styles.footer, { paddingBottom: insets.bottom > 0 ? insets.bottom : 16 }]}>
+          <TouchableOpacity style={styles.chatButton}>
+            <MessageCircle size={24} color={COLORS.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.applyButton}
+            onPress={() => navigation.navigate('Payment', { projectId: project._id })}
+          >
+            <Text style={styles.applyButtonText}>Apply Now</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <ProjectDiscussion
         isVisible={showTerms}
         onClose={() => setShowTerms(false)}
         onAccept={() => {
           setShowTerms(false);
-          navigation.navigate('BottomTab', { screen: 'Workspace' });
-          alert('Aplikasi berhasil dikirim! Tunggu konfirmasi dari client.');
+          navigation.navigate('Payment', { projectId: project._id });
         }}
         projectId={route.params.projectId}
       />
@@ -289,88 +475,68 @@ export default function ProjectDetails() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.background,
   },
-  animatedHeader: {
-    position: "absolute",
-    backgroundColor: "#fff",
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
+  },
+  header: {
+    backgroundColor: COLORS.background,
     borderBottomWidth: 1,
-    borderBottomColor: "#f3f4f6",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 3,
-    width: "100%",
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 100,
+    borderBottomColor: COLORS.border,
   },
   headerContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    height: 100,
-    backgroundColor: "#fff",
+    height: 56,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
   },
-  headerBackButton: {
-    width: 22,
-    height: 22,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#f3f4f6",
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#111827",
-    marginLeft: 16,
-    flex: 1,
-  },
-  content: {
-    padding: 20,
-  },
-  carouselContainer: {
-    height: 300,
-    backgroundColor: "#f3f4f6",
-    position: "relative",
-    marginTop: 0,
-  },
-  carouselBackButton: {
-    position: "absolute",
-    top: 10,
-    left: 20,
+  backButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  carouselItemContainer: {
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.black,
+  },
+  shareButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollViewContent: {
+    paddingBottom: 24,
+  },
+  carouselContainer: {
+    width: Dimensions.get("window").width,
+    height: 300,
+    position: "relative",
+  },
+  carouselImage: {
     width: Dimensions.get("window").width,
     height: 300,
   },
-  carouselImage: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
-  },
   paginationContainer: {
+    position: "absolute",
+    bottom: 16,
+    left: 0,
+    right: 0,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    position: "absolute",
-    bottom: 20,
-    left: 0,
-    right: 0,
   },
   paginationDot: {
     width: 8,
@@ -379,139 +545,200 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   paginationDotActive: {
-    backgroundColor: "#2563eb",
+    backgroundColor: COLORS.primary,
   },
   paginationDotInactive: {
-    backgroundColor: "rgba(255, 255, 255, 0.6)",
+    backgroundColor: "rgba(255, 255, 255, 0.5)",
+  },
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+  },
+  statusText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  content: {
+    padding: 20,
+  },
+  titleContainer: {
+    marginBottom: 20,
   },
   title: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#111827",
-    marginBottom: 20,
+    color: COLORS.black,
+    marginBottom: 8,
+  },
+  categoryBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: `${COLORS.primary}10`,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 16,
+    alignSelf: "flex-start",
+  },
+  categoryText: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: COLORS.primary,
+    marginLeft: 4,
   },
   statsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
     marginBottom: 24,
   },
-  statItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f9fafb",
-    padding: 16,
-    borderRadius: 12,
-    flex: 0.48,
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
   },
-  statIcon: {
+  statsCard: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
+    padding: 12,
+    borderRadius: 12,
+    marginHorizontal: 4,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  statsIconContainer: {
     width: 40,
     height: 40,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 12,
   },
-  statLabel: {
-    fontSize: 13,
-    color: "#6b7280",
+  statsContent: {
+    flex: 1,
+  },
+  statsLabel: {
+    fontSize: 12,
+    color: COLORS.gray,
     marginBottom: 2,
   },
-  statValue: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#111827",
+  statsValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.black,
   },
-  section: {
-    marginBottom: 24,
+  sectionContainer: {
+    marginTop: 24,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#111827",
+    color: COLORS.black,
     marginBottom: 12,
   },
   description: {
-    fontSize: 15,
-    color: "#4b5563",
-    lineHeight: 24,
+    fontSize: 14,
+    lineHeight: 22,
+    color: COLORS.darkGray,
+  },
+  requirementsList: {
+    marginTop: 8,
   },
   requirementItem: {
     flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
+    alignItems: "flex-start",
+    marginBottom: 12,
   },
-  bullet: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: "#2563eb",
-    marginRight: 12,
+  requirementBullet: {
+    marginRight: 8,
+    marginTop: 2,
   },
   requirementText: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: COLORS.darkGray,
     flex: 1,
-    fontSize: 15,
-    color: "#4b5563",
   },
-  footer: {
-    padding: 20,
-    borderTopWidth: 1,
-    borderTopColor: "#f3f4f6",
-    backgroundColor: "#fff",
+  clientCard: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-  },
-  chatButton: {
-    width: 52,
-    height: 52,
-    borderRadius: 12,
-    backgroundColor: "#eff6ff",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#2563eb",
-  },
-  applyButton: {
-    flex: 1,
-    backgroundColor: "#2563eb",
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: "center",
-  },
-  applyButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-  clientInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f9fafb',
+    backgroundColor: COLORS.background,
     padding: 16,
     borderRadius: 12,
-    marginTop: 8,
+    shadowColor: COLORS.black,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   clientImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginRight: 12,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 16,
+  },
+  clientInfo: {
+    flex: 1,
   },
   clientName: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
+    fontWeight: "600",
+    color: COLORS.black,
     marginBottom: 4,
   },
   clientLocation: {
     fontSize: 14,
-    color: '#6b7280',
+    color: COLORS.gray,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  locationIcon: {
+    marginRight: 4,
+  },
+  footer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: COLORS.background,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: 12,
+  },
+  chatButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: `${COLORS.primary}20`,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  applyButton: {
+    flex: 1,
+    height: 50,
+    backgroundColor: COLORS.primary,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  applyButtonText: {
+    color: COLORS.background,
+    fontSize: 16,
+    fontWeight: "600",
   },
   errorText: {
     fontSize: 16,
@@ -529,5 +756,42 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 14,
     fontWeight: '500',
+  },
+  metaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 12,
+    marginBottom: 20,
+  },
+  metaItem: {
+    flex: 1,
+  },
+  metaLabel: {
+    fontSize: 14,
+    color: COLORS.gray,
+    marginBottom: 4,
+  },
+  metaValue: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: COLORS.black,
+  },
+  infoContainer: {
+    padding: 20,
+  },
+  projectTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: COLORS.black,
+    marginBottom: 8,
+  },
+  noImageContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noImageText: {
+    fontSize: 14,
+    color: COLORS.gray,
   },
 });

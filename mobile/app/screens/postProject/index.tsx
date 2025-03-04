@@ -91,13 +91,6 @@ export default function PostProject() {
         status: "Open" // Default status adalah Open
     });
 
-    // Gunakan hook useMutation dengan tipe data yang spesifik
-    const createProjectMutation = useMutation<ProjectResponse, CreateProjectRequest>({
-        endpoint: 'projects',
-        method: 'POST',
-        requiresAuth: true,
-    });
-
     const pickImage = async () => {
         try {
             const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
