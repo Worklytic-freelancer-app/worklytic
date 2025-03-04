@@ -1,40 +1,63 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Zap, Brain, Target, Briefcase, ChevronRight } from "lucide-react-native";
+import { useState, useEffect } from "react";
+import { SecureStoreUtils } from "../../../utils/SecureStore";
+import { baseUrl } from "../../../constant/baseUrl";
 
 interface AIRecommendation {
-  id: number;
+  projectId: string;
   title: string;
-  matchPercentage: number;
-  budget: string;
+  matchPercentage: number;  
+  budget: number;
   category: string;
   skills: string[];
-  image: string;
+  image: string[];
 }
 
 export default function WorklyticAI() {
   const insets = useSafeAreaInsets();
+  const [recommendations, setRecommendations] = useState<AIRecommendation[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const recommendations: AIRecommendation[] = [
-    {
-      id: 1,
-      title: "Mobile App Development",
-      matchPercentage: 95,
-      budget: "Rp 37.500.000",
-      category: "Development",
-      skills: ["React Native", "TypeScript", "API Integration"],
-      image: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&auto=format&fit=crop&q=60",
-    },
-    {
-      id: 2,
-      title: "E-commerce Website",
-      matchPercentage: 88,
-      budget: "Rp 45.000.000",
-      category: "Web Development",
-      skills: ["React", "Node.js", "MongoDB"],
-      image: "https://images.unsplash.com/photo-1547658719-da2b51169166?w=800&auto=format&fit=crop&q=60",
-    },
-  ];
+  useEffect(() => {
+    fetchRecommendations();
+  }, []);
+
+  const fetchRecommendations = async () => {
+    try {
+      const userData = await SecureStoreUtils.getUserData();
+      // console.log(userData, "userData");
+
+      const token = await SecureStoreUtils.getToken();
+      
+      const response = await fetch(`${baseUrl}/api/projects/aiRecommendations`, {
+        headers: {
+          'user': JSON.stringify(userData),
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      console.log(data, "data");
+      
+      if (data.success) {
+        setRecommendations(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching recommendations:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatBudget = (budget: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(budget);
+  };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -48,14 +71,14 @@ export default function WorklyticAI() {
             <View style={[styles.statIcon, { backgroundColor: "#e0f2fe" }]}>
               <Target size={24} color="#0284c7" />
             </View>
-            <Text style={styles.statValue}>95%</Text>
+            <Text style={styles.statValue}>{recommendations.length}%</Text>
             <Text style={styles.statLabel}>Match Rate</Text>
           </View>
           <View style={styles.statCard}>
             <View style={[styles.statIcon, { backgroundColor: "#fef3c7" }]}>
               <Briefcase size={24} color="#d97706" />
             </View>
-            <Text style={styles.statValue}>24</Text>
+            <Text style={styles.statValue}>{recommendations.length}</Text>
             <Text style={styles.statLabel}>Matches</Text>
           </View>
         </View>
@@ -63,8 +86,11 @@ export default function WorklyticAI() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Top Matches</Text>
           {recommendations.map((item) => (
-            <TouchableOpacity key={item.id} style={styles.matchCard}>
-              <Image source={{ uri: item.image }} style={styles.projectImage} />
+            <TouchableOpacity key={item.projectId} style={styles.matchCard}>
+              <Image 
+                source={{ uri: item.image[0] }} 
+                style={styles.projectImage} 
+              />
               <View style={styles.matchInfo}>
                 <View style={styles.matchHeader}>
                   <Text style={styles.matchTitle}>{item.title}</Text>
@@ -74,7 +100,7 @@ export default function WorklyticAI() {
                   </View>
                 </View>
                 <Text style={styles.matchCategory}>{item.category}</Text>
-                <Text style={styles.matchBudget}>{item.budget}</Text>
+                <Text style={styles.matchBudget}>{formatBudget(item.budget)}</Text>
                 <View style={styles.skillsContainer}>
                   {item.skills.map((skill, index) => (
                     <View key={index} style={styles.skillBadge}>
