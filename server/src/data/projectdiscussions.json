@@ -1,152 +1,87 @@
 [
     {
         "_id": "68c09e7ea8bf2bcd8d03f001",
-        "projectFeatureId": "67c09e7ea8bf2bcd8d03f131",
-        "senderId": "66d064e5e913892a850e1249",
-        "description": "Saya sudah mulai mengembangkan sistem ERP. Modul inventory management sudah 30% selesai dengan fitur: tracking stok realtime, sistem barcode, dan integrasi dengan purchasing. Berikut mockup dashboard dan dokumentasi ERD untuk review.",
+        "projectFeatureId": "67c09e7ea8bf2bcd8d03f111",
+        "senderId": "66d064e5e913892a850e1234",
+        "description": "Saya telah mereview kebutuhan sistem ERP dan memiliki beberapa pertanyaan terkait integrasi dengan sistem yang sudah ada. Berikut adalah draft awal arsitektur sistem yang saya usulkan.",
         "images": [
-            "https://images.unsplash.com/photo-1460925895917-afdab827c52f",
-            "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3"
+            "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40",
+            "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e"
         ],
         "files": [
-            "https://example.com/files/inventory-mockup.pdf",
-            "https://example.com/files/erd-inventory.pdf"
-        ],
-        "createdAt": "2024-03-15T09:00:00.000Z"
+            "https://example.com/documents/erp-architecture-draft.pdf",
+            "https://example.com/documents/integration-plan.pdf"
+        ]
     },
     {
         "_id": "68c09e7ea8bf2bcd8d03f002",
-        "projectFeatureId": "67c09e7ea8bf2bcd8d03f132",
-        "senderId": "66d064e5e913892a850e1238",
-        "description": "Sudah menyelesaikan redesign aplikasi mobile banking dengan fokus pada peningkatan user experience dan keamanan. Berikut hasil wireframe untuk flow transaksi dan homepage yang mengikuti standar material design.",
+        "projectFeatureId": "67c09e7ea8bf2bcd8d03f222",
+        "senderId": "66d064e5e913892a850e1236",
+        "description": "Berikut adalah hasil redesign website berdasarkan brand guidelines yang telah didiskusikan. Saya telah membuat beberapa alternatif untuk halaman utama.",
         "images": [
-            "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d",
-            "https://images.unsplash.com/photo-1559028012-481c04fa702d"
-        ],
-        "files": [
-            "https://example.com/files/mobile-banking-wireframe.fig",
-            "https://example.com/files/user-flow-diagram.pdf"
-        ],
-        "createdAt": "2024-03-15T10:30:00.000Z"
-    },
-    {
-        "_id": "68c09e7ea8bf2bcd8d03f003",
-        "projectFeatureId": "67c09e7ea8bf2bcd8d03f133",
-        "senderId": "66d064e5e913892a850e1250",
-        "description": "Telah menyelesaikan konten marketing dan SEO untuk website. Sudah menghasilkan 5 artikel blog dengan keyword research dan optimasi SEO. Traffic website meningkat 20% dalam 2 minggu terakhir.",
-        "images": [
-            "https://images.unsplash.com/photo-1455390582262-044cdead277a",
-            "https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07"
-        ],
-        "files": [
-            "https://example.com/files/content-calendar.xlsx",
-            "https://example.com/files/seo-keyword-research.pdf"
-        ],
-        "createdAt": "2024-03-15T11:45:00.000Z"
-    },
-    {
-        "_id": "68c09e7ea8bf2bcd8d03f004",
-        "projectFeatureId": "67c09e7ea8bf2bcd8d03f134",
-        "senderId": "66d064e5e913892a850e1234",
-        "description": "Pengembangan aplikasi mobile internal sudah mencapai 40%. Fitur yang sudah selesai: autentikasi, manajemen profil, dan dashboard utama. Sedang mengerjakan modul absensi dengan GPS tracking.",
-        "images": [
-            "https://images.unsplash.com/photo-1467232004584-a241de8bcf5d",
+            "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e",
+            "https://images.unsplash.com/photo-1559028012-481c04fa702d",
             "https://images.unsplash.com/photo-1531403009284-440f080d1e12"
         ],
         "files": [
-            "https://example.com/files/app-demo.mp4",
-            "https://example.com/files/technical-specs.pdf"
+            "https://example.com/designs/homepage-v1.fig",
+            "https://example.com/designs/homepage-v2.fig"
+        ]
+    },
+    {
+        "_id": "68c09e7ea8bf2bcd8d03f003",
+        "projectFeatureId": "67c09e7ea8bf2bcd8d03f446",
+        "senderId": "66d064e5e913892a850e1237",
+        "description": "Update progress pengembangan aplikasi mobile: Fitur tracking lokasi sales sudah 80% selesai. Berikut tampilan dashboard tracking dan beberapa screenshot fitur input order.",
+        "images": [
+            "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c",
+            "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d"
         ],
-        "createdAt": "2024-03-15T13:15:00.000Z"
+        "files": [
+            "https://example.com/documents/tracking-feature-doc.pdf",
+            "https://example.com/documents/api-documentation.pdf"
+        ]
+    },
+    {
+        "_id": "68c09e7ea8bf2bcd8d03f004",
+        "projectFeatureId": "67c09e7ea8bf2bcd8d03f449",
+        "senderId": "66d064e5e913892a850e1240",
+        "description": "Implementasi fitur face recognition dan QR payment sudah selesai. Berikut demo video dan dokumentasi keamanan yang diterapkan pada fitur tersebut.",
+        "images": [
+            "https://images.unsplash.com/photo-1563013544-824ae1b704d3",
+            "https://images.unsplash.com/photo-1601597111158-2fceff292cdc"
+        ],
+        "files": [
+            "https://example.com/videos/face-recognition-demo.mp4",
+            "https://example.com/documents/security-implementation.pdf"
+        ]
     },
     {
         "_id": "68c09e7ea8bf2bcd8d03f005",
-        "projectFeatureId": "67c09e7ea8bf2bcd8d03f135",
-        "senderId": "66d064e5e913892a850e1240",
-        "description": "Kampanye digital marketing B2B di LinkedIn sudah berjalan 2 minggu. Hasil: 150+ leads qualified, 25% peningkatan engagement, dan 3 potential clients sudah masuk tahap negosiasi.",
+        "projectFeatureId": "67c09e7ea8bf2bcd8d03f452",
+        "senderId": "66d064e5e913892a850e1246",
+        "description": "Hasil analisis data dari sensor IoT menunjukkan beberapa pola menarik. Saya telah membuat dashboard untuk monitoring real-time dan sistem alert yang dapat dikustomisasi.",
         "images": [
-            "https://images.unsplash.com/photo-1460925895917-afdab827c52f",
-            "https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07"
+            "https://images.unsplash.com/photo-1581092160562-40aa08e78837",
+            "https://images.unsplash.com/photo-1563770660941-20978e870e26"
         ],
         "files": [
-            "https://example.com/files/campaign-analytics.pdf",
-            "https://example.com/files/leads-report.xlsx"
-        ],
-        "createdAt": "2024-03-15T14:30:00.000Z"
+            "https://example.com/documents/iot-analysis-report.pdf",
+            "https://example.com/documents/dashboard-guide.pdf"
+        ]
     },
     {
         "_id": "68c09e7ea8bf2bcd8d03f006",
-        "projectFeatureId": "67c09e7ea8bf2bcd8d03f136",
-        "senderId": "66d064e5e913892a850e1243",
-        "description": "Pengembangan aplikasi e-commerce sudah 45% selesai. Fitur yang sudah diimplementasi: katalog produk, keranjang belanja, dan integrasi payment gateway. Sedang mengerjakan fitur live shopping.",
+        "projectFeatureId": "67c09e7ea8bf2bcd8d03f455",
+        "senderId": "66d064e5e913892a850e1244",
+        "description": "Update pengembangan virtual classroom: Fitur interactive whiteboard sudah terintegrasi dengan video conference. Berikut demo penggunaan dan hasil testing performa.",
         "images": [
-            "https://images.unsplash.com/photo-1572044162444-ad60f128bdea",
-            "https://images.unsplash.com/photo-1559028012-481c04fa702d"
+            "https://images.unsplash.com/photo-1571260899304-425eee4c7efc",
+            "https://images.unsplash.com/photo-1552581234-26160f608093"
         ],
         "files": [
-            "https://example.com/files/ecommerce-demo.mp4",
-            "https://example.com/files/payment-integration.pdf"
-        ],
-        "createdAt": "2024-03-15T15:45:00.000Z"
-    },
-    {
-        "_id": "68c09e7ea8bf2bcd8d03f007",
-        "projectFeatureId": "67c09e7ea8bf2bcd8d03f137",
-        "senderId": "66d064e5e913892a850e1242",
-        "description": "Backend API development sudah 50% selesai. Endpoints yang sudah selesai: user management, authentication, dan product management. Database optimization sudah dilakukan untuk meningkatkan performance.",
-        "images": [
-            "https://images.unsplash.com/photo-1558494949-ef010cbdcc31",
-            "https://images.unsplash.com/photo-1531746790731-6c087fecd65a"
-        ],
-        "files": [
-            "https://example.com/files/api-documentation.pdf",
-            "https://example.com/files/database-schema.pdf"
-        ],
-        "createdAt": "2024-03-15T16:20:00.000Z"
-    },
-    {
-        "_id": "68c09e7ea8bf2bcd8d03f008",
-        "projectFeatureId": "67c09e7ea8bf2bcd8d03f138",
-        "senderId": "66d064e5e913892a850e1247",
-        "description": "Dashboard analytics sudah 60% selesai. Implementasi visualisasi data realtime menggunakan D3.js, integrasi dengan multiple data sources, dan custom filtering sudah berfungsi.",
-        "images": [
-            "https://images.unsplash.com/photo-1551288049-bebda4e38f71",
-            "https://images.unsplash.com/photo-1551288049-bebda4e38f71"
-        ],
-        "files": [
-            "https://example.com/files/dashboard-demo.mp4",
-            "https://example.com/files/performance-report.pdf"
-        ],
-        "createdAt": "2024-03-15T17:10:00.000Z"
-    },
-    {
-        "_id": "68c09e7ea8bf2bcd8d03f009",
-        "projectFeatureId": "67c09e7ea8bf2bcd8d03f139",
-        "senderId": "66d064e5e913892a850e1237",
-        "description": "Game edukasi mobile sudah 40% selesai. Fitur yang sudah diimplementasi: sistem level pembelajaran, mini games matematika, dan progress tracking. Sedang mengerjakan modul multiplayer.",
-        "images": [
-            "https://images.unsplash.com/photo-1556438064-2d7646166914",
-            "https://images.unsplash.com/photo-1559028012-481c04fa702d"
-        ],
-        "files": [
-            "https://example.com/files/game-preview.mp4",
-            "https://example.com/files/learning-modules.pdf"
-        ],
-        "createdAt": "2024-03-15T18:00:00.000Z"
-    },
-    {
-        "_id": "68c09e7ea8bf2bcd8d03f010",
-        "projectFeatureId": "67c09e7ea8bf2bcd8d03f140",
-        "senderId": "66d064e5e913892a850e1245",
-        "description": "Implementasi DevOps dan Cloud Infrastructure sudah 55% selesai. CI/CD pipeline dengan Jenkins sudah berjalan, Docker containers sudah dikonfigurasi, dan AWS services sudah terintegrasi.",
-        "images": [
-            "https://images.unsplash.com/photo-1451187580459-43490279c0fa",
-            "https://images.unsplash.com/photo-1558494949-ef010cbdcc31"
-        ],
-        "files": [
-            "https://example.com/files/infrastructure-diagram.pdf",
-            "https://example.com/files/deployment-guide.md"
-        ],
-        "createdAt": "2024-03-15T19:30:00.000Z"
+            "https://example.com/videos/whiteboard-demo.mp4",
+            "https://example.com/documents/performance-report.pdf"
+        ]
     }
 ]
