@@ -1,0 +1,14 @@
+{
+    "development": {
+        "url": "mongodb+srv://henscc:finleytisu1227@playful.wbo7m.mongodb.net/",
+        "database": "worklytic"
+    },
+    "test": {
+        "url": "mongodb+srv://henscc:finleytisu1227@playful.wbo7m.mongodb.net/",
+        "database": "worklytic_test"
+    },
+    "production": {
+        "url": "mongodb+srv://henscc:finleytisu1227@playful.wbo7m.mongodb.net/",
+        "database": "worklytic"
+    }
+}
