@@ -2,13 +2,12 @@ import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Image,
 import { useRoute, RouteProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/navigators";
 import { useState, useEffect } from "react";
-import { ChevronLeft, Plus, X } from "lucide-react-native";
+import { ChevronLeft, Plus, X, Upload, DollarSign } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as ImagePicker from 'expo-image-picker';
-import { baseUrl } from "@/constant/baseUrl";
-import { SecureStoreUtils } from "@/utils/SecureStore";
 import { useFetch } from "@/hooks/tanstack/useFetch";
 import { useMutation } from "@/hooks/tanstack/useMutation";
+import { COLORS } from "@/constant/color";
 
 type EditServiceRouteProp = RouteProp<RootStackParamList, 'EditService'>;
 
@@ -198,57 +197,69 @@ export default function EditService() {
     return (
         <View style={[styles.container, { paddingTop: insets.top }]}>
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <ChevronLeft size={24} color="#374151" />
+                <TouchableOpacity 
+                    style={styles.backButton} 
+                    onPress={() => navigation.goBack()}
+                >
+                    <ChevronLeft size={24} color={COLORS.primary} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Edit Layanan</Text>
-                <View style={{ width: 24 }} />
+                <View style={{ width: 40 }} />
             </View>
 
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                <View style={styles.imageSection}>
-                    <Text style={styles.sectionTitle}>Gambar Layanan</Text>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imageList}>
-                        {images.map((uri, index) => (
-                            <View key={index} style={styles.imageContainer}>
-                                <Image source={{ uri }} style={styles.image} />
-                                <TouchableOpacity style={styles.removeImage} onPress={() => removeImage(index)}>
-                                    <X size={16} color="#fff" />
-                                </TouchableOpacity>
-                            </View>
-                        ))}
-                        <TouchableOpacity style={styles.addImageButton} onPress={handleImagePick}>
-                            <Plus size={24} color="#2563eb" />
-                        </TouchableOpacity>
-                    </ScrollView>
-                </View>
-
-                <View style={styles.formSection}>
+            <ScrollView style={styles.formContainer} showsVerticalScrollIndicator={false}>
+                <View style={styles.card}>
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Judul Layanan</Text>
-                        <TextInput
+                        <Text style={styles.label}>Gambar Layanan <Text style={styles.required}>*</Text></Text>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imageList}>
+                            {images.map((uri, index) => (
+                                <View key={index} style={styles.imageWrapper}>
+                                    <Image source={{ uri }} style={styles.imagePreview} />
+                                    <TouchableOpacity 
+                                        style={styles.removeImageButton}
+                                        onPress={() => removeImage(index)}
+                                    >
+                                        <X size={16} color={COLORS.background} />
+                                    </TouchableOpacity>
+                                </View>
+                            ))}
+                            {images.length < 5 && (
+                                <TouchableOpacity style={styles.uploadButton} onPress={handleImagePick}>
+                                    <Upload size={24} color={COLORS.primary} />
+                                    <Text style={styles.uploadText}>Upload</Text>
+                                </TouchableOpacity>
+                            )}
+                        </ScrollView>
+                    </View>
+
+                    <View style={styles.inputGroup}>
+                        <Text style={styles.label}>Judul Layanan <Text style={styles.required}>*</Text></Text>
+                        <TextInput 
                             style={styles.input}
                             placeholder="Contoh: Pengembangan Aplikasi Mobile"
+                            placeholderTextColor={COLORS.gray}
                             value={formData.title}
                             onChangeText={(text) => setFormData({ ...formData, title: text })}
                         />
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Kategori</Text>
+                        <Text style={styles.label}>Kategori <Text style={styles.required}>*</Text></Text>
                         <TextInput
                             style={styles.input}
                             placeholder="Contoh: Pengembangan & IT"
+                            placeholderTextColor={COLORS.gray}
                             value={formData.category}
                             onChangeText={(text) => setFormData({ ...formData, category: text })}
                         />
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Deskripsi</Text>
+                        <Text style={styles.label}>Deskripsi <Text style={styles.required}>*</Text></Text>
                         <TextInput
                             style={[styles.input, styles.textArea]}
                             placeholder="Jelaskan layanan Anda secara detail"
+                            placeholderTextColor={COLORS.gray}
                             multiline
                             numberOfLines={4}
                             value={formData.description}
@@ -257,65 +268,70 @@ export default function EditService() {
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Harga (Rp)</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Contoh: 5000000"
-                            keyboardType="numeric"
-                            value={formData.price}
-                            onChangeText={(text) => setFormData({ ...formData, price: text })}
-                        />
+                        <Text style={styles.label}>Harga <Text style={styles.required}>*</Text></Text>
+                        <View style={styles.inputWithIcon}>
+                            <DollarSign size={20} color={COLORS.primary} style={styles.inputIcon} />
+                            <TextInput
+                                style={[styles.input, styles.inputWithPadding]}
+                                placeholder="Contoh: 5000000"
+                                placeholderTextColor={COLORS.gray}
+                                keyboardType="numeric"
+                                value={formData.price}
+                                onChangeText={(text) => setFormData({ ...formData, price: text })}
+                            />
+                        </View>
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Waktu Pengerjaan</Text>
+                        <Text style={styles.label}>Waktu Pengerjaan <Text style={styles.required}>*</Text></Text>
                         <TextInput
                             style={styles.input}
                             placeholder="Contoh: 14 hari"
+                            placeholderTextColor={COLORS.gray}
                             value={formData.deliveryTime}
                             onChangeText={(text) => setFormData({ ...formData, deliveryTime: text })}
                         />
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Persyaratan (pisahkan dengan koma)</Text>
+                        <Text style={styles.label}>Yang Termasuk</Text>
                         <TextInput
                             style={[styles.input, styles.textArea]}
-                            placeholder="Apa yang Anda butuhkan dari klien?"
-                            multiline
-                            numberOfLines={4}
-                            value={formData.requirements}
-                            onChangeText={(text) => setFormData({ ...formData, requirements: text })}
-                        />
-                    </View>
-
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Yang Termasuk (pisahkan dengan koma)</Text>
-                        <TextInput
-                            style={[styles.input, styles.textArea]}
-                            placeholder="Apa yang akan klien terima?"
+                            placeholder="Apa yang akan klien terima? (pisahkan dengan koma)"
+                            placeholderTextColor={COLORS.gray}
                             multiline
                             numberOfLines={4}
                             value={formData.includes}
                             onChangeText={(text) => setFormData({ ...formData, includes: text })}
                         />
                     </View>
-                </View>
-            </ScrollView>
 
-            <View style={styles.footer}>
+                    <View style={styles.inputGroup}>
+                        <Text style={styles.label}>Persyaratan</Text>
+                        <TextInput
+                            style={[styles.input, styles.textArea]}
+                            placeholder="Apa yang Anda butuhkan dari klien? (pisahkan dengan koma)"
+                            placeholderTextColor={COLORS.gray}
+                            multiline
+                            numberOfLines={4}
+                            value={formData.requirements}
+                            onChangeText={(text) => setFormData({ ...formData, requirements: text })}
+                        />
+                    </View>
+                </View>
+
                 <TouchableOpacity 
-                    style={[styles.saveButton, isLoading && styles.disabledButton]} 
+                    style={[styles.submitButton, isLoading && styles.disabledButton]} 
                     onPress={handleSubmit}
                     disabled={isLoading}
                 >
                     {isLoading ? (
-                        <ActivityIndicator color="#ffffff" size="small" />
+                        <ActivityIndicator color={COLORS.background} size="small" />
                     ) : (
-                        <Text style={styles.saveButtonText}>Simpan Perubahan</Text>
+                        <Text style={styles.submitButtonText}>Simpan Perubahan</Text>
                     )}
                 </TouchableOpacity>
-            </View>
+            </ScrollView>
         </View>
     );
 }
@@ -323,7 +339,7 @@ export default function EditService() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#ffffff',
+        backgroundColor: COLORS.background,
     },
     header: {
         flexDirection: 'row',
@@ -332,57 +348,24 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 16,
         borderBottomWidth: 1,
-        borderBottomColor: '#f3f4f6',
+        borderBottomColor: COLORS.border,
+        backgroundColor: COLORS.background,
     },
     headerTitle: {
         fontSize: 18,
         fontWeight: '600',
-        color: '#111827',
+        color: COLORS.black,
     },
-    content: {
+    formContainer: {
         flex: 1,
     },
-    imageSection: {
-        padding: 20,
-    },
-    sectionTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#111827',
-        marginBottom: 12,
-    },
-    imageList: {
-        flexDirection: 'row',
-    },
-    imageContainer: {
-        marginRight: 12,
-        position: 'relative',
-    },
-    image: {
-        width: 120,
-        height: 120,
-        borderRadius: 8,
-    },
-    removeImage: {
-        position: 'absolute',
-        top: 8,
-        right: 8,
-        backgroundColor: 'rgba(0,0,0,0.5)',
+    card: {
+        backgroundColor: COLORS.background,
         borderRadius: 12,
-        padding: 4,
-    },
-    addImageButton: {
-        width: 120,
-        height: 120,
-        borderRadius: 8,
-        borderWidth: 2,
-        borderColor: '#2563eb',
-        borderStyle: 'dashed',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    formSection: {
-        padding: 20,
+        padding: 16,
+        margin: 16,
+        borderWidth: 1,
+        borderColor: COLORS.border,
     },
     inputGroup: {
         marginBottom: 20,
@@ -390,47 +373,109 @@ const styles = StyleSheet.create({
     label: {
         fontSize: 14,
         fontWeight: '500',
-        color: '#374151',
+        color: COLORS.darkGray,
         marginBottom: 8,
+    },
+    required: {
+        color: COLORS.error,
     },
     input: {
         borderWidth: 1,
-        borderColor: '#e5e7eb',
+        borderColor: COLORS.border,
         borderRadius: 8,
         padding: 12,
         fontSize: 16,
-        color: '#111827',
+        color: COLORS.black,
+        backgroundColor: COLORS.background,
+    },
+    inputWithIcon: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: COLORS.border,
+        borderRadius: 8,
+        backgroundColor: COLORS.background,
+    },
+    inputIcon: {
+        padding: 12,
+    },
+    inputWithPadding: {
+        flex: 1,
+        borderWidth: 0,
     },
     textArea: {
         height: 100,
         textAlignVertical: 'top',
     },
-    footer: {
-        padding: 20,
-        borderTopWidth: 1,
-        borderTopColor: '#f3f4f6',
+    imageList: {
+        flexDirection: 'row',
+        marginBottom: 16,
     },
-    saveButton: {
-        backgroundColor: '#2563eb',
+    imageWrapper: {
+        marginRight: 12,
+        position: 'relative',
+    },
+    imagePreview: {
+        width: 120,
+        height: 120,
+        borderRadius: 8,
+    },
+    removeImageButton: {
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        borderRadius: 12,
+        padding: 4,
+    },
+    uploadButton: {
+        width: 120,
+        height: 120,
+        borderRadius: 8,
+        borderWidth: 2,
+        borderStyle: 'dashed',
+        borderColor: COLORS.primary,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: `${COLORS.primary}05`,
+    },
+    uploadText: {
+        marginTop: 8,
+        fontSize: 14,
+        color: COLORS.primary,
+        fontWeight: '500',
+    },
+    submitButton: {
+        backgroundColor: COLORS.primary,
         paddingVertical: 16,
         borderRadius: 8,
         alignItems: 'center',
+        margin: 16,
+        marginTop: 8,
     },
-    disabledButton: {
-        backgroundColor: '#93c5fd',
-    },
-    saveButtonText: {
-        color: '#ffffff',
+    submitButtonText: {
+        color: COLORS.background,
         fontSize: 16,
         fontWeight: '600',
     },
+    disabledButton: {
+        opacity: 0.7,
+    },
     loadingContainer: {
+        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
     },
     loadingText: {
         marginTop: 12,
         fontSize: 16,
-        color: '#6b7280',
+        color: COLORS.gray,
+    },
+    backButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
 });
