@@ -109,7 +109,7 @@ export default function Services() {
                     style={styles.addButton}
                 >
                     <Plus size={20} color={COLORS.background} />
-                    <Text style={styles.addButtonText}>Tambah</Text>
+                    <Text style={styles.addButtonText}>Add Service</Text>
                 </TouchableOpacity>
             </View>
 
@@ -172,7 +172,7 @@ export default function Services() {
                                         ) : (
                                             <>
                                                 <Trash2 size={16} color={COLORS.background} />
-                                                <Text style={styles.actionButtonText}>Hapus</Text>
+                                                <Text style={styles.actionButtonText}>Delete</Text>
                                             </>
                                         )}
                                     </TouchableOpacity>
