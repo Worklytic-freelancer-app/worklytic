@@ -168,8 +168,7 @@ class ProjectService {
                 skills: "array -> {ini pakai skills yg sesuai dengan data user / pikir sendiri yang sesuai dengan title dan kategory}",
                 image: "array -> {ini pakai image yg sesuai dengan data project}"
               }
-            ]
-            
+            ] 
             `
             const response = await gemini(prompt) as ProjectRecommendation[];
             console.log(response, "response");

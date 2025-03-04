@@ -62,7 +62,7 @@ export default function WorklyticAIFreelancer   () {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>AI Match</Text>
+        <Text style={styles.headerTitle}>AI Match Freelancer</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -71,7 +71,7 @@ export default function WorklyticAIFreelancer   () {
             <View style={[styles.statIcon, { backgroundColor: "#e0f2fe" }]}>
               <Target size={24} color="#0284c7" />
             </View>
-            <Text style={styles.statValue}>{recommendations.length}%</Text>
+            <Text style={styles.statValue}>{recommendations.map((item) => item.matchPercentage).reduce((a, b) => a + b, 0) / recommendations.length}%</Text>
             <Text style={styles.statLabel}>Match Rate</Text>
           </View>
           <View style={styles.statCard}>

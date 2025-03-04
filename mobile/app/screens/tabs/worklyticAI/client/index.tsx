@@ -62,7 +62,7 @@ export default function WorklyticAIClient() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>AI Match</Text>
+        <Text style={styles.headerTitle}>AI Match Client</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
