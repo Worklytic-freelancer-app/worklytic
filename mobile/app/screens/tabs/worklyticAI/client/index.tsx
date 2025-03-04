@@ -5,19 +5,19 @@ import { useState, useEffect } from "react";
 import { SecureStoreUtils } from "../../../../utils/SecureStore";
 import { baseUrl } from "../../../../constant/baseUrl";
 
-interface AIRecommendation {
-  projectId: string;
+interface ServiceRecommendation {
+  serviceId: string;
   title: string;
   matchPercentage: number;  
   budget: number;
   category: string;
-  skills: string[];
+  include: string[];
   image: string[];
 }
 
 export default function WorklyticAIClient() {
   const insets = useSafeAreaInsets();
-  const [recommendations, setRecommendations] = useState<AIRecommendation[]>([]);
+  const [recommendations, setRecommendations] = useState<ServiceRecommendation[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export default function WorklyticAIClient() {
 
       const token = await SecureStoreUtils.getToken();
       
-      const response = await fetch(`${baseUrl}/api/projects/aiRecommendations`, {
+      const response = await fetch(`${baseUrl}/api/services/aiRecommendations`, {
         headers: {
           'user': JSON.stringify(userData),
           'Authorization': `Bearer ${token}`
@@ -40,9 +40,7 @@ export default function WorklyticAIClient() {
       const data = await response.json();
       console.log(data, "data");
       
-      if (data.success) {
-        setRecommendations(data.data);
-      }
+      setRecommendations(data.data);
     } catch (error) {
       console.error('Error fetching recommendations:', error);
     } finally {
@@ -71,7 +69,7 @@ export default function WorklyticAIClient() {
             <View style={[styles.statIcon, { backgroundColor: "#e0f2fe" }]}>
               <Target size={24} color="#0284c7" />
             </View>
-            <Text style={styles.statValue}>{recommendations.length}%</Text>
+            <Text style={styles.statValue}>{recommendations.map((item) => item.matchPercentage).reduce((a, b) => a + b, 0) / recommendations.length}%</Text>
             <Text style={styles.statLabel}>Match Rate</Text>
           </View>
           <View style={styles.statCard}>
@@ -85,8 +83,8 @@ export default function WorklyticAIClient() {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Top Matches</Text>
-          {recommendations.map((item) => (
-            <TouchableOpacity key={item.projectId} style={styles.matchCard}>
+          {recommendations?.map((item) => (
+            <TouchableOpacity key={item.serviceId} style={styles.matchCard}>
               <Image 
                 source={{ uri: item.image[0] }} 
                 style={styles.projectImage} 
@@ -102,9 +100,9 @@ export default function WorklyticAIClient() {
                 <Text style={styles.matchCategory}>{item.category}</Text>
                 <Text style={styles.matchBudget}>{formatBudget(item.budget)}</Text>
                 <View style={styles.skillsContainer}>
-                  {item.skills.map((skill, index) => (
+                  {item.include.map((include, index) => (
                     <View key={index} style={styles.skillBadge}>
-                      <Text style={styles.skillText}>{skill}</Text>
+                      <Text style={styles.skillText}>{include}</Text>
                     </View>
                   ))}
                 </View>
