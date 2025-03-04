@@ -5,6 +5,7 @@ import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 import { useFetch } from "@/hooks/tanstack/useFetch";
+import { COLORS } from "@/constant/color";
 
 // Updated Service interface to match API response
 interface Service {
@@ -93,7 +94,7 @@ export default function FreelancerDetails() {
   if (loading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }, styles.loadingContainer]}>
-        <ActivityIndicator size="large" color="#2563EB" />
+        <ActivityIndicator size="large" color={COLORS.primary} />
         <Text style={styles.loadingText}>Memuat data freelancer...</Text>
       </View>
     );
@@ -128,7 +129,7 @@ export default function FreelancerDetails() {
         <Text style={styles.servicePrice}>{formatPrice(item.price)}</Text>
         <View style={styles.serviceStats}>
           <View style={styles.ratingContainer}>
-            <Star size={14} color="#FFC107" fill="#FFC107" />
+            <Star size={14} color={COLORS.primary} fill={COLORS.primary} />
             <Text style={styles.ratingText}>{item.rating}</Text>
           </View>
           <Text style={styles.reviewsText}>({item.reviews} reviews)</Text>
@@ -141,51 +142,71 @@ export default function FreelancerDetails() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <ChevronLeft size={24} color="#374151" />
+          <ChevronLeft size={24} color={COLORS.darkGray} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Freelancer Profile</Text>
-        <View style={{ width: 24 }} />
+        <Text style={styles.headerTitle}>Profil Freelancer</Text>
+        <View style={{ width: 40 }} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.profile}>
-          <Image source={{ uri: freelancer.profileImage || 'https://via.placeholder.com/150' }} style={styles.profileImage} />
+          <Image 
+            source={{ uri: freelancer.profileImage || 'https://via.placeholder.com/150' }} 
+            style={styles.profileImage} 
+          />
           <Text style={styles.name}>{freelancer.fullName}</Text>
-          <Text style={styles.role}>{freelancer.skills && freelancer.skills.length > 0 ? freelancer.skills[0] : "Freelancer"}</Text>
+          <Text style={styles.role}>
+            {freelancer.skills && freelancer.skills.length > 0 ? freelancer.skills[0] : "Freelancer"}
+          </Text>
 
           <View style={styles.locationContainer}>
-            <MapPin size={16} color="#6B7280" />
+            <MapPin size={16} color={COLORS.gray} />
             <Text style={styles.location}>{freelancer.location || "Lokasi tidak tersedia"}</Text>
+          </View>
+
+          <View style={styles.statsContainer}>
+            <View style={styles.statsCard}>
+              <Text style={styles.statsValue}>{freelancer.totalProjects || 0}</Text>
+              <Text style={styles.statsLabel}>Total Proyek</Text>
+            </View>
+            <View style={styles.statsCard}>
+              <Text style={styles.statsValue}>{freelancer.successRate || 0}%</Text>
+              <Text style={styles.statsLabel}>Tingkat Sukses</Text>
+            </View>
+            <View style={styles.statsCard}>
+              <Text style={styles.statsValue}>{freelancer.rating || 0}</Text>
+              <Text style={styles.statsLabel}>Rating</Text>
+            </View>
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>About</Text>
+          <Text style={styles.sectionTitle}>Tentang</Text>
           <Text style={styles.about}>{freelancer.about || "Tidak ada deskripsi tersedia."}</Text>
         </View>
 
-        
-
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Contact Information</Text>
+          <Text style={styles.sectionTitle}>Informasi Kontak</Text>
           <View style={styles.contactInfo}>
             <View style={styles.contactItem}>
-              <Mail size={16} color="#6B7280" />
+              <Mail size={16} color={COLORS.gray} />
               <Text style={styles.contactText}>{freelancer.email}</Text>
             </View>
             <View style={styles.contactItem}>
-              <Phone size={16} color="#6B7280" />
+              <Phone size={16} color={COLORS.gray} />
               <Text style={styles.contactText}>{freelancer.phone || "Nomor telepon tidak tersedia"}</Text>
             </View>
             <View style={styles.contactItem}>
-              <Calendar size={16} color="#6B7280" />
-              <Text style={styles.contactText}>Joined {freelancer.createdAt ? formatJoinedDate(freelancer.createdAt) : "Unknown"}</Text>
+              <Calendar size={16} color={COLORS.gray} />
+              <Text style={styles.contactText}>
+                Bergabung {freelancer.createdAt ? formatJoinedDate(freelancer.createdAt) : "Unknown"}
+              </Text>
             </View>
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Skills</Text>
+          <Text style={styles.sectionTitle}>Keahlian</Text>
           <View style={styles.skillsContainer}>
             {freelancer.skills && freelancer.skills.length > 0 ? (
               freelancer.skills.map((skill, index) => (
@@ -194,23 +215,25 @@ export default function FreelancerDetails() {
                 </View>
               ))
             ) : (
-              <Text style={styles.noDataText}>Belum ada skill yang ditambahkan</Text>
+              <Text style={styles.noDataText}>Belum ada keahlian yang ditambahkan</Text>
             )}
           </View>
         </View>
 
-        {/* Services Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Services</Text>
+          <Text style={styles.sectionTitle}>Layanan</Text>
           {servicesLoading ? (
             <View style={styles.servicesLoadingContainer}>
-              <ActivityIndicator size="small" color="#2563EB" />
+              <ActivityIndicator size="small" color={COLORS.primary} />
               <Text style={styles.loadingText}>Memuat layanan...</Text>
             </View>
           ) : servicesError ? (
             <View style={styles.servicesErrorContainer}>
-              <Text style={styles.errorText}>Gagal memuat layanan: {servicesError.message}</Text>
-              <TouchableOpacity style={styles.retryButton} onPress={() => refetchServices()}>
+              <Text style={styles.errorText}>Gagal memuat layanan</Text>
+              <TouchableOpacity 
+                style={styles.retryButton} 
+                onPress={() => refetchServices()}
+              >
                 <Text style={styles.retryButtonText}>Coba Lagi</Text>
               </TouchableOpacity>
             </View>
@@ -235,9 +258,9 @@ export default function FreelancerDetails() {
             userImage: freelancer.profileImage,
             chatId: `freelancer_${freelancer._id}`
           })} 
-          style={[styles.hireButton, { backgroundColor: "#2563EB" }]}
+          style={styles.chatButton}
         >
-          <Text style={styles.hireButtonText}>Chat</Text>
+          <Text style={styles.chatButtonText}>Mulai Chat</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -247,7 +270,7 @@ export default function FreelancerDetails() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.background,
   },
   header: {
     flexDirection: "row",
@@ -255,50 +278,77 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
   },
   backButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: COLORS.inputBackground,
     alignItems: "center",
     justifyContent: "center",
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#111827",
+    color: COLORS.black,
   },
   profile: {
     alignItems: "center",
     paddingVertical: 24,
+    backgroundColor: COLORS.background,
   },
   profileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     marginBottom: 16,
   },
   name: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#111827",
+    color: COLORS.black,
     marginBottom: 4,
   },
   role: {
     fontSize: 16,
-    color: "#6B7280",
+    color: COLORS.gray,
     marginBottom: 12,
   },
   locationContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 24,
   },
   location: {
     fontSize: 14,
-    color: "#6B7280",
+    color: COLORS.gray,
     marginLeft: 4,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    paddingHorizontal: 20,
+  },
+  statsCard: {
+    alignItems: 'center',
+    backgroundColor: `${COLORS.primary}10`,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    minWidth: 100,
+  },
+  statsValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.primary,
+    marginBottom: 4,
+  },
+  statsLabel: {
+    fontSize: 12,
+    color: COLORS.gray,
   },
   section: {
     paddingHorizontal: 20,
@@ -307,16 +357,16 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#111827",
+    color: COLORS.black,
     marginBottom: 12,
   },
   about: {
     fontSize: 15,
     lineHeight: 22,
-    color: "#4B5563",
+    color: COLORS.darkGray,
   },
   contactInfo: {
-    backgroundColor: "#F9FAFB",
+    backgroundColor: COLORS.inputBackground,
     borderRadius: 12,
     padding: 16,
   },
@@ -327,7 +377,7 @@ const styles = StyleSheet.create({
   },
   contactText: {
     fontSize: 14,
-    color: "#4B5563",
+    color: COLORS.darkGray,
     marginLeft: 8,
   },
   skillsContainer: {
@@ -336,7 +386,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   skillBadge: {
-    backgroundColor: "#EFF6FF",
+    backgroundColor: `${COLORS.primary}15`,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
@@ -345,19 +395,20 @@ const styles = StyleSheet.create({
   },
   skillText: {
     fontSize: 14,
-    color: "#2563EB",
+    color: COLORS.primary,
   },
-  hireButton: {
+  chatButton: {
     marginHorizontal: 20,
     marginBottom: 32,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: "center",
+    backgroundColor: COLORS.primary,
   },
-  hireButtonText: {
+  chatButtonText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#FFFFFF",
+    color: COLORS.background,
   },
   loadingContainer: {
     justifyContent: "center",
@@ -366,7 +417,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: "#6B7280",
+    color: COLORS.gray,
   },
   errorContainer: {
     justifyContent: "center",
@@ -380,7 +431,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   retryButton: {
-    backgroundColor: "#2563EB",
+    backgroundColor: COLORS.primary,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
@@ -388,15 +439,14 @@ const styles = StyleSheet.create({
   retryButtonText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#FFFFFF",
+    color: COLORS.background,
   },
   noDataText: {
     fontSize: 14,
-    color: "#6B7280",
+    color: COLORS.gray,
     textAlign: "center",
     marginTop: 8,
   },
-  // Services styles
   servicesContainer: {
     paddingRight: 20,
     paddingBottom: 8,
@@ -411,15 +461,17 @@ const styles = StyleSheet.create({
   },
   serviceCard: {
     width: 280,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: COLORS.background,
     borderRadius: 12,
     marginRight: 12,
-    shadowColor: "#000",
+    shadowColor: COLORS.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2,
     overflow: "hidden",
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   serviceImage: {
     width: "100%",
@@ -432,18 +484,18 @@ const styles = StyleSheet.create({
   serviceTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#111827",
+    color: COLORS.black,
     marginBottom: 8,
   },
   serviceDescription: {
     fontSize: 14,
-    color: "#6B7280",
+    color: COLORS.gray,
     marginBottom: 8,
   },
   servicePrice: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#2563EB",
+    color: COLORS.primary,
     marginBottom: 8,
   },
   serviceStats: {
@@ -457,11 +509,11 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: 14,
-    color: "#4B5563",
+    color: COLORS.gray,
     marginLeft: 4,
   },
   reviewsText: {
     fontSize: 14,
-    color: "#6B7280",
+    color: COLORS.gray,
   },
 });

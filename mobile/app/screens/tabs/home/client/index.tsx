@@ -210,7 +210,7 @@ export default function Client() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>{item.title}</Text>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => navigation.navigate("Services")}>
                 <Text style={styles.seeAllButton}>See All</Text>
               </TouchableOpacity>
             </View>
