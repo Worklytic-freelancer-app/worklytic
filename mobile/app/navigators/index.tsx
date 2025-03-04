@@ -25,6 +25,7 @@ import { useEffect, useState } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { SecureStoreUtils } from "@/utils/SecureStore";
 import ReviewPostProject from "@/screens/postProject/reviewPostProject";
+import ProjectDiscussion from "@/screens/projects/projectDetails/projectDiscussion";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -49,7 +50,8 @@ export type RootStackParamList = {
     userId: string;
     userName: string;
     userImage: string;
-    chatId: string;
+    chatId?: string | undefined;
+    initialMessage?: string;
   };
   FreelancerDetails: {
     freelancerId: string;
@@ -71,6 +73,12 @@ export type RootStackParamList = {
     clientId: string;
   };
   Notifications: undefined;
+  ProjectDiscussion: {
+    projectId: string;
+    clientId: string;
+    clientName: string;
+    clientImage: string;
+  };
 };
 
 export default function AppNavigator() {
@@ -121,6 +129,7 @@ export default function AppNavigator() {
       {/* Projects */}
       <Stack.Screen name="ProjectDetails" component={ProjectDetails} />
       <Stack.Screen name="Projects" component={Projects} />
+      <Stack.Screen name="ProjectDiscussion" component={ProjectDiscussion} />
 
       {/* Search */}
       <Stack.Screen name="DirectMessage" component={DirectMessage} />

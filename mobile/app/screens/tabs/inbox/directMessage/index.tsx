@@ -12,13 +12,14 @@ interface RouteParams {
   userName: string;
   userImage: string;
   chatId?: string;
+  initialMessage?: string;
 }
 
 export default function DirectMessage() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const route = useRoute();
-  const { userId, userName, userImage, chatId: routeChatId } = route.params as RouteParams;
+  const { userId, userName, userImage, chatId: routeChatId, initialMessage } = route.params as RouteParams;
   const [message, setMessage] = useState("");
   const [localChatId, setLocalChatId] = useState<string | undefined>(routeChatId);
   const { data: user } = useUser();
@@ -51,6 +52,13 @@ export default function DirectMessage() {
       markAsRead(userId);
     }
   }, [localChatId, userId, markAsRead]);
+
+  // Tambahkan useEffect untuk mengirim pesan otomatis
+  useEffect(() => {
+    if (initialMessage && localChatId && user?._id) {
+      sendMessage(initialMessage, userId);
+    }
+  }, [localChatId, user, userId, initialMessage]);
 
   const handleSend = async () => {
     if (message.trim() && user?._id) {

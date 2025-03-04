@@ -5,7 +5,6 @@ import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import React, { useState, useRef } from "react";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
-import ProjectDiscussion from "./projectDiscussion";
 import { useFetch } from "@/hooks/tanstack/useFetch";
 import { useUser } from "@/hooks/tanstack/useUser";
 import { COLORS } from "@/constant/color";
@@ -37,7 +36,6 @@ export default function ProjectDetails() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const route = useRoute<ProjectDetailsRouteProp>();
-  const [showTerms, setShowTerms] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const { data: user } = useUser();
@@ -457,22 +455,19 @@ export default function ProjectDetails() {
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.applyButton}
-            onPress={() => navigation.navigate('Payment', { projectId: project._id })}
+            onPress={() => {
+              navigation.navigate("ProjectDiscussion", {
+                projectId: project._id,
+                clientId: project.clientId,
+                clientName: client?.fullName || "",
+                clientImage: client?.profileImage || ""
+              });
+            }}
           >
             <Text style={styles.applyButtonText}>Apply Now</Text>
           </TouchableOpacity>
         </View>
       )}
-
-      <ProjectDiscussion
-        isVisible={showTerms}
-        onClose={() => setShowTerms(false)}
-        onAccept={() => {
-          setShowTerms(false);
-          navigation.navigate('Payment', { projectId: project._id });
-        }}
-        projectId={route.params.projectId}
-      />
     </View>
   );
 }

@@ -589,7 +589,7 @@ export default function ChooseFreelancer() {
                 >
                     <ChevronLeft size={24} color="#111827" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Pilih Freelancer</Text>
+                <Text style={styles.headerTitle}>Choose Freelancer</Text>
                 <View style={{ width: 24 }} />
             </View>
             
@@ -597,7 +597,6 @@ export default function ChooseFreelancer() {
                 <View style={styles.projectInfo}>
                     <Text style={styles.projectTitle}>{project.title}</Text>
                     <Text style={styles.projectBudget}>
-                        <DollarSign size={16} color={COLORS.success} /> 
                         {project.budget.toLocaleString('id-ID', { 
                             style: 'currency', 
                             currency: 'IDR',

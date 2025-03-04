@@ -108,6 +108,21 @@ export default function ServiceDetails() {
     }
   };
 
+  // Tambahkan fungsi handleContinue
+  const handleContinue = () => {
+    if (!freelancer || !service) return;
+    
+    const initialMessage = `Halo, saya tertarik dengan layanan Anda "${service.title}" dengan harga Rp${service.price.toLocaleString('id-ID')}. Saya ingin memesan jasa ini.`;
+    
+    navigation.navigate("DirectMessage", {
+      userId: freelancer._id,
+      userName: freelancer.fullName,
+      userImage: freelancer.profileImage,
+      chatId: undefined, // Biarkan undefined agar sistem generate chatId baru
+      initialMessage: initialMessage // Tambahkan initial message
+    });
+  };
+
   const handleScroll = (event: any) => {
     const slideSize = event.nativeEvent.layoutMeasurement.width;
     const offset = event.nativeEvent.contentOffset.x;
@@ -290,9 +305,7 @@ export default function ServiceDetails() {
         </View>
         <TouchableOpacity
           style={styles.hireMeButton}
-          onPress={() => {
-            // Handle hire action
-          }}
+          onPress={handleContinue}
         >
           <Text style={styles.hireMeButtonText}>Continue</Text>
         </TouchableOpacity>

@@ -3,11 +3,13 @@ import { View, Text, Modal, StyleSheet, ScrollView, TouchableOpacity, ActivityIn
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useMutation } from "@/hooks/tanstack/useMutation";
 import { useUser } from "@/hooks/tanstack/useUser";
-import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
-import { RootStackParamList } from "@/navigators";
 
-type ProjectDiscussionRouteProp = RouteProp<RootStackParamList, "ProjectDiscussion">;
+interface ProjectDiscussionProps {
+    isVisible: boolean;
+    onClose: () => void;
+    onAccept: () => void;
+    projectId: string;
+}
 
 interface ProjectFeatureResponse {
     _id: string;
@@ -18,12 +20,10 @@ interface ProjectFeatureResponse {
     updatedAt: string;
 }
 
-export default function ProjectDiscussion() {
+export default function ProjectDiscussion({ isVisible, onClose, onAccept, projectId }: ProjectDiscussionProps) {
     const [canAccept, setCanAccept] = useState(false);
     const scrollViewRef = useRef<ScrollView>(null);
     const insets = useSafeAreaInsets();
-    const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-    const route = useRoute<ProjectDiscussionRouteProp>();
     
     // Gunakan useUser untuk mendapatkan data user
     const { data: userData } = useUser();
@@ -38,8 +38,8 @@ export default function ProjectDiscussion() {
         method: 'POST',
         requiresAuth: true,
         onSuccess: () => {
-            // Navigasi ke halaman workspace
-            navigation.navigate('Workspace');
+            // Panggil onAccept callback untuk navigasi
+            onAccept();
         },
     });
 
@@ -60,15 +60,11 @@ export default function ProjectDiscussion() {
             if (!userData?._id) {
                 throw new Error('User ID tidak ditemukan');
             }
-
-            if (!route.params.projectId) {
-                throw new Error('Project ID tidak ditemukan');
-            }
             
             // Buat project feature baru menggunakan mutation
             await createProjectFeatureMutation.mutateAsync({
-                projectId: route.params.projectId.toString(),
-                freelancerId: userData._id.toString(),
+                projectId: projectId,
+                freelancerId: userData._id,
                 status: 'pending'
             });
             
@@ -78,7 +74,7 @@ export default function ProjectDiscussion() {
             // Cek apakah error adalah conflict (sudah apply)
             if (error instanceof Error && error.message.includes('already applied')) {
                 alert('Kamu sudah melamar untuk proyek ini');
-                navigation.goBack();
+                onClose(); // Tutup modal
                 return;
             }
             
@@ -159,117 +155,125 @@ By accepting these terms, you agree to:
   `;
 
     return (
-        <View style={styles.container}>
-            <View style={[styles.content, { paddingTop: insets.top }]}>
-                <View style={styles.header}>
-                    <View style={styles.pullBar} />
-                </View>
-                <Text style={styles.title}>Terms & Conditions</Text>
+        <Modal animationType="slide" transparent={true} visible={isVisible} onRequestClose={onClose}>
+            <View style={styles.modalContainer}>
+                <View style={[styles.modalContent, { paddingTop: insets.top }]}>
+                    <View style={styles.modalHeader}>
+                        <View style={styles.pullBar} />
+                    </View>
+                    <Text style={styles.modalTitle}>Terms & Conditions</Text>
 
-                <ScrollView ref={scrollViewRef} style={styles.termsScroll} onScroll={handleScroll} scrollEventThrottle={400}>
-                    <Text style={styles.termsText}>{termsAndConditions}</Text>
-                </ScrollView>
+                    <ScrollView ref={scrollViewRef} style={styles.termsScroll} onScroll={handleScroll} scrollEventThrottle={400}>
+                        <Text style={styles.termsText}>{termsAndConditions}</Text>
+                    </ScrollView>
 
-                <View style={[styles.footer, { paddingBottom: insets.bottom }]}>
-                    <View style={styles.buttonContainer}>
-                        <TouchableOpacity 
-                            style={[
-                                styles.button, 
-                                styles.buttonFlex, 
-                                (!canAccept || createProjectFeatureMutation.isPending) && styles.buttonDisabled
-                            ]} 
-                            disabled={!canAccept || createProjectFeatureMutation.isPending} 
-                            onPress={handleAccept}
-                        >
-                            {createProjectFeatureMutation.isPending ? (
-                                <ActivityIndicator size="small" color="#FFFFFF" />
-                            ) : (
-                                <Text style={[styles.buttonText, !canAccept && styles.buttonTextDisabled]}>
-                                    {canAccept ? "Accept & Continue" : "Please read all terms"}
-                                </Text>
-                            )}
-                        </TouchableOpacity>
+                    <View style={[styles.modalFooter, { paddingBottom: insets.bottom }]}>
+                        <View style={styles.buttonContainer}>
+                            <TouchableOpacity 
+                                style={[
+                                    styles.modalButton, 
+                                    styles.buttonFlex, 
+                                    (!canAccept || createProjectFeatureMutation.isPending) && styles.modalButtonDisabled
+                                ]} 
+                                disabled={!canAccept || createProjectFeatureMutation.isPending} 
+                                onPress={handleAccept}
+                            >
+                                {createProjectFeatureMutation.isPending ? (
+                                    <ActivityIndicator size="small" color="#FFFFFF" />
+                                ) : (
+                                    <Text style={[styles.modalButtonText, !canAccept && styles.modalButtonTextDisabled]}>
+                                        {canAccept ? "Accept & Continue" : "Please read all terms"}
+                                    </Text>
+                                )}
+                            </TouchableOpacity>
 
-                        <TouchableOpacity 
-                            style={[styles.button, styles.cancelButton, styles.buttonFlex]} 
-                            onPress={() => navigation.goBack()}
-                            disabled={createProjectFeatureMutation.isPending}
-                        >
-                            <Text style={[styles.buttonText, styles.cancelButtonText]}>Cancel</Text>
-                        </TouchableOpacity>
+                            <TouchableOpacity 
+                                style={[styles.modalButton, styles.cancelButton, styles.buttonFlex]} 
+                                onPress={onClose}
+                                disabled={createProjectFeatureMutation.isPending}
+                            >
+                                <Text style={[styles.modalButtonText, styles.cancelButtonText]}>Cancel</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </View>
             </View>
-        </View>
+        </Modal>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-    },
-    content: {
-        flex: 1,
-        padding: 20,
-    },
-    header: {
-        alignItems: "center",
-        marginBottom: 8,
-    },
-    pullBar: {
-        width: 40,
-        height: 4,
-        backgroundColor: "#e5e7eb",
-        borderRadius: 2,
-        marginBottom: 8,
-    },
-    title: {
-        fontSize: 20,
-        fontWeight: "600",
-        color: "#111827",
-        marginBottom: 16,
-        textAlign: "center",
-    },
-    termsScroll: {
-        flex: 1,
-    },
-    termsText: {
-        fontSize: 14,
-        color: "#4b5563",
-        lineHeight: 20,
-    },
-    footer: {
-        marginTop: 20,
-    },
-    buttonContainer: {
-        flexDirection: 'row',
-        gap: 12,
-    },
-    buttonFlex: {
-        flex: 1,
-    },
-    button: {
-        paddingVertical: 16,
-        borderRadius: 12,
-        alignItems: "center",
-        backgroundColor: "#2563eb",
-    },
-    buttonDisabled: {
-        backgroundColor: "#93c5fd",
-    },
-    buttonText: {
-        color: "#fff",
-        fontSize: 16,
-        fontWeight: "600",
-    },
-    buttonTextDisabled: {
-        color: "#e5e7eb",
-    },
-    cancelButton: {
-        backgroundColor: "#f3f4f6",
-    },
-    cancelButtonText: {
-        color: "#4b5563",
-    },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "flex-end", // Changed from 'center' to 'flex-end'
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    width: "100%",
+    height: "100%",
+    padding: 20,
+    paddingTop: 0, // Remove default padding top since we're using insets
+  },
+  modalFooter: {
+    marginTop: 20,
+    paddingBottom: 0,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  buttonFlex: {
+    flex: 1,
+  },
+  modalHeader: {
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  pullBar: {
+    width: 40,
+    height: 4,
+    backgroundColor: "#e5e7eb",
+    borderRadius: 2,
+    marginBottom: 8,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#111827",
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  termsScroll: {
+    flex: 1, // Changed to use flex
+  },
+  termsText: {
+    fontSize: 14,
+    color: "#4b5563",
+    lineHeight: 20,
+  },
+  modalButton: {
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    backgroundColor: "#2563eb",
+  },
+  modalButtonDisabled: {
+    backgroundColor: "#93c5fd",
+  },
+  modalButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  modalButtonTextDisabled: {
+    color: "#e5e7eb",
+  },
+  cancelButton: {
+    backgroundColor: "#f3f4f6",
+  },
+  cancelButtonText: {
+    color: "#4b5563",
+  },
 });
