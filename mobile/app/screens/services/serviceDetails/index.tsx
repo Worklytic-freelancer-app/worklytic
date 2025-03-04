@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Dimensions, Share, Animated } from "react-native";
 import React, { useRef, useState } from "react";
 import { COLORS } from "@/constant/color";
+import { useUser } from "@/hooks/tanstack/useUser";
 
 type ServiceDetailScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 type ServiceDetailScreenRouteProp = RouteProp<RootStackParamList, "ServiceDetails">;
@@ -108,18 +109,27 @@ export default function ServiceDetails() {
     }
   };
 
-  // Tambahkan fungsi handleContinue
+  // Tambahkan fungsi untuk membuat chatId yang konsisten
+  const generateChatId = (userId1: string, userId2: string) => {
+    // Urutkan ID agar format selalu konsisten
+    return [userId1, userId2].sort().join('_');
+  };
+
+  // Update fungsi handleContinue
   const handleContinue = () => {
-    if (!freelancer || !service) return;
+    if (!freelancer || !service || !user?._id) return;
     
     const initialMessage = `Halo, saya tertarik dengan layanan Anda "${service.title}" dengan harga Rp${service.price.toLocaleString('id-ID')}. Saya ingin memesan jasa ini.`;
+    
+    // Generate chatId yang konsisten
+    const chatId = generateChatId(user._id, freelancer._id);
     
     navigation.navigate("DirectMessage", {
       userId: freelancer._id,
       userName: freelancer.fullName,
       userImage: freelancer.profileImage,
-      chatId: undefined, // Biarkan undefined agar sistem generate chatId baru
-      initialMessage: initialMessage // Tambahkan initial message
+      chatId: chatId,
+      initialMessage: initialMessage
     });
   };
 
@@ -129,6 +139,8 @@ export default function ServiceDetails() {
     const activeIndex = Math.round(offset / slideSize);
     setActiveSlide(activeIndex);
   };
+
+  const { data: user } = useUser();
 
   if (loading) {
     return (
@@ -244,12 +256,16 @@ export default function ServiceDetails() {
               </View>
               <TouchableOpacity
                 style={styles.chatButton}
-                onPress={() => navigation.navigate("DirectMessage", {
-                  userId: freelancer._id,
-                  userName: freelancer.fullName,
-                  userImage: freelancer.profileImage,
-                  chatId: `freelancer_${freelancer._id}`
-                })} 
+                onPress={() => {
+                  if (!user?._id) return;
+                  const chatId = generateChatId(user._id, freelancer._id);
+                  navigation.navigate("DirectMessage", {
+                    userId: freelancer._id,
+                    userName: freelancer.fullName,
+                    userImage: freelancer.profileImage,
+                    chatId: chatId
+                  });
+                }} 
               >
                 <MessageCircle size={20} color="#ffffff" />
               </TouchableOpacity>
