@@ -143,7 +143,7 @@ export default function Projects() {
           {item.description}
         </Text>
 
-        {item.assignedFreelancer.length > 0 && (
+        {item.assignedFreelancer?.length > 0 && (
           <View style={styles.assignedFreelancerContainer}>
             <View style={styles.freelancerImages}>
               {item.assignedFreelancer.map((freelancer, index) => (

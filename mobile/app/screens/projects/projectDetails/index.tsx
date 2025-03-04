@@ -250,7 +250,7 @@ export default function ProjectDetails() {
           >
             <ChevronLeft size={24} color={COLORS.black} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Detail Proyek</Text>
+          <Text style={styles.headerTitle}>Details Project</Text>
           <TouchableOpacity 
             style={styles.shareButton}
             onPress={handleShare}
@@ -443,11 +443,16 @@ export default function ProjectDetails() {
           <View style={{ height: 100 }} />
         </View>
       </ScrollView>
-
+            
       {/* Tampilkan footer dengan tombol aksi hanya jika user bukan client atau pemilik project */}
       {!isClientOrOwner && (
         <View style={[styles.footer, { paddingBottom: insets.bottom > 0 ? insets.bottom : 16 }]}>
-          <TouchableOpacity style={styles.chatButton}>
+          <TouchableOpacity style={styles.chatButton} onPress={() => navigation.navigate('DirectMessage', {
+            userId: project.clientId,
+            userName: client?.fullName,
+            userImage: client?.profileImage,
+            chatId: `project_${project._id}`
+          })}>
             <MessageCircle size={24} color={COLORS.primary} />
           </TouchableOpacity>
           <TouchableOpacity 
