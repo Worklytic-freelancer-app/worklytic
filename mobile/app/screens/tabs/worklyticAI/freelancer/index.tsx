@@ -4,6 +4,7 @@ import { Zap, Brain, Target, Briefcase, ChevronRight } from "lucide-react-native
 import { useState, useEffect } from "react";
 import { SecureStoreUtils } from "../../../../utils/SecureStore";
 import { baseUrl } from "../../../../constant/baseUrl";
+import { COLORS } from "../../../../constant/color";
 
 interface AIRecommendation {
   projectId: string;
@@ -62,21 +63,26 @@ export default function WorklyticAIFreelancer   () {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>AI Match Freelancer</Text>
+        <Text style={styles.headerTitle}>AI Match</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <View style={[styles.statIcon, { backgroundColor: "#e0f2fe" }]}>
-              <Target size={24} color="#0284c7" />
+            <View style={[styles.statIcon, { backgroundColor: "rgba(8, 145, 178, 0.08)" }]}>
+              <Target size={24} color={COLORS.primary} />
             </View>
-            <Text style={styles.statValue}>{recommendations.map((item) => item.matchPercentage).reduce((a, b) => a + b, 0) / recommendations.length}%</Text>
+            <Text style={styles.statValue}>
+              {recommendations.length > 0 
+                ? `${Math.round(recommendations.map((item) => item.matchPercentage).reduce((a, b) => a + b, 0) / recommendations.length)}%`
+                : '0%'
+              }
+            </Text>
             <Text style={styles.statLabel}>Match Rate</Text>
           </View>
           <View style={styles.statCard}>
-            <View style={[styles.statIcon, { backgroundColor: "#fef3c7" }]}>
-              <Briefcase size={24} color="#d97706" />
+            <View style={[styles.statIcon, { backgroundColor: "rgba(249, 115, 22, 0.08)" }]}>
+              <Briefcase size={24} color={COLORS.secondary} />
             </View>
             <Text style={styles.statValue}>{recommendations.length}</Text>
             <Text style={styles.statLabel}>Matches</Text>
@@ -139,7 +145,7 @@ export default function WorklyticAIFreelancer   () {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.background,
   },
   header: {
     flexDirection: "row",
@@ -147,11 +153,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#111827",
+    color: COLORS.black,
   },
   scanButton: {
     flexDirection: "row",
@@ -177,15 +185,17 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.cardBackground,
     padding: 16,
     borderRadius: 16,
     alignItems: "center",
-    shadowColor: "#000",
+    shadowColor: COLORS.black,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.08,
     shadowRadius: 8,
-    elevation: 2,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   statIcon: {
     width: 48,
@@ -198,12 +208,13 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#111827",
+    color: COLORS.black,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 14,
-    color: "#6b7280",
+    color: COLORS.gray,
+    fontWeight: "500",
   },
   section: {
     padding: 20,
@@ -211,20 +222,22 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#111827",
+    color: COLORS.black,
     marginBottom: 16,
   },
   matchCard: {
     flexDirection: "row",
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.cardBackground,
     borderRadius: 16,
     marginBottom: 16,
-    shadowColor: "#000",
+    shadowColor: COLORS.black,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.08,
     shadowRadius: 8,
-    elevation: 2,
+    elevation: 3,
     overflow: "hidden",
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   projectImage: {
     width: 100,
@@ -244,13 +257,13 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontWeight: "600",
-    color: "#111827",
+    color: COLORS.black,
     marginRight: 8,
   },
   matchBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fef3c7",
+    backgroundColor: "rgba(249, 115, 22, 0.08)",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -258,18 +271,19 @@ const styles = StyleSheet.create({
   },
   matchPercentage: {
     fontSize: 12,
-    fontWeight: "500",
-    color: "#d97706",
+    fontWeight: "600",
+    color: COLORS.secondary,
   },
   matchCategory: {
     fontSize: 14,
-    color: "#6b7280",
+    color: COLORS.gray,
     marginBottom: 4,
+    fontWeight: "500",
   },
   matchBudget: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#059669",
+    fontWeight: "700",
+    color: COLORS.success,
     marginBottom: 8,
   },
   skillsContainer: {
@@ -278,14 +292,15 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   skillBadge: {
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "rgba(8, 145, 178, 0.08)",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
   },
   skillText: {
     fontSize: 12,
-    color: "#4b5563",
+    color: COLORS.primary,
+    fontWeight: "500",
   },
   aiFeatures: {
     padding: 20,
@@ -294,20 +309,22 @@ const styles = StyleSheet.create({
   },
   featureCard: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.cardBackground,
     padding: 16,
     borderRadius: 16,
-    shadowColor: "#000",
+    shadowColor: COLORS.black,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.08,
     shadowRadius: 8,
-    elevation: 2,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   featureIcon: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: "#eff6ff",
+    backgroundColor: "rgba(8, 145, 178, 0.08)",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 12,
@@ -315,12 +332,13 @@ const styles = StyleSheet.create({
   featureTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#111827",
+    color: COLORS.black,
     marginBottom: 4,
   },
   featureDescription: {
     fontSize: 13,
-    color: "#6b7280",
+    color: COLORS.darkGray,
     lineHeight: 18,
+    fontWeight: "500",
   },
 });
