@@ -1,11 +1,15 @@
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowLeft, Star, Clock, MessageCircle } from "lucide-react-native";
+import {  Star, Clock, MessageCircle, ChevronLeft, Share as ShareIcon, ImageIcon } from "lucide-react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 import { useMemo } from "react";
 import { useFetch } from "@/hooks/tanstack/useFetch";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Dimensions, Share, Animated } from "react-native";
+import React, { useRef, useState } from "react";
+import { COLORS } from "@/constant/color";
 
 type ServiceDetailScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 type ServiceDetailScreenRouteProp = RouteProp<RootStackParamList, "ServiceDetails">;
@@ -41,6 +45,9 @@ export default function ServiceDetails() {
   const navigation = useNavigation<ServiceDetailScreenNavigationProp>();
   const route = useRoute<ServiceDetailScreenRouteProp>();
   const { serviceId } = route.params;
+  const insets = useSafeAreaInsets();
+  const [activeSlide, setActiveSlide] = useState(0);
+  const scrollY = useRef(new Animated.Value(0)).current;
   
   // Fetch service details
   const { 
@@ -86,6 +93,28 @@ export default function ServiceDetails() {
     }
   };
 
+  // Tambahkan fungsi handleShare
+  const handleShare = async () => {
+    if (!service) return;
+    
+    try {
+      await Share.share({
+        title: service.title,
+        message: `Lihat layanan ini: ${service.title}\n\nHarga: Rp${service.price.toLocaleString('id-ID')}\nKategori: ${service.category}\n\nDeskripsi: ${service.description.substring(0, 100)}...`,
+        url: `https://worklytic.com/services/${service._id}`,
+      });
+    } catch (error) {
+      console.error("Error sharing service:", error);
+    }
+  };
+
+  const handleScroll = (event: any) => {
+    const slideSize = event.nativeEvent.layoutMeasurement.width;
+    const offset = event.nativeEvent.contentOffset.x;
+    const activeIndex = Math.round(offset / slideSize);
+    setActiveSlide(activeIndex);
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
@@ -110,20 +139,77 @@ export default function ServiceDetails() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <ArrowLeft size={24} color="#374151" />
+    <View style={styles.container}>
+      {/* Header Baru */}
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={styles.headerContent}>
+          <TouchableOpacity 
+            style={styles.backButton} 
+            onPress={() => navigation.goBack()}
+          >
+            <ChevronLeft size={24} color={COLORS.black} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Service Details</Text>
-          <View style={{ width: 24 }} />
+          <Text style={styles.headerTitle}>Details Service</Text>
+          <TouchableOpacity 
+            style={styles.shareButton}
+            onPress={handleShare}
+          >
+            <ShareIcon size={22} color={COLORS.black} />
+          </TouchableOpacity>
         </View>
+      </View>
 
-        <Image 
-          source={{ uri: service.images[0] || "https://via.placeholder.com/400" }} 
-          style={styles.coverImage} 
-        />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
+      >
+        {/* Image Carousel Baru */}
+        <View style={styles.carouselContainer}>
+          <ScrollView
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
+          >
+            {service.images && service.images.length > 0 ? (
+              service.images.map((img, index) => (
+                <Image
+                  key={index}
+                  source={{ uri: img }}
+                  style={styles.carouselImage}
+                  resizeMode="cover"
+                />
+              ))
+            ) : (
+              <View style={styles.carouselImage}>
+                <View style={styles.noImageContainer}>
+                  <ImageIcon size={60} color={COLORS.lightGray} />
+                  <Text style={styles.noImageText}>Tidak ada gambar</Text>
+                </View>
+              </View>
+            )}
+          </ScrollView>
+          
+          {/* Pagination dots */}
+          {service.images && service.images.length > 1 && (
+            <View style={styles.paginationContainer}>
+              {service.images.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.paginationDot,
+                    index === activeSlide && styles.paginationDotActive,
+                  ]}
+                />
+              ))}
+            </View>
+          )}
+        </View>
 
         <View style={styles.content}>
           {freelancer && (
@@ -211,26 +297,31 @@ export default function ServiceDetails() {
           <Text style={styles.hireMeButtonText}>Continue</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.background,
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    backgroundColor: COLORS.background,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  headerContent: {
+    height: 56,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#111827",
+    color: COLORS.black,
   },
   coverImage: {
     width: "100%",
@@ -387,15 +478,61 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   backButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#d1d5db",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  shareButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  carouselContainer: {
+    width: Dimensions.get("window").width,
+    height: 300,
+    position: "relative",
+  },
+  carouselImage: {
+    width: Dimensions.get("window").width,
+    height: 300,
+  },
+  paginationContainer: {
+    position: "absolute",
+    bottom: 16,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  paginationDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "rgba(255, 255, 255, 0.5)",
+    marginHorizontal: 4,
+  },
+  paginationDotActive: {
+    backgroundColor: COLORS.primary,
+  },
+  noImageContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORS.border,
+  },
+  noImageText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: COLORS.gray,
   },
   backButtonText: {
-    color: "#4b5563",
     fontSize: 16,
     fontWeight: "600",
+    color: COLORS.black,
   },
 });
