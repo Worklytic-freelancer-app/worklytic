@@ -6,6 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import React, { useState } from "react";
 import { useMutation } from "@/hooks/tanstack/useMutation";
 import { useUser } from "@/hooks/tanstack/useUser";
+import { COLORS } from "@/constant/color";
 
 // Definisikan tipe untuk data service
 interface ServiceData {
@@ -23,8 +24,8 @@ interface ServiceData {
     freelancerId: string;
 }
 
-// Definisikan tipe untuk request payload
-interface CreateServicePayload {
+// Ubah tipe untuk request payload agar memenuhi Record<string, unknown>
+type CreateServicePayload = Record<string, unknown> & {
     title: string;
     description: string;
     price: number;
@@ -171,32 +172,39 @@ export default function AddService() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <ArrowLeft size={24} color="#374151" />
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <ArrowLeft size={24} color={COLORS.primary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Tambah Layanan Baru</Text>
-        <View style={{ width: 24 }} />
+        <View style={{ width: 40 }} />
       </View>
 
       <ScrollView style={styles.container}>
-        <View style={styles.imageSection}>
-          <Text style={styles.sectionTitle}>Gambar Layanan</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imageList}>
-            {images.map((uri, index) => (
-              <View key={index} style={styles.imageContainer}>
-                <Image source={{ uri }} style={styles.image} />
-                <TouchableOpacity style={styles.removeImage} onPress={() => removeImage(index)}>
-                  <X size={16} color="#fff" />
-                </TouchableOpacity>
-              </View>
-            ))}
-            <TouchableOpacity style={styles.addImageButton} onPress={handleImagePick}>
-              <Plus size={24} color="#2563eb" />
-            </TouchableOpacity>
-          </ScrollView>
-        </View>
+        <View style={styles.card}>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Gambar Layanan <Text style={styles.required}>*</Text></Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imageList}>
+              {images.map((uri, index) => (
+                <View key={index} style={styles.imageWrapper}>
+                  <Image source={{ uri }} style={styles.imagePreview} />
+                  <TouchableOpacity 
+                    style={styles.removeImageButton}
+                    onPress={() => removeImage(index)}
+                  >
+                    <X size={16} color={COLORS.background} />
+                  </TouchableOpacity>
+                </View>
+              ))}
+              <TouchableOpacity style={styles.uploadButton} onPress={handleImagePick}>
+                <Plus size={24} color={COLORS.primary} />
+                <Text style={styles.uploadText}>Upload</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
 
-        <View style={styles.formSection}>
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Judul Layanan</Text>
             <TextInput
@@ -283,7 +291,7 @@ export default function AddService() {
           disabled={isLoading}
         >
           {isLoading ? (
-            <ActivityIndicator color="#ffffff" size="small" />
+            <ActivityIndicator color={COLORS.background} size="small" />
           ) : (
             <Text style={styles.submitButtonText}>Buat Layanan</Text>
           )}
@@ -296,7 +304,7 @@ export default function AddService() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.background,
   },
   header: {
     flexDirection: "row",
@@ -305,96 +313,131 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#f3f4f6",
+    borderBottomColor: COLORS.border,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#111827",
+    color: COLORS.black,
   },
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.background,
   },
-  imageSection: {
+  card: {
+    backgroundColor: COLORS.background,
+    borderRadius: 16,
     padding: 20,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#111827",
-    marginBottom: 12,
-  },
-  imageList: {
-    flexDirection: "row",
-  },
-  imageContainer: {
-    marginRight: 12,
-    position: "relative",
-  },
-  image: {
-    width: 120,
-    height: 120,
-    borderRadius: 8,
-  },
-  removeImage: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    borderRadius: 12,
-    padding: 4,
-  },
-  addImageButton: {
-    width: 120,
-    height: 120,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: "#2563eb",
-    borderStyle: "dashed",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  formSection: {
-    padding: 20,
+    margin: 16,
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 15,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   inputGroup: {
     marginBottom: 20,
   },
   label: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "500",
-    color: "#374151",
+    color: COLORS.darkGray,
     marginBottom: 8,
   },
-  input: {
+  required: {
+    color: COLORS.error,
+  },
+  imageList: {
+    flexDirection: "row",
+    marginTop: 8,
+  },
+  imageWrapper: {
+    width: 100,
+    height: 100,
+    borderRadius: 12,
+    marginRight: 12,
+    position: "relative",
+    overflow: "hidden",
     borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: 8,
-    padding: 12,
+    borderColor: COLORS.border,
+  },
+  imagePreview: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 12,
+  },
+  removeImageButton: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    backgroundColor: "rgba(239, 68, 68, 0.9)",
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  uploadButton: {
+    width: 100,
+    height: 100,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+    borderStyle: "dashed",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: `${COLORS.primary}05`,
+  },
+  uploadText: {
+    fontSize: 14,
+    color: COLORS.primary,
+    marginTop: 8,
+    fontWeight: "500",
+  },
+  input: {
+    backgroundColor: COLORS.inputBackground,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    padding: 14,
     fontSize: 16,
-    color: "#111827",
+    color: COLORS.black,
   },
   textArea: {
-    height: 100,
+    height: 120,
     textAlignVertical: "top",
   },
   footer: {
     padding: 20,
     borderTopWidth: 1,
-    borderTopColor: "#f3f4f6",
+    borderTopColor: COLORS.border,
+    backgroundColor: COLORS.background,
   },
   submitButton: {
-    backgroundColor: "#2563eb",
+    backgroundColor: COLORS.primary,
     paddingVertical: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     alignItems: "center",
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
   },
   disabledButton: {
-    backgroundColor: "#93c5fd",
+    backgroundColor: COLORS.disabled,
   },
   submitButtonText: {
-    color: "#ffffff",
+    color: COLORS.background,
     fontSize: 16,
     fontWeight: "600",
   },
