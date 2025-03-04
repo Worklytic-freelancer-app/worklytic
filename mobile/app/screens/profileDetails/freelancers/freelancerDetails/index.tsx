@@ -5,6 +5,7 @@ import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
 import { useFetch } from "@/hooks/tanstack/useFetch";
+import { useUser } from "@/hooks/tanstack/useUser";
 import { COLORS } from "@/constant/color";
 
 // Updated Service interface to match API response
@@ -46,6 +47,12 @@ interface User {
     totalReviews: number;
     createdAt: string;
 }
+
+// Tambahkan fungsi generateChatId
+const generateChatId = (userId1: string, userId2: string) => {
+  // Urutkan ID agar format selalu konsisten
+  return [userId1, userId2].sort().join('_');
+};
 
 export default function FreelancerDetails() {
   const navigation = useNavigation<FreelancerDetailsNavigationProp>();
@@ -91,6 +98,23 @@ export default function FreelancerDetails() {
   
   const error = fetchError ? (fetchError instanceof Error ? fetchError.message : 'An error occurred') : null;
   
+  const { data: user } = useUser();
+
+  // Modifikasi handler untuk tombol chat
+  const handleStartChat = () => {
+    if (!user?._id || !freelancer) return;
+
+    // Generate chatId yang konsisten
+    const chatId = generateChatId(user._id, freelancer._id);
+
+    navigation.navigate("DirectMessage", {
+      userId: freelancer._id,
+      userName: freelancer.fullName,
+      userImage: freelancer.profileImage,
+      chatId: chatId // Gunakan chatId yang sudah digenerate
+    });
+  };
+
   if (loading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }, styles.loadingContainer]}>
@@ -252,12 +276,7 @@ export default function FreelancerDetails() {
         </View>
 
         <TouchableOpacity 
-          onPress={() => navigation.navigate("DirectMessage", {
-            userId: freelancer._id,
-            userName: freelancer.fullName,
-            userImage: freelancer.profileImage,
-            chatId: `freelancer_${freelancer._id}`
-          })} 
+          onPress={handleStartChat}
           style={styles.chatButton}
         >
           <Text style={styles.chatButtonText}>Mulai Chat</Text>
