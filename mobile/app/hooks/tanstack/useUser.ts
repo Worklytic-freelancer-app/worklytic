@@ -4,37 +4,41 @@ import { SecureStoreUtils } from '@/utils/SecureStore';
 
 export interface Service {
     _id: string;
+    freelancerId?: string;
     title: string;
     description: string;
     price: number;
-    images: string[];
     deliveryTime?: string;
     category?: string;
+    images: string[];
     rating?: number;
     reviews?: number;
     includes?: string[];
     requirements?: string[];
-    freelancerId?: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
 interface User {
     _id: string;
     fullName: string;
     email: string;
+    password: string;
     role: string;
     profileImage: string;
     location: string;
+    createdAt: string;
+    updatedAt: string;
     balance: number;
     about: string;
     phone: string;
     skills: string[];
     totalProjects: number;
-    successRate: number;
+    companyName: string;
+    industry: string;
     website: string;
     rating: number;
     totalReviews: number;
-    companyName?: string;
-    industry?: string;
     services: Service[];
 }
 

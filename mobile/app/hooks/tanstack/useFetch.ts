@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { baseUrl } from '@/constant/baseUrl';
 import { SecureStoreUtils } from '@/utils/SecureStore';
+import { useNavigation } from '@react-navigation/native';
 
 // Tipe untuk parameter fetch
 interface FetchOptions {
@@ -21,6 +22,8 @@ export const useFetch = <T>({
     refetchInterval = false,
     staleTime = 5 * 60 * 1000 // Default 5 menit
 }: FetchOptions) => {
+    const navigation = useNavigation();
+    
     // Buat query key dari endpoint dan query params
     const queryKey = [
         endpoint,
@@ -48,6 +51,12 @@ export const useFetch = <T>({
                 if (requiresAuth) {
                     const token = await SecureStoreUtils.getToken();
                     if (!token) {
+                        // Redirect ke halaman login jika tidak ada token
+                        await SecureStoreUtils.clearAuthData();
+                        navigation.reset({
+                            index: 0,
+                            routes: [{ name: 'SignIn' as never }],
+                        });
                         throw new Error('Sesi login tidak valid. Silakan login kembali.');
                     }
                     headers['Authorization'] = `Bearer ${token}`;
@@ -55,6 +64,17 @@ export const useFetch = <T>({
                 
                 // Lakukan fetch
                 const response = await fetch(url, { headers });
+                
+                // Handle unauthorized response (401)
+                if (response.status === 401) {
+                    await SecureStoreUtils.clearAuthData();
+                    navigation.reset({
+                        index: 0,
+                        routes: [{ name: 'SignIn' as never }],
+                    });
+                    throw new Error('Sesi login telah berakhir. Silakan login kembali.');
+                }
+                
                 const result = await response.json();
                 
                 if (!result.success) {

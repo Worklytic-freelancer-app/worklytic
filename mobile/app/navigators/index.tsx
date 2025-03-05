@@ -22,10 +22,9 @@ import ChooseFreelancer from "@/screens/tabs/workspace/chooseFreelancer";
 import Payment from "@/screens/payment";
 import Notifications from "@/screens/notifications";
 import ProjectTerms from "@/screens/projects/projectDetails/projectTerms";
-import { useEffect, useState } from "react";
 import { View, ActivityIndicator } from "react-native";
-import { SecureStoreUtils } from "@/utils/SecureStore";
 import ReviewPostProject from "@/screens/postProject/reviewPostProject";
+import { useAuth } from "@/hooks/tanstack/useAuth";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -79,25 +78,10 @@ export type RootStackParamList = {
 };
 
 export default function AppNavigator() {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    // Memeriksa token saat aplikasi dimulai
-    checkAuthStatus();
-  }, []);
-
-  const checkAuthStatus = async () => {
-    try {
-      const token = await SecureStoreUtils.getToken();
-      setIsAuthenticated(!!token);
-    } catch (error) {
-      console.error("Error checking auth status:", error);
-      setIsAuthenticated(false);
-    }
-  };
+  const { isAuthenticated, isLoading } = useAuth();
 
   // Menampilkan loading screen saat memeriksa status autentikasi
-  if (isAuthenticated === null) {
+  if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#fff" }}>
         <ActivityIndicator size="large" color="#2563eb" />
