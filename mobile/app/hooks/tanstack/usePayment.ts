@@ -69,7 +69,11 @@ export const usePayment = () => {
 
     // Mutation untuk memeriksa status pembayaran
     const checkPaymentStatusMutation = useMutation<
-        { status: string; message: string }, 
+        { 
+            status: string; 
+            message: string;
+            paymentUrl?: string; 
+        }, 
         Error, 
         CheckPaymentStatusRequest
     >({
@@ -100,9 +104,14 @@ export const usePayment = () => {
                     throw new Error(result.message || 'Failed to check payment status');
                 }
                 
+                // Gunakan properti yang ada atau undefined
+                const paymentUrl = result.data.paymentUrl;
+                const redirectUrl = result.data.redirect_url;
+                
                 return {
                     status: result.data.status,
-                    message: result.message
+                    message: result.message,
+                    paymentUrl: paymentUrl || redirectUrl
                 };
             } catch (error) {
                 console.error('Check payment status error:', error);
@@ -171,14 +180,22 @@ export const usePayment = () => {
                 }
                 
                 try {
+                    // Tambahkan timeout dan log URL untuk debugging
+                    console.log(`Checking payment status for orderId: ${orderId}`);
+                    console.log(`Request URL: ${baseUrl}/api/payments/check-status`);
+                    
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 detik timeout
+                    
                     const response = await fetch(`${baseUrl}/api/payments/check-status`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${token}`
                         },
-                        body: JSON.stringify({ orderId })
-                    });
+                        body: JSON.stringify({ orderId }),
+                        signal: controller.signal
+                    }).finally(() => clearTimeout(timeoutId));
                     
                     if (!response.ok) {
                         // Jika status 404, kembalikan status pending daripada error
@@ -200,6 +217,15 @@ export const usePayment = () => {
                 } catch (error) {
                     // Tangani error dengan lebih baik
                     console.error('Error checking payment status:', error);
+                    
+                    // Handle network errors specifically
+                    if (error instanceof TypeError && error.message.includes('Network request failed')) {
+                        console.log('Network error detected, returning pending status');
+                        return { 
+                            status: 'pending', 
+                            message: 'Cannot check payment status due to network issue. Please check your connection.' 
+                        };
+                    }
                     
                     // Jika error terkait "Transaction doesn't exist", kembalikan status pending
                     if (error instanceof Error && 

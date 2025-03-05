@@ -39,6 +39,7 @@ export default function WorklyticAIClient() {
 
       const token = await SecureStoreUtils.getToken();
       
+      console.log('🔍 Fetching AI recommendations...');
       const response = await fetch(`${baseUrl}/api/services/aiRecommendations`, {
         headers: {
           'user': JSON.stringify(userData),
@@ -46,11 +47,18 @@ export default function WorklyticAIClient() {
         }
       });
       const data = await response.json();
-      console.log(data, "data");
+      console.log('📊 Recommendations response:', data);
       
-      setRecommendations(data.data);
+      if (data && data.data) {
+        console.log(`✅ Got ${data.data.length} recommendations`);
+        setRecommendations(data.data);
+      } else {
+        console.log('❌ No recommendations data found:', data);
+        setRecommendations([]);
+      }
     } catch (error) {
-      console.error('Error fetching recommendations:', error);
+      console.error('❌ Error fetching recommendations:', error);
+      setRecommendations([]); // Set empty array to avoid null/undefined errors
     } finally {
       setLoading(false);
     }

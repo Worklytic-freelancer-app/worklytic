@@ -1,7 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { baseUrl } from '@/constant/baseUrl';
 import { SecureStoreUtils } from '@/utils/SecureStore';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { handleAuthError } from '@/utils/handleAuthError';
+import { RootStackParamList } from '@/navigators';
 
 // Tipe untuk parameter fetch
 interface FetchOptions {
@@ -22,7 +24,7 @@ export const useFetch = <T>({
     refetchInterval = false,
     staleTime = 5 * 60 * 1000 // Default 5 menit
 }: FetchOptions) => {
-    const navigation = useNavigation();
+    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     
     // Buat query key dari endpoint dan query params
     const queryKey = [
@@ -51,12 +53,8 @@ export const useFetch = <T>({
                 if (requiresAuth) {
                     const token = await SecureStoreUtils.getToken();
                     if (!token) {
-                        // Redirect ke halaman login jika tidak ada token
-                        await SecureStoreUtils.clearAuthData();
-                        navigation.reset({
-                            index: 0,
-                            routes: [{ name: 'SignIn' as never }],
-                        });
+                        // Gunakan handleAuthError untuk menangani error tidak ada token
+                        await handleAuthError({ message: 'unauthorized' }, navigation);
                         throw new Error('Sesi login tidak valid. Silakan login kembali.');
                     }
                     headers['Authorization'] = `Bearer ${token}`;
@@ -67,11 +65,7 @@ export const useFetch = <T>({
                 
                 // Handle unauthorized response (401)
                 if (response.status === 401) {
-                    await SecureStoreUtils.clearAuthData();
-                    navigation.reset({
-                        index: 0,
-                        routes: [{ name: 'SignIn' as never }],
-                    });
+                    await handleAuthError({ status: 401 }, navigation);
                     throw new Error('Sesi login telah berakhir. Silakan login kembali.');
                 }
                 
@@ -84,7 +78,15 @@ export const useFetch = <T>({
                 return result.data as T;
             } catch (error) {
                 console.error('Error fetching data:', error);
-                throw error;
+                // Cek apakah error adalah auth error
+                const isAuthError = await handleAuthError(error, navigation);
+                if (!isAuthError) {
+                    // Jika bukan auth error, lempar error seperti biasa
+                    throw error;
+                } else {
+                    // Jika auth error, lempar error yang lebih spesifik
+                    throw new Error('Sesi login telah berakhir. Silakan login kembali.');
+                }
             }
         },
         enabled,

@@ -57,7 +57,11 @@ export type RootStackParamList = {
   };
   EditProfile: undefined;
   ChooseFreelancer: { projectId: string };
-  Payment: { projectId: string };
+  Payment: { 
+    projectId?: string; 
+    orderId?: string;
+    fromPrePayment?: boolean;
+  };
   EditService: { serviceId: string };
   ReviewPostProject: { 
     title: string;

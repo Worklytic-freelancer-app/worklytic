@@ -8,22 +8,52 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '@/navigators';
 import { useUser } from '@/hooks/tanstack/useUser';
 import { usePayment } from '@/hooks/tanstack/usePayment';
+import { useMutation } from '@/hooks/tanstack/useMutation';
+import { SecureStoreUtils } from '@/utils/SecureStore';
 import { COLORS } from '@/constant/color';
-
+import { baseUrl } from '@/constant/baseUrl';
+import { useFetch } from '@/hooks/tanstack/useFetch';
 type PaymentRouteProps = RouteProp<RootStackParamList, 'Payment'>;
 type PaymentNavigationProps = StackNavigationProp<RootStackParamList>;
+
+interface ProjectResponse {
+    _id: string;
+    title: string;
+    description: string;
+    budget: number;
+    category: string;
+    location: string;
+    completedDate: Date;
+    status: string;
+    requirements: string[];
+    image: string[];
+    clientId: string;
+}
+
+// Tambahkan interface untuk respons pembayaran
+interface PaymentResponse {
+    orderId: string;
+    status: string;
+    paymentUrl?: string;
+    redirect_url?: string;
+    success?: boolean;
+    data?: {
+        paymentUrl?: string;
+        redirect_url?: string;
+    };
+}
 
 export default function Payment() {
     const insets = useSafeAreaInsets();
     const navigation = useNavigation<PaymentNavigationProps>();
     const route = useRoute<PaymentRouteProps>();
-    const { projectId } = route.params;
+    const { projectId, orderId, fromPrePayment } = route.params;
     const { data: user, isLoading: userLoading } = useUser();
     
     const [initialLoading, setInitialLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
-    const [orderId, setOrderId] = useState<string | null>(null);
+    const [currentOrderId, setCurrentOrderId] = useState<string | null>(orderId || null);
     const [webViewLoading, setWebViewLoading] = useState(false);
     const [paymentProcessed, setPaymentProcessed] = useState(false);
     
@@ -40,29 +70,46 @@ export default function Payment() {
 
     // Gunakan getPaymentStatus untuk auto-refresh status pembayaran
     const { data: paymentStatusData, isLoading: isLoadingStatus } = 
-        getPaymentStatus(orderId || '', !!orderId);
+        getPaymentStatus(currentOrderId || '', !!currentOrderId);
+
+    // Mutation untuk membuat proyek setelah pembayaran berhasil
+    const createProjectMutation = useMutation<ProjectResponse>({
+        endpoint: 'projects',
+        method: 'POST',
+        requiresAuth: true,
+    });
+
+    // Gunakan useFetch untuk mendapatkan detail pembayaran dengan tipe yang benar
+    const { data: paymentDetail, isLoading: isLoadingDetail, error: detailError } = useFetch<PaymentResponse>({
+        endpoint: `payments/detail/${orderId}`,
+        enabled: !!orderId,
+        requiresAuth: true
+    });
 
     // Efek untuk memantau perubahan status pembayaran
     useEffect(() => {
-        if (paymentStatusData && orderId && !paymentProcessed) {
+        if (paymentStatusData && currentOrderId && !paymentProcessed) {
             const status = paymentStatusData.status;
             
             if (status === 'success') {
                 setPaymentProcessed(true);
-                Alert.alert(
-                    'Pembayaran Berhasil',
-                    'Pembayaran Anda telah berhasil diproses.',
-                    [
-                        { 
-                            text: 'OK', 
-                            // onPress: () => navigation.reset({
-                                // index: 0,
-                                // routes: [{ name: 'BottomTab', params: { screen: 'Workspace' } }],
-                            // })
-                            onPress: () => navigation.navigate('BottomTab', { screen: 'Workspace' })
-                        }
-                    ]
-                );
+                
+                // Jika pembayaran dari pre-payment, buat proyek
+                if (fromPrePayment) {
+                    handleCreateProjectAfterPayment();
+                } else {
+                    // Alur lama
+                    Alert.alert(
+                        'Pembayaran Berhasil',
+                        'Pembayaran Anda telah berhasil diproses.',
+                        [
+                            { 
+                                text: 'OK', 
+                                onPress: () => navigation.navigate('BottomTab', { screen: 'Workspace' })
+                            }
+                        ]
+                    );
+                }
             } else if (status === 'failed' || status === 'expired') {
                 setPaymentProcessed(true);
                 Alert.alert(
@@ -77,23 +124,106 @@ export default function Payment() {
                 );
             }
         }
-    }, [paymentStatusData, orderId, paymentProcessed]);
+    }, [paymentStatusData, currentOrderId, paymentProcessed]);
+
+    // Effect untuk mengatur URL pembayaran dari detail
+    useEffect(() => {
+        if (paymentDetail && !isLoadingDetail) {
+            setPaymentUrl(paymentDetail.paymentUrl || paymentDetail.redirect_url || null);
+            setInitialLoading(false);
+        }
+    }, [paymentDetail, isLoadingDetail]);
+    
+    // Effect untuk menangani error detail
+    useEffect(() => {
+        if (detailError && orderId) {
+            console.error('Error fetching payment details:', detailError);
+            // Jika gagal mendapatkan detail, coba cek status
+            checkPaymentStatus(
+                { orderId },
+                {
+                    onSuccess: (result) => {
+                        if (result && result.paymentUrl) {
+                            setPaymentUrl(result.paymentUrl);
+                        }
+                        setInitialLoading(false);
+                    },
+                    onError: (err) => {
+                        handlePaymentError(err);
+                    }
+                }
+            );
+        }
+    }, [detailError, orderId]);
 
     useEffect(() => {
         if (userLoading) return; // Tunggu sampai data user selesai dimuat
         
-        if (!projectId) {
-            handlePaymentError(new Error('Project ID is required'));
+        if (orderId) {
+            // Jika orderId sudah ada (dari pre-payment), gunakan itu
+            setCurrentOrderId(orderId);
+            
+            // Coba dapatkan URL pembayaran dari detail pembayaran
+            const fetchPaymentDetails = async () => {
+                try {
+                    const token = await SecureStoreUtils.getToken();
+                    if (!token) {
+                        throw new Error('Authentication token not found');
+                    }
+                    
+                    const response = await fetch(`${baseUrl}/api/payments/detail/${orderId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        if (response.status === 404) {
+                            // Jika payment tidak ditemukan, coba cek status
+                            checkPaymentStatus({ orderId });
+                            return;
+                        }
+                        throw new Error(`Error ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    if (data.success && data.data) {
+                        // Set URL pembayaran jika ada
+                        setPaymentUrl(data.data.paymentUrl || data.data.redirect_url);
+                    }
+                    setInitialLoading(false);
+                } catch (err) {
+                    console.error('Error fetching payment details:', err);
+                    // Jika gagal mendapatkan detail, coba cek status
+                    checkPaymentStatus(
+                        { orderId },
+                        {
+                            onSuccess: (result) => {
+                                if (result && result.paymentUrl) {
+                                    setPaymentUrl(result.paymentUrl);
+                                }
+                                setInitialLoading(false);
+                            },
+                            onError: (err) => {
+                                handlePaymentError(err);
+                            }
+                        }
+                    );
+                }
+            };
+            
+            fetchPaymentDetails();
+        } else if (!projectId) {
+            handlePaymentError(new Error('Project ID or Order ID is required'));
             return;
-        }
-        
-        if (!user) {
+        } else if (!user) {
             handlePaymentError(new Error('User data not found. Please try logging in again.'));
             return;
+        } else {
+            // Alur lama - inisiasi pembayaran untuk proyek yang sudah ada
+            initiatePayment();
         }
-        
-        initiatePayment();
-    }, [projectId, user, userLoading]);
+    }, [projectId, orderId, user, userLoading]);
 
     const initiatePayment = () => {
         try {
@@ -109,12 +239,12 @@ export default function Payment() {
             createPayment(
                 {
                     userId: user._id,
-                    projectId
+                    projectId: projectId || ''
                 },
                 {
                     onSuccess: (data) => {
                         setPaymentUrl(data.redirect_url || data.paymentUrl || null);
-                        setOrderId(data.orderId);
+                        setCurrentOrderId(data.orderId);
                         setInitialLoading(false);
                     },
                     onError: (err) => {
@@ -128,13 +258,13 @@ export default function Payment() {
     };
 
     const handleCheckPaymentStatus = () => {
-        if (!orderId || paymentProcessed) return;
+        if (!currentOrderId || paymentProcessed) return;
         
         setWebViewLoading(true);
         
         // Gunakan checkPaymentStatus dari hook usePayment
         checkPaymentStatus(
-            { orderId },
+            { orderId: currentOrderId },
             {
                 onSuccess: (result) => {
                     setWebViewLoading(false);
@@ -201,24 +331,60 @@ export default function Payment() {
     };
 
     // Fungsi untuk menangani error dengan lebih baik
-    const handlePaymentError = (error: unknown) => {
-        const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+    const handlePaymentError = (err: unknown) => {
+        console.error('Payment error:', err);
         
-        // Log error untuk debugging
-        console.error('Payment error:', error);
-        
-        // Kategorikan error
-        if (errorMessage.includes('network') || errorMessage.includes('connection')) {
-            setError('Koneksi internet terputus. Silakan periksa koneksi Anda dan coba lagi.');
-        } else if (errorMessage.includes('token') || errorMessage.includes('authentication')) {
-            setError('Sesi login Anda telah berakhir. Silakan login kembali.');
-            // Mungkin redirect ke halaman login
+        // Tangani error jaringan dengan lebih baik
+        if (err instanceof Error && err.message.includes('Network request failed')) {
+            setError('Tidak dapat terhubung ke server. Periksa koneksi internet Anda dan coba lagi.');
         } else {
-            setError(`Gagal memproses pembayaran: ${errorMessage}`);
+            setError(err instanceof Error ? err.message : 'Terjadi kesalahan saat memproses pembayaran');
         }
         
         setInitialLoading(false);
-        setWebViewLoading(false);
+    };
+
+    // Fungsi untuk membuat proyek setelah pembayaran berhasil
+    const handleCreateProjectAfterPayment = async () => {
+        try {
+            // Ambil data proyek sementara dari SecureStore
+            const tempProjectData = await SecureStoreUtils.getTempProjectData();
+            
+            if (!tempProjectData) {
+                throw new Error('Project data not found');
+            }
+            
+            // Buat proyek menggunakan mutation
+            const result = await createProjectMutation.mutateAsync(tempProjectData);
+            
+            if (result?._id) {
+                // Hapus data proyek sementara
+                await SecureStoreUtils.clearTempProjectData();
+                
+                // Tampilkan alert sukses
+                Alert.alert(
+                    'Proyek Berhasil Dibuat',
+                    'Proyek Anda telah berhasil dibuat dan pembayaran telah diproses.',
+                    [
+                        { 
+                            text: 'OK', 
+                            onPress: () => navigation.reset({
+                                index: 0,
+                                routes: [{ name: 'BottomTab', params: { screen: 'Workspace' } }],
+                            })
+                        }
+                    ]
+                );
+            } else {
+                throw new Error('Failed to create project');
+            }
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+            Alert.alert(
+                'Error',
+                `Pembayaran berhasil tetapi gagal membuat proyek: ${errorMessage}. Silakan hubungi dukungan pelanggan.`
+            );
+        }
     };
 
     // Render loading screen saat inisialisasi

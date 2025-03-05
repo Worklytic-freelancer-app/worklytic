@@ -2,7 +2,7 @@ import * as SecureStore from 'expo-secure-store';
 
 interface AuthData {
   token: string;
-  user?: any; // Sesuaikan dengan tipe data user Anda
+  user?: Record<string, unknown>; // Tipe yang lebih baik daripada any
 }
 
 export const SecureStoreUtils = {
@@ -30,7 +30,7 @@ export const SecureStoreUtils = {
   },
 
   // Mengambil data user
-  async getUserData(): Promise<any | null> {
+  async getUserData(): Promise<Record<string, unknown> | null> {
     try {
       const userData = await SecureStore.getItemAsync('user_data');
       return userData ? JSON.parse(userData) : null;
@@ -41,7 +41,7 @@ export const SecureStoreUtils = {
   },
 
   // Menyimpan data user
-  async setUserData(userData: any): Promise<void> {
+  async setUserData(userData: Record<string, unknown>): Promise<void> {
     try {
       await SecureStore.setItemAsync('user_data', JSON.stringify(userData));
     } catch (error) {
@@ -57,6 +57,37 @@ export const SecureStoreUtils = {
       await SecureStore.deleteItemAsync('user_data');
     } catch (error) {
       console.error('Error clearing auth data:', error);
+      throw error;
+    }
+  },
+  
+  // Menyimpan data project sementara (untuk proses pembayaran)
+  async setTempProjectData(projectData: Record<string, unknown>): Promise<void> {
+    try {
+      await SecureStore.setItemAsync('temp_project_data', JSON.stringify(projectData));
+    } catch (error) {
+      console.error('Error saving temp project data:', error);
+      throw error;
+    }
+  },
+  
+  // Mengambil data project sementara
+  async getTempProjectData(): Promise<Record<string, unknown> | null> {
+    try {
+      const projectData = await SecureStore.getItemAsync('temp_project_data');
+      return projectData ? JSON.parse(projectData) : null;
+    } catch (error) {
+      console.error('Error getting temp project data:', error);
+      return null;
+    }
+  },
+  
+  // Menghapus data project sementara
+  async clearTempProjectData(): Promise<void> {
+    try {
+      await SecureStore.deleteItemAsync('temp_project_data');
+    } catch (error) {
+      console.error('Error clearing temp project data:', error);
       throw error;
     }
   }

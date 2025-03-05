@@ -1,13 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { AlertTriangle, CheckCircle, XCircle, X } from 'lucide-react-native';
+import { AlertTriangle, CheckCircle, XCircle, X, Info } from 'lucide-react-native';
 import { COLORS } from '@/constant/color';
 
 interface ConfirmationProps {
     visible: boolean;
     title: string;
     message: string;
-    type: 'success' | 'error' | 'warning' | 'confirm';
+    type: 'success' | 'error' | 'warning' | 'confirm' | 'info';
     confirmText?: string;
     cancelText?: string;
     onConfirm?: () => void;
@@ -36,6 +36,8 @@ const Confirmation = ({
             case 'warning':
             case 'confirm':
                 return <AlertTriangle size={40} color={COLORS.warning} />;
+            case 'info':
+                return <Info size={40} color={COLORS.primary} />;
             default:
                 return null;
         }
@@ -50,6 +52,7 @@ const Confirmation = ({
             case 'warning':
                 return { backgroundColor: COLORS.warning };
             case 'confirm':
+            case 'info':
                 return { backgroundColor: COLORS.primary };
             default:
                 return { backgroundColor: COLORS.primary };

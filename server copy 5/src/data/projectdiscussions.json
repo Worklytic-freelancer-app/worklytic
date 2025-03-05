@@ -1,0 +1,87 @@
+[
+    {
+        "_id": "68c09e7ea8bf2bcd8d03f001",
+        "projectFeatureId": "67c09e7ea8bf2bcd8d03f111",
+        "senderId": "66d064e5e913892a850e1234",
+        "description": "Saya telah mereview kebutuhan sistem ERP dan memiliki beberapa pertanyaan terkait integrasi dengan sistem yang sudah ada. Berikut adalah draft awal arsitektur sistem yang saya usulkan.",
+        "images": [
+            "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40",
+            "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e"
+        ],
+        "files": [
+            "https://example.com/documents/erp-architecture-draft.pdf",
+            "https://example.com/documents/integration-plan.pdf"
+        ]
+    },
+    {
+        "_id": "68c09e7ea8bf2bcd8d03f002",
+        "projectFeatureId": "67c09e7ea8bf2bcd8d03f222",
+        "senderId": "66d064e5e913892a850e1236",
+        "description": "Berikut adalah hasil redesign website berdasarkan brand guidelines yang telah didiskusikan. Saya telah membuat beberapa alternatif untuk halaman utama.",
+        "images": [
+            "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e",
+            "https://images.unsplash.com/photo-1559028012-481c04fa702d",
+            "https://images.unsplash.com/photo-1531403009284-440f080d1e12"
+        ],
+        "files": [
+            "https://example.com/designs/homepage-v1.fig",
+            "https://example.com/designs/homepage-v2.fig"
+        ]
+    },
+    {
+        "_id": "68c09e7ea8bf2bcd8d03f003",
+        "projectFeatureId": "67c09e7ea8bf2bcd8d03f446",
+        "senderId": "66d064e5e913892a850e1237",
+        "description": "Update progress pengembangan aplikasi mobile: Fitur tracking lokasi sales sudah 80% selesai. Berikut tampilan dashboard tracking dan beberapa screenshot fitur input order.",
+        "images": [
+            "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c",
+            "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d"
+        ],
+        "files": [
+            "https://example.com/documents/tracking-feature-doc.pdf",
+            "https://example.com/documents/api-documentation.pdf"
+        ]
+    },
+    {
+        "_id": "68c09e7ea8bf2bcd8d03f004",
+        "projectFeatureId": "67c09e7ea8bf2bcd8d03f449",
+        "senderId": "66d064e5e913892a850e1240",
+        "description": "Implementasi fitur face recognition dan QR payment sudah selesai. Berikut demo video dan dokumentasi keamanan yang diterapkan pada fitur tersebut.",
+        "images": [
+            "https://images.unsplash.com/photo-1563013544-824ae1b704d3",
+            "https://images.unsplash.com/photo-1601597111158-2fceff292cdc"
+        ],
+        "files": [
+            "https://example.com/videos/face-recognition-demo.mp4",
+            "https://example.com/documents/security-implementation.pdf"
+        ]
+    },
+    {
+        "_id": "68c09e7ea8bf2bcd8d03f005",
+        "projectFeatureId": "67c09e7ea8bf2bcd8d03f452",
+        "senderId": "66d064e5e913892a850e1246",
+        "description": "Hasil analisis data dari sensor IoT menunjukkan beberapa pola menarik. Saya telah membuat dashboard untuk monitoring real-time dan sistem alert yang dapat dikustomisasi.",
+        "images": [
+            "https://images.unsplash.com/photo-1581092160562-40aa08e78837",
+            "https://images.unsplash.com/photo-1563770660941-20978e870e26"
+        ],
+        "files": [
+            "https://example.com/documents/iot-analysis-report.pdf",
+            "https://example.com/documents/dashboard-guide.pdf"
+        ]
+    },
+    {
+        "_id": "68c09e7ea8bf2bcd8d03f006",
+        "projectFeatureId": "67c09e7ea8bf2bcd8d03f455",
+        "senderId": "66d064e5e913892a850e1244",
+        "description": "Update pengembangan virtual classroom: Fitur interactive whiteboard sudah terintegrasi dengan video conference. Berikut demo penggunaan dan hasil testing performa.",
+        "images": [
+            "https://images.unsplash.com/photo-1571260899304-425eee4c7efc",
+            "https://images.unsplash.com/photo-1552581234-26160f608093"
+        ],
+        "files": [
+            "https://example.com/videos/whiteboard-demo.mp4",
+            "https://example.com/documents/performance-report.pdf"
+        ]
+    }
+]

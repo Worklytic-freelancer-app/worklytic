@@ -1,6 +1,9 @@
 import { useMutation as useTanstackMutation, useQueryClient } from '@tanstack/react-query';
 import { baseUrl } from '@/constant/baseUrl';
 import { SecureStoreUtils } from '@/utils/SecureStore';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { handleAuthError } from '@/utils/handleAuthError';
+import { RootStackParamList } from '@/navigators';
 
 // Tipe untuk parameter mutation
 interface MutationOptions<TData> {
@@ -25,6 +28,7 @@ export const useMutation = <TData, TVariables extends Record<string, unknown> = 
     invalidateQueries = []
 }: MutationOptions<TData>) => {
     const queryClient = useQueryClient();
+    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
     return useTanstackMutation<TData, Error, TVariables & Partial<WithCustomEndpoint>>({
         mutationFn: async (variables) => {
@@ -47,6 +51,7 @@ export const useMutation = <TData, TVariables extends Record<string, unknown> = 
                 if (requiresAuth) {
                     const token = await SecureStoreUtils.getToken();
                     if (!token) {
+                        await handleAuthError({ message: 'unauthorized' }, navigation);
                         throw new Error('Sesi login tidak valid. Silakan login kembali.');
                     }
                     headers['Authorization'] = `Bearer ${token}`;
@@ -58,6 +63,12 @@ export const useMutation = <TData, TVariables extends Record<string, unknown> = 
                     headers,
                     body: method !== 'DELETE' ? JSON.stringify(restVariables) : undefined,
                 });
+                
+                // Handle unauthorized response (401)
+                if (response.status === 401) {
+                    await handleAuthError({ status: 401 }, navigation);
+                    throw new Error('Sesi login telah berakhir. Silakan login kembali.');
+                }
                 
                 // Cek jika respons kosong untuk DELETE request
                 if (method === 'DELETE' && response.status === 204) {
@@ -87,7 +98,15 @@ export const useMutation = <TData, TVariables extends Record<string, unknown> = 
                 return (result.data || result) as TData;
             } catch (error) {
                 console.error(`Error ${method} data:`, error);
-                throw error;
+                // Cek apakah error adalah auth error
+                const isAuthError = await handleAuthError(error, navigation);
+                if (!isAuthError) {
+                    // Jika bukan auth error, lempar error seperti biasa
+                    throw error;
+                } else {
+                    // Jika auth error, lempar error yang lebih spesifik
+                    throw new Error('Sesi login telah berakhir. Silakan login kembali.');
+                }
             }
         },
         onSuccess: (data) => {

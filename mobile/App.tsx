@@ -3,9 +3,9 @@ import { NavigationContainer } from "@react-navigation/native";
 import Navigator from "@/navigators";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import { LogBox } from "react-native";
+// import { LogBox } from "react-native";
 
-LogBox.ignoreAllLogs();
+// LogBox.ignoreAllLogs();
 
 const queryClient = new QueryClient();
 

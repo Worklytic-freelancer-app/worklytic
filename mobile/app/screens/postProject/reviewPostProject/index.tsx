@@ -8,6 +8,8 @@ import { COLORS } from "@/constant/color";
 import { useState } from "react";
 import { useMutation } from "@/hooks/tanstack/useMutation";
 import { usePayment } from '@/hooks/tanstack/usePayment';
+import { usePrePayment } from '@/hooks/tanstack/usePrePayment';
+import { SecureStoreUtils } from '@/utils/SecureStore';
 
 type ReviewPostProjectRouteProp = RouteProp<RootStackParamList, 'ReviewPostProject'>;
 type ReviewPostProjectNavigationProp = StackNavigationProp<RootStackParamList>;
@@ -58,6 +60,9 @@ export default function ReviewPostProject() {
     // Gunakan hook usePayment
     const { createPayment } = usePayment();
 
+    // Gunakan hook usePrePayment
+    const { createPrePaymentAsync, isCreatingPrePayment } = usePrePayment();
+
     // Fungsi untuk memvalidasi proyek sebelum dibuat
     const validateProject = () => {
         // Validasi dasar
@@ -95,8 +100,8 @@ export default function ReviewPostProject() {
                 ? projectData.requirements.split('\n').filter((item: string) => item.trim() !== '')
                 : [];
             
-            // Buat project menggunakan mutation
-            const result = await createProjectMutation.mutateAsync({
+            // Simpan data proyek sementara di SecureStore
+            const tempProjectData = {
                 clientId: projectData.clientId,
                 title: projectData.title,
                 description: projectData.description,
@@ -107,33 +112,31 @@ export default function ReviewPostProject() {
                 status: projectData.status,
                 requirements: requirementsArray,
                 image: projectData.images
-            });
+            };
             
-            if (result?._id) {
-                // Navigasi ke halaman pembayaran dengan ID proyek
-                navigation.navigate('Payment', { projectId: result._id });
+            await SecureStoreUtils.setTempProjectData(tempProjectData as Record<string, unknown>);
+            
+            try {
+                // Buat pre-payment
+                const paymentResult = await createPrePaymentAsync({
+                    userId: projectData.clientId,
+                    amount: projectData.budget,
+                    title: projectData.title
+                });
                 
-                // Inisiasi pembayaran di background (opsional)
-                // Ini akan mempersiapkan data pembayaran sebelum halaman Payment dimuat
-                if (projectData.clientId) {
-                    createPayment(
-                        {
-                            userId: projectData.clientId,
-                            projectId: result._id
-                        },
-                        {
-                            onSuccess: (data) => {
-                                console.log('Payment initiated successfully:', data.orderId);
-                            },
-                            onError: (err) => {
-                                console.error('Failed to initiate payment:', err);
-                                // Tidak perlu menampilkan alert karena halaman Payment akan menanganinya
-                            }
-                        }
-                    );
+                if (paymentResult?.orderId && (paymentResult.redirect_url || paymentResult.paymentUrl)) {
+                    // Navigasi ke halaman pembayaran dengan order ID
+                    navigation.navigate('Payment', { 
+                        orderId: paymentResult.orderId,
+                        fromPrePayment: true
+                    });
+                } else {
+                    throw new Error('Failed to create payment: Missing payment URL or order ID');
                 }
-            } else {
-                throw new Error('Failed to create project');
+            } catch (err) {
+                console.error('Pre-payment error:', err);
+                const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+                Alert.alert('Error', `Gagal membuat pembayaran: ${errorMessage}`);
             }
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'An error occurred';

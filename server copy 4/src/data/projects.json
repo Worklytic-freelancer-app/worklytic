@@ -1,0 +1,253 @@
+[
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f800",
+        "clientId": "66d064e5e913892a850e1235",
+        "title": "Pengembangan Sistem ERP Terintegrasi",
+        "description": "Membutuhkan pengembangan sistem ERP yang dapat mengintegrasikan proses bisnis perusahaan meliputi inventory, accounting, HR, dan sales management. Sistem harus dapat diakses secara real-time dan memiliki dashboard analytics.",
+        "budget": 75000000,
+        "category": "Web Development",
+        "location": "Surabaya, Indonesia",
+        "completedDate": "2025-12-27T17:18:54.570Z",
+        "status": "Open",
+        "requirements": [
+            "Pengalaman minimal 5 tahun dalam pengembangan ERP",
+            "Menguasai React.js dan Node.js",
+            "Familiar dengan database PostgreSQL",
+            "Memahami proses bisnis perusahaan"
+        ],
+        "image": [
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204483/krakenimages-376KN_ISplE-unsplash_q2kr2x.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204472/headway-5QgIuuBxKwM-unsplash_gio6ad.jpg"
+        ],
+        "createdAt": "2024-02-27T17:18:54.570Z",
+        "updatedAt": "2024-02-27T17:18:54.570Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f801",
+        "clientId": "66d064e5e913892a850e1239",
+        "title": "Redesign Website Perusahaan",
+        "description": "Mencari UI/UX designer untuk melakukan redesign website perusahaan dengan fokus pada user experience dan konversi yang lebih baik. Website harus responsif dan modern.",
+        "budget": 25000000,
+        "category": "UI/UX Design",
+        "location": "Remote",
+        "completedDate": "2025-12-27T17:18:54.570Z",
+        "status": "In Progress",
+        "requirements": [
+            "Portfolio desain website B2B",
+            "Kemampuan UI/UX research",
+            "Familiar dengan Figma",
+            "Pengalaman dalam design system"
+        ],
+        "image": [
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204471/laura-adai-7PbJAJAg5Ig-unsplash_phqhcv.jpg"
+        ],
+        "createdAt": "2024-01-15T10:30:00.000Z",
+        "updatedAt": "2024-02-20T15:45:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f802",
+        "clientId": "66d064e5e913892a850e1235",
+        "title": "Pengembangan Aplikasi Mobile Internal",
+        "description": "Membutuhkan pengembangan aplikasi mobile untuk manajemen internal perusahaan. Aplikasi harus dapat digunakan di iOS dan Android.",
+        "budget": 45000000,
+        "category": "Mobile Development",
+        "location": "Surabaya, Indonesia",
+        "completedDate": "2025-12-27T17:18:54.570Z",
+        "status": "Open",
+        "requirements": [
+            "Pengalaman React Native/Flutter",
+            "Kemampuan backend integration",
+            "Understanding of mobile UI/UX",
+            "Knowledge of mobile security best practices"
+        ],
+        "image": [
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204466/felipe-furtado-2zDXqgTzEFE-unsplash_qjctrt.jpg"
+        ],
+        "createdAt": "2024-02-25T09:00:00.000Z",
+        "updatedAt": "2024-02-25T09:00:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f803",
+        "clientId": "66d064e5e913892a850e1239",
+        "title": "Pengembangan Sistem Manajemen Warehouse",
+        "description": "Membutuhkan pengembangan sistem manajemen warehouse yang terintegrasi dengan sistem ERP yang sudah ada. Sistem harus dapat menangani inventory tracking, barcode scanning, dan reporting.",
+        "budget": 60000000,
+        "category": "Web Development",
+        "location": "Jakarta, Indonesia",
+        "completedDate": "2025-12-27T17:18:54.570Z",
+        "status": "Open",
+        "requirements": [
+            "Pengalaman dalam pengembangan sistem warehouse",
+            "Familiar dengan barcode dan RFID technology",
+            "Menguasai Node.js dan React",
+            "Pengalaman integrasi dengan sistem ERP"
+        ],
+        "image": [
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204464/brands-people-Ax8IA8GAjVg-unsplash_ixbdkv.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204458/alvaro-reyes-qWwpHwip31M-unsplash_cdu7yr.jpg"
+        ],
+        "createdAt": "2024-03-01T08:00:00.000Z",
+        "updatedAt": "2024-03-01T08:00:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f804",
+        "clientId": "66d064e5e913892a850e1235",
+        "title": "Aplikasi Mobile untuk Sales Force",
+        "description": "Pengembangan aplikasi mobile untuk tim sales yang dapat melakukan pencatatan kunjungan, input order, dan tracking lokasi sales secara real-time.",
+        "budget": 35000000,
+        "category": "Mobile Development",
+        "location": "Surabaya, Indonesia",
+        "completedDate": "2025-12-27T17:18:54.570Z",
+        "status": "In Progress",
+        "requirements": [
+            "Menguasai Flutter atau React Native",
+            "Pengalaman dengan GPS tracking",
+            "Familiar dengan offline-first architecture",
+            "Kemampuan mengintegrasikan dengan REST API"
+        ],
+        "image": [
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204457/markus-winkler-Q2J2qQsoYH8-unsplash_oxnxaa.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204451/uwe-hensel-44Uz2J7z9Rg-unsplash_uymzhh.jpg"
+        ],
+        "createdAt": "2024-03-10T14:30:00.000Z",
+        "updatedAt": "2024-03-10T14:30:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f805",
+        "clientId": "66d064e5e913892a850e1239",
+        "title": "Pengembangan Website E-learning",
+        "description": "Membutuhkan pengembangan platform e-learning yang dapat menangani video streaming, quiz online, dan tracking progress pembelajaran.",
+        "budget": 85000000,
+        "category": "Web Development",
+        "location": "Remote",
+        "completedDate": "2025-12-27T17:18:54.570Z",
+        "status": "Open",
+        "requirements": [
+            "Pengalaman dalam pengembangan LMS",
+            "Familiar dengan video streaming technology",
+            "Menguasai React.js dan Node.js",
+            "Pengalaman dengan WebRTC dan Socket.io"
+        ],
+        "image": [
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204450/stanley-dai-73OZYNjVoNI-unsplash_mvs0fb.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204450/sigmund-4UGmm3WRUoQ-unsplash_gpcln5.jpg"
+        ],
+        "createdAt": "2024-03-15T09:45:00.000Z",
+        "updatedAt": "2024-03-15T09:45:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f806",
+        "clientId": "66d064e5e913892a850e1241",
+        "title": "Pengembangan Sistem Mobile Banking",
+        "description": "Membutuhkan pengembangan aplikasi mobile banking dengan fitur-fitur modern seperti face recognition, QR payment, dan virtual card management.",
+        "budget": 120000000,
+        "category": "Mobile Development",
+        "location": "Jakarta, Indonesia",
+        "completedDate": "2025-12-27T17:18:54.570Z",
+        "status": "In Progress",
+        "requirements": [
+            "Pengalaman dalam pengembangan aplikasi fintech",
+            "Keahlian dalam keamanan aplikasi mobile",
+            "Familiar dengan regulasi perbankan",
+            "Menguasai React Native/Flutter"
+        ],
+        "image": [
+            "https://images.unsplash.com/photo-1563013544-824ae1b704d3",
+            "https://images.unsplash.com/photo-1601597111158-2fceff292cdc"
+        ],
+        "createdAt": "2024-03-16T10:00:00.000Z",
+        "updatedAt": "2024-03-16T10:00:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f807",
+        "clientId": "66d064e5e913892a850e1243",
+        "title": "Desain Brand Identity UMKM",
+        "description": "Mencari desainer grafis untuk membuat brand identity lengkap untuk 5 UMKM binaan, termasuk logo, guidelines, dan marketing materials.",
+        "budget": 40000000,
+        "category": "Graphic Design",
+        "location": "Yogyakarta, Indonesia",
+        "completedDate": "2025-11-27T17:18:54.570Z",
+        "status": "Open",
+        "requirements": [
+            "Portfolio desain brand identity",
+            "Pemahaman tentang kebutuhan UMKM",
+            "Kemampuan ilustrasi digital",
+            "Pengalaman dalam social media design"
+        ],
+        "image": [
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204442/firmbee-com-gcsNOsPEXfs-unsplash_eygskj.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204483/krakenimages-376KN_ISplE-unsplash_q2kr2x.jpg"
+        ],
+        "createdAt": "2024-03-17T11:30:00.000Z",
+        "updatedAt": "2024-03-17T11:30:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f808",
+        "clientId": "66d064e5e913892a850e1245",
+        "title": "Sistem Monitoring IoT untuk Pabrik",
+        "description": "Pengembangan sistem monitoring berbasis IoT untuk mengawasi mesin produksi, termasuk dashboard analitik dan sistem peringatan dini.",
+        "budget": 95000000,
+        "category": "IoT Development",
+        "location": "Jakarta, Indonesia",
+        "completedDate": "2025-10-27T17:18:54.570Z",
+        "status": "Open",
+        "requirements": [
+            "Pengalaman dengan sensor IoT industrial",
+            "Keahlian dalam real-time data processing",
+            "Familiar dengan protokol MQTT",
+            "Kemampuan membuat dashboard analytics"
+        ],
+        "image": [
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204472/headway-5QgIuuBxKwM-unsplash_gio6ad.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204464/brands-people-Ax8IA8GAjVg-unsplash_ixbdkv.jpg"
+        ],
+        "createdAt": "2024-03-18T13:45:00.000Z",
+        "updatedAt": "2024-03-18T13:45:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f809",
+        "clientId": "66d064e5e913892a850e1247",
+        "title": "Aplikasi Point of Sale untuk UMKM",
+        "description": "Pengembangan aplikasi POS berbasis web dan mobile untuk UMKM dengan fitur inventory, laporan penjualan, dan integrasi payment gateway.",
+        "budget": 55000000,
+        "category": "Web Development",
+        "location": "Bandung, Indonesia",
+        "completedDate": "2025-10-27T17:18:54.570Z",
+        "status": "Open",
+        "requirements": [
+            "Pengalaman dalam pengembangan sistem POS",
+            "Familiar dengan payment gateway lokal",
+            "Kemampuan membuat PWA",
+            "Menguasai React dan Node.js"
+        ],
+        "image": [
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204451/uwe-hensel-44Uz2J7z9Rg-unsplash_uymzhh.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204450/stanley-dai-73OZYNjVoNI-unsplash_mvs0fb.jpg"
+        ],
+        "createdAt": "2024-03-19T15:20:00.000Z",
+        "updatedAt": "2024-03-19T15:20:00.000Z"
+    },
+    {
+        "_id": "67c09e7ea8bf2bcd8d03f810",
+        "clientId": "66d064e5e913892a850e1249",
+        "title": "Platform Virtual Classroom",
+        "description": "Pengembangan platform virtual classroom dengan fitur video conference, interactive whiteboard, dan sistem manajemen tugas terintegrasi.",
+        "budget": 150000000,
+        "category": "Web Development",
+        "location": "Jakarta, Indonesia",
+        "completedDate": "2025-11-27T17:18:54.570Z",
+        "status": "Open",
+        "requirements": [
+            "Pengalaman dalam pengembangan platform edtech",
+            "Keahlian WebRTC dan real-time communication",
+            "Familiar dengan teknologi whiteboard digital",
+            "Kemampuan mengoptimasi streaming video"
+        ],
+        "image": [
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204450/sigmund-4UGmm3WRUoQ-unsplash_gpcln5.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204449/daniel-mccullough-HtBlQdxfG9k-unsplash_suhhvo.jpg"
+        ],
+        "createdAt": "2024-03-20T16:40:00.000Z",
+        "updatedAt": "2024-03-20T16:40:00.000Z"
+    }
+]
