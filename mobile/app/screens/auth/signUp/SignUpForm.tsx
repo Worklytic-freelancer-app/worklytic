@@ -86,6 +86,13 @@ export default function SignUpForm({ role }: SignUpFormProps) {
           <ChevronLeft size={24} color={COLORS.black} />
         </TouchableOpacity>
 
+        {/* <View style={styles.logoContainer}>
+          <View style={styles.logoCircle}>
+            <Text style={styles.logoText}>W</Text>
+          </View>
+          <Text style={styles.logoTitle}>Worklytic</Text>
+        </View> */}
+        
         <View style={styles.logoContainer}>
           <View style={styles.logoCircle}>
             <Text style={styles.logoText}>W</Text>
@@ -147,12 +154,12 @@ export default function SignUpForm({ role }: SignUpFormProps) {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.footer}>
+        {/* <View style={styles.footer}>
           <Text style={styles.footerText}>Already have an account? </Text>
           <TouchableOpacity onPress={() => navigation.navigate("SignIn")}>
             <Text style={styles.footerLink}>Sign In</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
       </ScrollView>
     </KeyboardAvoidingView>
   );
