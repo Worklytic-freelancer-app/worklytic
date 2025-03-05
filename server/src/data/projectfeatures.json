@@ -7,6 +7,13 @@
         "isPaid": false
     },
     {
+        "_id": "67c09e7ea8bf2bcd8d031312",
+        "projectId": "67c09e7ea8bf2bcd8d03f801",
+        "freelancerId": "66d064e5e913892a850e1237",
+        "status": "pending",
+        "isPaid": false
+    },
+    {
         "_id": "67c09e7ea8bf2bcd8d03f222",
         "projectId": "67c09e7ea8bf2bcd8d03f801",
         "freelancerId": "66d064e5e913892a850e1236",

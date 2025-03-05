@@ -44,19 +44,19 @@ export default function SignIn() {
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: COLORS.background }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <ScrollView contentContainerStyle={[styles.container, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 }]}>
-        <View style={styles.logoContainer}>
+        {/* <View style={styles.logoContainer}>
           <View style={styles.logoCircle}>
             <Text style={styles.logoText}>W</Text>
           </View>
           <Text style={styles.logoTitle}>Worklytic</Text>
-        </View>
-
-        {/* <View style={styles.logoContainer}>
-          <Text style={styles.logoTitle}>Pasang logo disini</Text>
         </View> */}
 
+        <View style={styles.logoContainer}>
+          <Image source={require("@/assets/Worklytic.png")} style={styles.logoImage} />
+        </View>
+
         <View style={styles.header}>
-          <Text style={styles.title}>Welcome Back</Text>
+          <Text style={styles.title}>Welcome to Worklytic</Text>
           <Text style={styles.subtitle}>Sign in to continue your journey</Text>
         </View>
 
@@ -256,6 +256,10 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: 14,
     color: COLORS.gray,
+  },
+  logoImage: {
+    width: 100,
+    height: 100,
   },
   footerLink: {
     fontSize: 14,

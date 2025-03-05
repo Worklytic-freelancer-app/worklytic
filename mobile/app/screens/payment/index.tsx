@@ -55,10 +55,11 @@ export default function Payment() {
                     [
                         { 
                             text: 'OK', 
-                            onPress: () => navigation.reset({
-                                index: 0,
-                                routes: [{ name: 'BottomTab', params: { screen: 'Workspace' } }],
-                            })
+                            // onPress: () => navigation.reset({
+                                // index: 0,
+                                // routes: [{ name: 'BottomTab', params: { screen: 'Workspace' } }],
+                            // })
+                            onPress: () => navigation.navigate('BottomTab', { screen: 'Workspace' })
                         }
                     ]
                 );

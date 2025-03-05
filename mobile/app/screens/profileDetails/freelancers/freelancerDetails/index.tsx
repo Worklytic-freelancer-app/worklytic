@@ -200,13 +200,13 @@ export default function FreelancerDetails() {
 
           <View style={styles.statsContainer}>
             <View style={styles.statsCard}>
-              <Text style={styles.statsValue}>{freelancer.totalProjects || 0}</Text>
-              <Text style={styles.statsLabel}>Total Proyek</Text>
+              <Text style={styles.statsValue}>{services.length || 0}</Text>
+              <Text style={styles.statsLabel}>Total Services</Text>
             </View>
-            <View style={styles.statsCard}>
+            {/* <View style={styles.statsCard}>
               <Text style={styles.statsValue}>{freelancer.successRate || 0}%</Text>
               <Text style={styles.statsLabel}>Tingkat Sukses</Text>
-            </View>
+            </View> */}
             <View style={styles.statsCard}>
               <Text style={styles.statsValue}>{freelancer.rating || 0}</Text>
               <Text style={styles.statsLabel}>Rating</Text>
@@ -356,7 +356,8 @@ const styles = StyleSheet.create({
   },
   statsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'center',
+    gap: 10,
     width: '100%',
     paddingHorizontal: 20,
   },

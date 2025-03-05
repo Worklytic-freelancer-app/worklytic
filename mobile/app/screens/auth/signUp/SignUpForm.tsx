@@ -82,23 +82,20 @@ export default function SignUpForm({ role }: SignUpFormProps) {
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: COLORS.background }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <ScrollView contentContainerStyle={[styles.container, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 }]}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate("SelectRole")}>
           <ChevronLeft size={24} color={COLORS.black} />
         </TouchableOpacity>
 
+        <View style={styles.logoContainer}>
+          <Image source={require("@/assets/Worklytic.png")} style={styles.logoImage} />
+        </View>
+        
         {/* <View style={styles.logoContainer}>
           <View style={styles.logoCircle}>
             <Text style={styles.logoText}>W</Text>
           </View>
           <Text style={styles.logoTitle}>Worklytic</Text>
         </View> */}
-        
-        <View style={styles.logoContainer}>
-          <View style={styles.logoCircle}>
-            <Text style={styles.logoText}>W</Text>
-          </View>
-          <Text style={styles.logoTitle}>Worklytic</Text>
-        </View>
 
         <View style={styles.header}>
           <Text style={styles.title}>Sign Up as {role === "client" ? "Client" : "Freelancer"}</Text>
@@ -148,18 +145,18 @@ export default function SignUpForm({ role }: SignUpFormProps) {
             <View style={styles.dividerLine} />
           </View>
 
-          <TouchableOpacity style={styles.googleButton}>
+          {/* <TouchableOpacity style={styles.googleButton}>
             <Image source={{ uri: "https://cdn-icons-png.flaticon.com/512/2991/2991148.png" }} style={styles.socialIcon} />
             <Text style={styles.googleButtonText}>Continue with Google</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
-        {/* <View style={styles.footer}>
+        <View style={styles.footer}>
           <Text style={styles.footerText}>Already have an account? </Text>
           <TouchableOpacity onPress={() => navigation.navigate("SignIn")}>
             <Text style={styles.footerLink}>Sign In</Text>
           </TouchableOpacity>
-        </View> */}
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -235,6 +232,10 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     paddingHorizontal: 16,
+  },
+  logoImage: {
+    width: 100,
+    height: 100,
   },
   input: {
     flex: 1,

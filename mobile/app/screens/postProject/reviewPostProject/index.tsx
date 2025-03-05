@@ -167,7 +167,7 @@ export default function ReviewPostProject() {
                 >
                     <ChevronLeft size={24} color={COLORS.primary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Review Proyek</Text>
+                <Text style={styles.headerTitle}>Review Project</Text>
                 <View style={{ width: 40 }} />
             </View>
 

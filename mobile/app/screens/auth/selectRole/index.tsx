@@ -49,8 +49,8 @@ export default function SelectRole() {
       </TouchableOpacity>
 
       <View style={styles.header}>
-        <Text style={styles.title}>Pilih Role Anda</Text>
-        <Text style={styles.subtitle}>Pilih peran Anda di Worklytic</Text>
+        <Text style={styles.title}>Choose Your Role</Text>
+        <Text style={styles.subtitle}>Choose your role to continue</Text>
       </View>
 
       {/* Freelancer Choice */}
@@ -60,8 +60,8 @@ export default function SelectRole() {
             <UserCircle2 size={32} color={COLORS.primary} />
           </View>
           <View style={styles.choiceTextContainer}>
-            <Text style={styles.choiceTitle}>Saya Freelancer</Text>
-            <Text style={styles.choiceDescription}>Tambah Penghasilan melalui Kesempatan Bekerja dengan 40,000+ client</Text>
+            <Text style={styles.choiceTitle}>I am a Freelancer</Text>
+            <Text style={styles.choiceDescription}>Add income through opportunities to work with 40,000+ clients</Text>
           </View>
         </TouchableOpacity>
       </RNAnimated.View>
@@ -73,14 +73,14 @@ export default function SelectRole() {
             <Building2 size={32} color={COLORS.primary} />
           </View>
           <View style={styles.choiceTextContainer}>
-            <Text style={styles.choiceTitle}>Saya Client</Text>
-            <Text style={styles.choiceDescription}>Rekrut Freelancer Profesional Terkurasi untuk Hasil Pekerjaan Terbaik</Text>
+            <Text style={styles.choiceTitle}>I am a Client</Text>
+            <Text style={styles.choiceDescription}>Recruit professional freelancers for the best work results</Text>
           </View>
         </TouchableOpacity>
       </RNAnimated.View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Sudah memiliki akun? </Text>
+        <Text style={styles.footerText}>Already have an account? </Text>
         <TouchableOpacity onPress={() => navigation.navigate("SignIn")}>
           <Text style={styles.footerLink}>Sign In</Text>
         </TouchableOpacity>
