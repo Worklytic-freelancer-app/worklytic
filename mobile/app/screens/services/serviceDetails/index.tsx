@@ -44,6 +44,8 @@ interface ApiFreelancer {
   totalProjects?: number;
 }
 
+
+
 export default function ServiceDetails() {
   const navigation = useNavigation<ServiceDetailScreenNavigationProp>();
   const route = useRoute<ServiceDetailScreenRouteProp>();
@@ -62,6 +64,8 @@ export default function ServiceDetails() {
     endpoint: `services/${serviceId}`,
     requiresAuth: true
   });
+
+  // Tambahkan fungsi generateChatId
   
   // Fetch freelancer details jika service sudah diload
   const {
@@ -94,6 +98,20 @@ export default function ServiceDetails() {
     if (service) {
       refetchFreelancer();
     }
+  };
+
+  const handleStartChat = () => {
+    if (!user?._id || !freelancer) return;
+
+    // Generate chatId yang konsisten
+    const chatId = generateChatId(user._id, freelancer._id);
+
+    navigation.navigate("DirectMessage", {
+      userId: freelancer._id,
+      userName: freelancer.fullName,
+      userImage: freelancer.profileImage,
+      chatId: chatId // Gunakan chatId yang sudah digenerate
+    });
   };
 
   // Tambahkan fungsi handleShare
@@ -254,9 +272,10 @@ export default function ServiceDetails() {
         <View style={styles.content}>
           {/* Freelancer Section */}
           {freelancer && (
-            <TouchableOpacity 
-              style={styles.freelancerCard}
-              onPress={() => navigation.navigate('FreelancerDetails', { freelancerId: freelancer._id })}
+            <>  
+              <TouchableOpacity 
+                style={styles.freelancerCard}
+                onPress={() => navigation.navigate('FreelancerDetails', { freelancerId: freelancer._id })}
             >
               <ImageWithSkeleton 
                 source={{ uri: freelancer.profileImage || "https://via.placeholder.com/150" }} 
@@ -276,8 +295,12 @@ export default function ServiceDetails() {
                   </View>
                 </View>
               </View>
+              <TouchableOpacity onPress={handleStartChat}>
               <MessageCircle size={24} color={COLORS.primary} />
             </TouchableOpacity>
+            </TouchableOpacity>
+            
+            </>
           )}
 
           {/* Title & Price */}

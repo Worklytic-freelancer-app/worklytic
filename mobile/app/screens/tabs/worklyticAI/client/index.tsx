@@ -7,9 +7,12 @@ import { baseUrl } from "../../../../constant/baseUrl";
 import { COLORS } from "../../../../constant/color";
 import ImageWithSkeleton from "@/components/ImageWithSkeleton";
 import SkeletonWorklyticAIClient from "./SkeletonWorklyticAIClient";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RootStackParamList } from "@/navigators/index";
 
 interface ServiceRecommendation {
-  serviceId: string;
+  serviceId: string;  
   title: string;
   matchPercentage: number;  
   budget: number;
@@ -23,6 +26,7 @@ export default function WorklyticAIClient() {
   const [recommendations, setRecommendations] = useState<ServiceRecommendation[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   useEffect(() => {
     fetchRecommendations();
@@ -131,7 +135,7 @@ export default function WorklyticAIClient() {
             ) : (
               <View style={styles.matchesContainer}>
                 {recommendations.map((item) => (
-                  <TouchableOpacity key={item.serviceId} style={styles.matchCard} activeOpacity={0.8}>
+                  <TouchableOpacity onPress={() => navigation.navigate("ServiceDetails", { serviceId: item.serviceId })}  key={item.serviceId} style={styles.matchCard} activeOpacity={0.8}>
                     <View style={styles.matchImageContainer}>
                       <ImageWithSkeleton 
                         source={{ uri: item.image[0] }} 
@@ -167,10 +171,10 @@ export default function WorklyticAIClient() {
                         )}
                       </View>
                       
-                      <TouchableOpacity style={styles.detailButton}>
+                      {/* <TouchableOpacity style={styles.detailButton}>
                         <Text style={styles.detailButtonText}>Lihat Detail</Text>
                         <ChevronRight size={16} color={COLORS.white} />
-                      </TouchableOpacity>
+                      </TouchableOpacity> */}
                     </View>
                   </TouchableOpacity>
                 ))}

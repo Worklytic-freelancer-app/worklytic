@@ -160,6 +160,7 @@ class ProjectService {
             [
               {
                 projectId: "string -> {ini pakai project ID yg sesuai dengan data project}",
+                clientId: "string -> {ini pakai client ID yg sesuai dengan data project / atau id user / pikir sendiri}",
                 title: "string -> {ini pakai title yg sesuai dengan data project}",
                 matchPercentage: "number -> {ini tidak ada pada data project ataupun user, jadi kamu harus menghitungnya sendiri, contoh: 95%}",
                 budget: "number -> {ini pakai budget yg sesuai dengan data project}",

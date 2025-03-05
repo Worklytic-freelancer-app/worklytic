@@ -116,7 +116,7 @@ export default function Services() {
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.title}>Layanan Saya</Text>
+                <Text style={styles.title}>My Services</Text>
                 <TouchableOpacity 
                     onPress={() => navigation.navigate("AddService")}
                     style={styles.addButton}
@@ -192,7 +192,7 @@ export default function Services() {
                         selectedService && navigation.navigate("EditService", { serviceId: selectedService });
                     }}
                 >
-                    Edit Layanan
+                    Edit Service
                 </MenuItem>
                 <MenuItem
                     icon="trash"
@@ -202,7 +202,7 @@ export default function Services() {
                     }}
                     destructive
                 >
-                    Hapus Layanan
+                    Delete Service
                 </MenuItem>
             </Menu>
 

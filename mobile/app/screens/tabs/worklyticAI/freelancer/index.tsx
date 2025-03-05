@@ -7,9 +7,13 @@ import { baseUrl } from "../../../../constant/baseUrl";
 import { COLORS } from "../../../../constant/color";
 import ImageWithSkeleton from "@/components/ImageWithSkeleton";
 import SkeletonWorklyticAIFreelancer from "./SkeletonWorklyticAIFreelancer";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RootStackParamList } from "@/navigators/index";
 
 interface AIRecommendation {
     projectId: string;
+    clientId: string;
     title: string;
     matchPercentage: number;  
     budget: number;
@@ -19,6 +23,7 @@ interface AIRecommendation {
 }
 
 export default function WorklyticAIFreelancer() {
+    const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
     const insets = useSafeAreaInsets();
     const [recommendations, setRecommendations] = useState<AIRecommendation[]>([]);
     const [loading, setLoading] = useState(true);
@@ -40,6 +45,8 @@ export default function WorklyticAIFreelancer() {
                 }
             });
             const data = await response.json();
+
+            // console.log(data, 'data');
             
             if (data.success) {
                 setRecommendations(data.data);
@@ -130,7 +137,12 @@ export default function WorklyticAIFreelancer() {
                         ) : (
                             <View style={styles.matchesContainer}>
                                 {recommendations.map((item) => (
-                                    <TouchableOpacity key={item.projectId} style={styles.matchCard} activeOpacity={0.8}>
+                                    <TouchableOpacity 
+                                        onPress={() => navigation.navigate("ProjectDetails", { projectId: item.projectId, clientId: item.clientId })}
+                                        key={item.projectId} 
+                                        style={styles.matchCard} 
+                                        activeOpacity={0.8}
+                                    >
                                         <View style={styles.matchImageContainer}>
                                             <ImageWithSkeleton 
                                                 source={{ uri: item.image[0] }} 
@@ -166,10 +178,10 @@ export default function WorklyticAIFreelancer() {
                                                 )}
                                             </View>
                                             
-                                            <TouchableOpacity style={styles.detailButton}>
+                                            {/* <TouchableOpacity style={styles.detailButton}>
                                                 <Text style={styles.detailButtonText}>Lihat Detail</Text>
                                                 <ChevronRight size={16} color={COLORS.white} />
-                                            </TouchableOpacity>
+                                            </TouchableOpacity> */}
                                         </View>
                                     </TouchableOpacity>
                                 ))}

@@ -615,7 +615,7 @@ export default function ChooseFreelancer() {
                         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                             <ChevronLeft size={24} color={COLORS.black} />
                         </TouchableOpacity>
-                        <Text style={styles.headerTitle}>Pilih Freelancer</Text>
+                        <Text style={styles.headerTitle}>Choose Freelancer</Text>
                         <View style={{ width: 24 }} />
                     </View>
                     
