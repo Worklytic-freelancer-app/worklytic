@@ -73,6 +73,7 @@ export default function ChooseFreelancer() {
     
     // Debug projectId
     useEffect(() => {
+        // console.log('projectId:', projectId);
     }, [projectId]);
     
     const [actionType, setActionType] = useState<{ id: string | null, type: 'accept' | 'reject' | null }>({ id: null, type: null });
@@ -415,6 +416,7 @@ export default function ChooseFreelancer() {
     };
 
     const renderApplicant = ({ item }: { item: ProjectFeature }) => {
+        // console.log('item:', item);
         if (!item.freelancer) return null;
 
         const isRejectLoading = actionType.id === item._id && actionType.type === 'reject';
@@ -424,17 +426,19 @@ export default function ChooseFreelancer() {
         return (
             <View style={styles.applicantCard}>
                 <View style={styles.applicantHeader}>
-                    <ImageWithSkeleton
-                        source={{ uri: item.freelancer.profileImage }}
-                        style={styles.applicantAvatar}
-                    />
-                    <View style={styles.applicantInfo}>
-                        <Text style={styles.applicantName}>{item.freelancer.fullName}</Text>
-                        <View style={styles.ratingContainer}>
-                            <Star size={16} color="#F59E0B" fill="#F59E0B" />
-                            <Text style={styles.ratingText}>{item.freelancer.rating.toFixed(1)}</Text>
+                    <TouchableOpacity onPress={() => item.freelancer && navigation.navigate("FreelancerDetails", { freelancerId: item.freelancer._id })}>
+                        <ImageWithSkeleton
+                            source={{ uri: item.freelancer?.profileImage }}
+                            style={styles.applicantAvatar}
+                        />
+                    </TouchableOpacity>
+                        <View style={styles.applicantInfo}>
+                            <Text style={styles.applicantName}>{item.freelancer?.fullName}</Text>
+                            <View style={styles.ratingContainer}>
+                                <Star size={16} color="#F59E0B" fill="#F59E0B" />
+                                <Text style={styles.ratingText}>{item.freelancer?.rating.toFixed(1)}</Text>
+                            </View>
                         </View>
-                    </View>
                     
                     {/* Menu dropdown dengan titik tiga */}
                     <View style={styles.menuContainer}>
@@ -543,7 +547,7 @@ export default function ChooseFreelancer() {
                 <View style={styles.applicantDetails}>
                     <View style={styles.detailItem}>
                         <MapPin size={16} color="#6B7280" />
-                        <Text style={styles.detailText}>{item.freelancer.location || 'Lokasi tidak tersedia'}</Text>
+                        <Text style={styles.detailText}>{item.freelancer?.location || 'Lokasi tidak tersedia'}</Text>
                     </View>
                     <View style={styles.detailItem}>
                         <Calendar size={16} color="#6B7280" />

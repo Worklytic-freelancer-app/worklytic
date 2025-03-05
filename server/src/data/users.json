@@ -23,7 +23,7 @@
         "companyName": "",
         "industry": "",
         "website": "https://henotic.space",
-        "rating": 4.8,
+        "rating": 4.4,
         "totalReviews": 37
     },
     {   
@@ -77,8 +77,8 @@
     },
     {
         "_id": "66d064e5e913892a850e1237",
-        "fullName": "Budi Santoso",
-        "email": "budi.santoso@gmail.com",
+        "fullName": "Bee",
+        "email": "robbysugandaaa@gmail.com",
         "password": "123456",
         "role": "freelancer",
         "profileImage": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7",

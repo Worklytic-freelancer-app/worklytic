@@ -57,7 +57,7 @@ export default function Profile() {
                     <ProfileInfo 
                         fullName={user.fullName}
                         location={user.location || 'Belum diatur'}
-                        profileImage={user.profileImage || 'https://images.unsplash.com/photo-1497366216548-37526070297c'}
+                        profileImage={user.profileImage || "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small_2x/default-avatar-icon-of-social-media-user-vector.jpg"}
                         rating={user.rating || 0}
                         totalReviews={user.totalReviews || 0}
                     />
