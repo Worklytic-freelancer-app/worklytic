@@ -689,6 +689,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 8,
         paddingVertical: 2,
         borderRadius: 12,
+        maxWidth: 80,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     clientBadge: {
         backgroundColor: 'rgba(8, 145, 178, 0.08)',
