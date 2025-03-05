@@ -38,7 +38,7 @@ export const usePayment = () => {
                 if (!token) {
                     throw new Error('Authentication token not found');
                 }
-                
+                console.log(userId, projectId)
                 const response = await fetch(`${baseUrl}/api/projects/${projectId}/payment`, {
                     method: 'POST',
                     headers: {

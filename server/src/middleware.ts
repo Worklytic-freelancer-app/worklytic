@@ -4,10 +4,15 @@ import { verifyToken } from "./utils/jwt";
 
 export async function middleware(request: NextRequest) {
   try {
+    // // Periksa apakah ini adalah rute autentikasi yang tidak memerlukan token
+    // if (request.nextUrl.pathname.startsWith('/api/auth/')) {
+    //   return NextResponse.next();
+    // }
+
     const token = request.headers.get("Authorization")?.split(" ")[1];
 
     if (!token) {
-      return NextResponse.json({ message: "Authentication required" }, { status: 401 });
+      return NextResponse.json({ success: false, message: "Authentication required" }, { status: 401 });
     }
 
     const payload = await verifyToken(token);
@@ -22,12 +27,21 @@ export async function middleware(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error in middleware:", error);
-    return NextResponse.json({ message: "Invalid token" }, { status: 401 });
+    return NextResponse.json({ success: false, message: "Invalid token" }, { status: 401 });
   }
 }
 
 export const config = {
-  matcher: ["/api/users", "/api/users/:path*", "/((?!api/auth|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/api/users/:path*",
+    "/api/projects/:path*",
+    "/api/services/:path*",
+    "/api/projectfeatures/:path*",
+    "/api/projectdiscussions/:path*",
+    // "/api/payments/:path*",
+    // Tambahkan endpoint lain yang memerlukan autentikasi
+    // PENTING: Jangan sertakan endpoint autentikasi
+  ],
 };
 
 

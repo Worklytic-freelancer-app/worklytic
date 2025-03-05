@@ -52,21 +52,43 @@ export const useAuth = () => {
     // Mutation untuk sign in
     const signInMutation = useMutation({
         mutationFn: async (credentials: SignInCredentials) => {
-            const response = await fetch(`${baseUrl}/api/auth/sign-in`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(credentials),
-            });
-            
-            const result = await response.json() as AuthResponse;
-            
-            if (!response.ok) {
-                throw new Error(result.message || 'Gagal melakukan login');
+            try {
+                const response = await fetch(`${baseUrl}/api/auth/sign-in`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(credentials),
+                });
+                
+                // Ambil respons sebagai text terlebih dahulu
+                const responseText = await response.text();
+                
+                // Periksa apakah respons adalah HTML (biasanya dimulai dengan <!DOCTYPE atau <html)
+                if (responseText.trim().startsWith('<!DOCTYPE') || responseText.trim().startsWith('<html')) {
+                    console.error('Server mengembalikan HTML alih-alih JSON:', responseText.substring(0, 200));
+                    throw new Error('Server sedang mengalami masalah. Silakan coba lagi nanti.');
+                }
+                
+                // Coba parse sebagai JSON
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (error) {
+                    console.error('Error parsing JSON:', error, 'Response:', responseText);
+                    throw new Error('Format respons server tidak valid');
+                }
+                
+                // Periksa status respons
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || 'Gagal melakukan login');
+                }
+                
+                return result as AuthResponse;
+            } catch (error) {
+                console.error('Login error:', error);
+                throw error;
             }
-            
-            return result;
         },
         onSuccess: async (data) => {
             // Simpan data autentikasi
@@ -91,13 +113,34 @@ export const useAuth = () => {
                 body: JSON.stringify(credentials),
             });
             
-            const result = await response.json() as AuthResponse;
-            
+            // Periksa status HTTP terlebih dahulu
             if (!response.ok) {
-                throw new Error(result.message || 'Gagal melakukan registrasi');
+                const errorText = await response.text();
+                let errorMessage = 'Gagal melakukan registrasi';
+                
+                try {
+                    // Coba parse sebagai JSON jika memungkinkan
+                    const errorJson = JSON.parse(errorText);
+                    errorMessage = errorJson.message || errorMessage;
+                } catch (e) {
+                    // Jika bukan JSON, gunakan text sebagai error message
+                    errorMessage = errorText || errorMessage;
+                }
+                
+                throw new Error(errorMessage);
             }
             
-            return result;
+            // Coba parse response sebagai JSON dengan penanganan error
+            let result;
+            try {
+                const responseText = await response.text();
+                result = JSON.parse(responseText);
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+                throw new Error('Format respons server tidak valid');
+            }
+            
+            return result as AuthResponse;
         },
         onSuccess: async (data) => {
             // Simpan data autentikasi
