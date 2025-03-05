@@ -21,11 +21,9 @@ const UserSchema = z.object({
   hourlyRate: z.number().default(0),
   skills: z.array(z.string()).default([]),
   totalProjects: z.number().default(0),
-  successRate: z.number().default(0),
   companyName: z.string().default(""),
   industry: z.string().default(""),
   website: z.string().default(""),
-  totalPostedProjects: z.number().default(0),
   rating: z.number().default(0),
   totalReviews: z.number().default(0),
 });

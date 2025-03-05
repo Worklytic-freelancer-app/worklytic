@@ -20,13 +20,11 @@
             "UI/UX Design"
         ],
         "totalProjects": 0,
-        "successRate": 0,
         "companyName": "",
         "industry": "",
         "website": "https://henotic.space",
-        "totalPostedProjects": 0,
-        "rating": 0,
-        "totalReviews": 0
+        "rating": 4.8,
+        "totalReviews": 37
     },
     {   
         "_id": "66d064e5e913892a850e1235",
@@ -42,14 +40,12 @@
         "about": "Perusahaan IT konsultan terkemuka yang berfokus pada transformasi digital",
         "phone": "+62318765432",
         "skills": [],
-        "totalProjects": 0,
-        "successRate": 0,
+        "totalProjects": 3,
         "companyName": "PT Maju Teknologi Indonesia",
         "industry": "Information Technology",
         "website": "https://majuteknologi.co.id",
-        "totalPostedProjects": 0,
-        "rating": 0,
-        "totalReviews": 0
+        "rating": 4.6,
+        "totalReviews": 33
     },
 
     {
@@ -73,13 +69,11 @@
             "Digital Marketing"
         ],
         "totalProjects": 0,
-        "successRate": 0,
         "companyName": "",
         "industry": "",
         "website": "https://dewisafitri.design",
-        "totalPostedProjects": 0,
-        "rating": 0,
-        "totalReviews": 0
+        "rating": 4.5,
+        "totalReviews": 20
     },
     {
         "_id": "66d064e5e913892a850e1237",
@@ -102,13 +96,11 @@
             "Backend Development"
         ],
         "totalProjects": 0,
-        "successRate": 0,
         "companyName": "",
         "industry": "",
         "website": "https://budisantoso.dev",
-        "totalPostedProjects": 0,
-        "rating": 0,
-        "totalReviews": 0
+        "rating": 4.5,
+        "totalReviews": 20
     },
     {
         "fullName": "CV Digital Kreatif",
@@ -124,13 +116,11 @@
         "phone": "+6261987654321",
         "skills": [],
         "totalProjects": 0,
-        "successRate": 0,
         "companyName": "CV Digital Kreatif",
         "industry": "Digital Marketing",
         "website": "https://digitalkreatif.com",
-        "totalPostedProjects": 0,
-        "rating": 0,
-        "totalReviews": 0
+        "rating": 4.5,
+        "totalReviews": 32
     },
     {
         "_id": "66d064e5e913892a850e1238",
@@ -153,13 +143,11 @@
             "Graphic Design"
         ],
         "totalProjects": 0,
-        "successRate": 0,
         "companyName": "",
         "industry": "",
         "website": "https://freelancer.com",
-        "totalPostedProjects": 0,
-        "rating": 0,
-        "totalReviews": 0
+        "rating": 4.9,
+        "totalReviews": 15
     },
     {
         "_id": "66d064e5e913892a850e1239",
@@ -175,14 +163,12 @@
         "about": "Perusahaan IT konsultan terkemuka yang berfokus pada transformasi digital",
         "phone": "+6281234567890",
         "skills": [],
-        "totalProjects": 0,
-        "successRate": 0,
+        "totalProjects": 3,
         "companyName": "PT Maju Teknologi Indonesia",
         "industry": "Information Technology",
         "website": "https://majuteknologi.co.id",
-        "totalPostedProjects": 0,
-        "rating": 0,
-        "totalReviews": 0
+        "rating": 4.2,
+        "totalReviews": 24
     },
     {
         "_id": "66d064e5e913892a850e1240",
@@ -205,13 +191,11 @@
             "Data Science"
         ],
         "totalProjects": 0,
-        "successRate": 0,
         "companyName": "",
         "industry": "",
         "website": "https://andipratama.dev",
-        "totalPostedProjects": 0,
-        "rating": 0,
-        "totalReviews": 0
+        "rating": 4.5,
+        "totalReviews": 26
     },
     {
         "_id": "66d064e5e913892a850e1241",
@@ -227,14 +211,12 @@
         "about": "Perusahaan konsultan IT yang fokus pada transformasi digital untuk sektor perbankan dan finansial",
         "phone": "+62215678901",
         "skills": [],
-        "totalProjects": 0,
-        "successRate": 0,
+        "totalProjects": 1,
         "companyName": "PT Solusi Digital Indonesia",
         "industry": "Financial Technology",
         "website": "https://solusidigital.id",
-        "totalPostedProjects": 0,
-        "rating": 0,
-        "totalReviews": 0
+        "rating": 4.6,
+        "totalReviews": 23
     },
     {
         "_id": "66d064e5e913892a850e1242",
@@ -257,13 +239,11 @@
             "Frontend Development"
         ],
         "totalProjects": 0,
-        "successRate": 0,
         "companyName": "",
         "industry": "",
         "website": "https://sitirahayu.com",
-        "totalPostedProjects": 0,
-        "rating": 0,
-        "totalReviews": 0
+        "rating": 4.8,
+        "totalReviews": 10
     },
     {
         "_id": "66d064e5e913892a850e1243",
@@ -279,14 +259,12 @@
         "about": "Studio kreatif yang fokus pada pengembangan brand dan desain grafis untuk UMKM",
         "phone": "+62274567890",
         "skills": [],
-        "totalProjects": 0,
-        "successRate": 0,
+        "totalProjects": 1,
         "companyName": "CV Kreatif Muda",
         "industry": "Creative Agency",
         "website": "https://kreatifmuda.com",
-        "totalPostedProjects": 0,
-        "rating": 0,
-        "totalReviews": 0
+        "rating": 4.5,
+        "totalReviews": 17
     },
     {
         "_id": "66d064e5e913892a850e1244",
@@ -309,13 +287,11 @@
             "Backend Development"
         ],
         "totalProjects": 0,
-        "successRate": 0,
         "companyName": "",
         "industry": "",
         "website": "https://rudihartono.dev",
-        "totalPostedProjects": 0,
-        "rating": 0,
-        "totalReviews": 0
+        "rating": 4.5,
+        "totalReviews": 23
     },
     {
         "_id": "66d064e5e913892a850e1245",
@@ -331,14 +307,12 @@
         "about": "Perusahaan teknologi yang fokus pada pengembangan solusi IoT dan AI untuk industri manufaktur",
         "phone": "+62216789012",
         "skills": [],
-        "totalProjects": 0,
-        "successRate": 0,
+        "totalProjects": 1,
         "companyName": "PT Teknologi Masa Depan",
         "industry": "Technology",
         "website": "https://tekmasadepan.co.id",
-        "totalPostedProjects": 0,
-        "rating": 0,
-        "totalReviews": 0
+        "rating": 4.9,
+        "totalReviews": 21
     },
     {
         "_id": "66d064e5e913892a850e1246",
@@ -361,13 +335,11 @@
             "DevOps"
         ],
         "totalProjects": 0,
-        "successRate": 0,
         "companyName": "",
         "industry": "",
         "website": "https://mayaputri.ai",
-        "totalPostedProjects": 0,
-        "rating": 0,
-        "totalReviews": 0
+        "rating": 4.9,
+        "totalReviews": 10
     },
     {
         "_id": "66d064e5e913892a850e1247",
@@ -383,14 +355,12 @@
         "about": "Startup yang bergerak di bidang pengembangan aplikasi mobile dan web untuk UMKM",
         "phone": "+62227890123",
         "skills": [],
-        "totalProjects": 0,
-        "successRate": 0,
+        "totalProjects": 1,
         "companyName": "CV Inovasi Digital",
         "industry": "Software Development",
         "website": "https://inovasidigital.id",
-        "totalPostedProjects": 0,
-        "rating": 0,
-        "totalReviews": 0
+        "rating": 4.7,
+        "totalReviews": 22
     },
     {
         "_id": "66d064e5e913892a850e1248",
@@ -413,13 +383,11 @@
             "Data Science"
         ],
         "totalProjects": 0,
-        "successRate": 0,
         "companyName": "",
         "industry": "",
         "website": "https://dimasprayoga.dev",
-        "totalPostedProjects": 0,
-        "rating": 0,
-        "totalReviews": 0
+        "rating": 4.6,
+        "totalReviews": 30
     },
     {
         "_id": "66d064e5e913892a850e1249",
@@ -435,13 +403,11 @@
         "about": "Perusahaan edtech yang fokus pada pengembangan platform pembelajaran online",
         "phone": "+62218901234",
         "skills": [],
-        "totalProjects": 0,
-        "successRate": 0,
+        "totalProjects": 1,
         "companyName": "PT Edukasi Teknologi Indonesia",
         "industry": "Education Technology",
         "website": "https://edutech.co.id",
-        "totalPostedProjects": 0,
-        "rating": 0,
-        "totalReviews": 0
+        "rating": 4.8,
+        "totalReviews": 18
     }
 ]

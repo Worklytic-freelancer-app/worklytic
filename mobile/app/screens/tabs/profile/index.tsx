@@ -57,15 +57,17 @@ export default function Profile() {
                     <ProfileInfo 
                         fullName={user.fullName}
                         location={user.location || 'Belum diatur'}
-                        profileImage={user.profileImage}
+                        profileImage={user.profileImage || 'https://images.unsplash.com/photo-1497366216548-37526070297c'}
                         rating={user.rating || 0}
                         totalReviews={user.totalReviews || 0}
                     />
                     <Balance balance={user.balance || 0} />
                     <Stats 
                         totalProjects={user.totalProjects || 0}
-                        successRate={user.successRate || 0}
+                        // successRate={user.successRate || 0}
+                        services={user.services || []}
                         balance={user.balance || 0}
+                        role={user.role || ''}
                     />
                     
                     {(!user.about && (!user.skills || user.skills.length === 0)) ? (

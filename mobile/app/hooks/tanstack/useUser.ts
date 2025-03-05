@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { baseUrl } from '@/constant/baseUrl';
 import { SecureStoreUtils } from '@/utils/SecureStore';
 
-interface Service {
+export interface Service {
     _id: string;
     title: string;
     description: string;

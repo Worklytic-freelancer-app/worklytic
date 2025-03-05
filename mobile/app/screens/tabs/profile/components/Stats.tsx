@@ -1,24 +1,39 @@
 import { View, Text, StyleSheet } from "react-native";
 import { COLORS } from "@/constant/color";
+import React from "react";
+import { Service } from "@/hooks/tanstack/useUser";
 
 interface StatsProps {
   totalProjects: number;
-  successRate: number;
+  services: Service[];
   balance: number;
+  role: string;
 }
 
-export default function Stats({ totalProjects, successRate, balance }: StatsProps) {
+export default function Stats({ totalProjects, services, balance , role}: StatsProps) {
   return (
     <View style={styles.statsContainer}>
-      <View style={styles.statItem}>
-        <Text style={styles.statNumber}>{totalProjects}</Text>
-        <Text style={styles.statLabel}>Projects</Text>
-      </View>
-      <View style={styles.divider} />
-      <View style={styles.statItem}>
+      {role === "freelancer" ? (
+        <>
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>{services.length}</Text>
+            <Text style={styles.statLabel}>Services</Text>
+          </View>
+          <View style={styles.divider} />
+        </>
+      ):(
+        <>
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>{totalProjects}</Text>
+            <Text style={styles.statLabel}>Projects</Text>
+          </View>
+          <View style={styles.divider} />
+        </>
+      )}
+      {/* <View style={styles.statItem}>
         <Text style={styles.statNumber}>{successRate}%</Text>
         <Text style={styles.statLabel}>Success Rate</Text>
-      </View>
+      </View> */}
       <View style={styles.divider} />
       <View style={styles.statItem}>
         <Text style={styles.statNumber}>Rp{(balance/1000000).toFixed(1)}M</Text>
