@@ -51,6 +51,10 @@ export default function SignIn() {
           <Text style={styles.logoTitle}>Worklytic</Text>
         </View>
 
+        {/* <View style={styles.logoContainer}>
+          <Text style={styles.logoTitle}>Pasang logo disini</Text>
+        </View> */}
+
         <View style={styles.header}>
           <Text style={styles.title}>Welcome Back</Text>
           <Text style={styles.subtitle}>Sign in to continue your journey</Text>
@@ -88,10 +92,10 @@ export default function SignIn() {
             <View style={styles.dividerLine} />
           </View>
 
-          <TouchableOpacity style={styles.socialButton}>
+          {/* <TouchableOpacity style={styles.socialButton}>
             <Image source={{ uri: "https://cdn-icons-png.flaticon.com/512/2991/2991148.png" }} style={styles.socialIcon} />
             <Text style={styles.socialButtonText}>Continue with Google</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         <View style={styles.footer}>
@@ -112,6 +116,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     justifyContent: "center",
   },
+
   logoContainer: {
     alignItems: "center",
     marginBottom: 30,
