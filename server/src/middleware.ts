@@ -4,11 +4,6 @@ import { verifyToken } from "./utils/jwt";
 
 export async function middleware(request: NextRequest) {
   try {
-    // // Periksa apakah ini adalah rute autentikasi yang tidak memerlukan token
-    // if (request.nextUrl.pathname.startsWith('/api/auth/')) {
-    //   return NextResponse.next();
-    // }
-
     const token = request.headers.get("Authorization")?.split(" ")[1];
 
     if (!token) {
@@ -32,64 +27,8 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/api/users/:path*",
-    "/api/projects/:path*",
-    "/api/services/:path*",
-    "/api/projectfeatures/:path*",
-    "/api/projectdiscussions/:path*",
-    // "/api/payments/:path*",
-    // Tambahkan endpoint lain yang memerlukan autentikasi
-    // PENTING: Jangan sertakan endpoint autentikasi
-  ],
+    matcher: [
+        "/api/:path*",
+        "/((?!api/auth|api/projects|api/services|_next/static|_next/image|favicon.ico).*)",
+    ],
 };
-
-
-
-// import { NextResponse } from "next/server";
-// import type { NextRequest } from "next/server";
-// import { verifyToken } from "./utils/jwt";
-
-// export async function middleware(request: NextRequest) {
-//   try {
-//     const publicPaths = ["/", "/terms", "/privacy", "/maintenance"];
-//     const path = request.nextUrl.pathname;
-
-//     if (publicPaths.includes(path)) {
-//       return NextResponse.next();
-//     }
-    
-//     const token = request.headers.get("Authorization")?.split(" ")[1];
-
-//     if (!token) {
-//       return NextResponse.json(
-//         { message: "Authentication required" },
-//         { status: 401 }
-//       );
-//     }
-
-//     const payload = await verifyToken(token);
-    
-//     const requestHeaders = new Headers(request.headers);
-//     requestHeaders.set("user", JSON.stringify(payload));
-
-//     return NextResponse.next({
-//       request: {
-//         headers: requestHeaders,
-//       },
-//     });
-//   } catch (error) {
-//     console.error("Error in middleware:", error);
-//     return NextResponse.json(
-//       { message: "Invalid token" },
-//       { status: 401 }
-//     );
-//   }
-// }
-
-// export const config = {
-//     matcher: [
-//       "/api/:path*",
-//       "/((?!api/auth|_next/static|_next/image|favicon.ico).*)",
-//     ],
-//   };

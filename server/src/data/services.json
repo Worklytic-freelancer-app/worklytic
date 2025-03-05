@@ -7,9 +7,9 @@
         "deliveryTime": "7 hari",
         "category": "UI/UX Design",
         "images": [
-            "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
-            "https://images.unsplash.com/photo-1559028012-481c04fa702d",
-            "https://images.unsplash.com/photo-1531403009284-440f080d1e12"
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204449/daniel-mccullough-HtBlQdxfG9k-unsplash_suhhvo.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204450/sigmund-4UGmm3WRUoQ-unsplash_gpcln5.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204451/uwe-hensel-44Uz2J7z9Rg-unsplash_uymzhh.jpg"
         ],
         "rating": 4.7,
         "reviews": 53,
@@ -37,9 +37,9 @@
         "deliveryTime": "14 hari",
         "category": "Mobile Development",
         "images": [
-            "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7",
-            "https://images.unsplash.com/photo-1551650975-87deedd944c3",
-            "https://images.unsplash.com/photo-1607252650355-f7fd0460ccdb"
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204450/sigmund-4UGmm3WRUoQ-unsplash_gpcln5.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204449/daniel-mccullough-HtBlQdxfG9k-unsplash_suhhvo.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204451/uwe-hensel-44Uz2J7z9Rg-unsplash_uymzhh.jpg"
         ],
         "rating": 4.8,
         "reviews": 48,
@@ -67,9 +67,9 @@
         "deliveryTime": "10 hari",
         "category": "UI/UX Design",
         "images": [
-            "https://images.unsplash.com/photo-1561070791-2526d30994b5",
-            "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e",
-            "https://images.unsplash.com/photo-1559028012-481c04fa702d"
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204451/uwe-hensel-44Uz2J7z9Rg-unsplash_uymzhh.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204449/daniel-mccullough-HtBlQdxfG9k-unsplash_suhhvo.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204450/sigmund-4UGmm3WRUoQ-unsplash_gpcln5.jpg"
         ],
         "rating": 4.9,
         "reviews": 35,
@@ -97,9 +97,9 @@
         "deliveryTime": "12 hari",
         "category": "Backend Development",
         "images": [
-            "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7",
-            "https://images.unsplash.com/photo-1555066931-4365d14bab8c",
-            "https://images.unsplash.com/photo-1623479322729-28b25c16b011"
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204449/daniel-mccullough-HtBlQdxfG9k-unsplash_suhhvo.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204444/jo-szczepanska-5aiRb5f464A-unsplash_btsp8f.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204442/firmbee-com-gcsNOsPEXfs-unsplash_eygskj.jpg"
         ],
         "rating": 4.6,
         "reviews": 42,
@@ -127,9 +127,9 @@
         "deliveryTime": "5 hari",
         "category": "UI/UX Design",
         "images": [
-            "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f",
-            "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d",
-            "https://images.unsplash.com/photo-1556740758-90de374c12ad"
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204444/jo-szczepanska-5aiRb5f464A-unsplash_btsp8f.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204449/daniel-mccullough-HtBlQdxfG9k-unsplash_suhhvo.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204442/firmbee-com-gcsNOsPEXfs-unsplash_eygskj.jpg"
         ],
         "rating": 4.8,
         "reviews": 28,
@@ -157,9 +157,9 @@
         "deliveryTime": "21 hari",
         "category": "Full-Stack Development",
         "images": [
-            "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7",
-            "https://images.unsplash.com/photo-1547658719-da2b51169166",
-            "https://images.unsplash.com/photo-1551650975-87deedd944c3"
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204442/firmbee-com-gcsNOsPEXfs-unsplash_eygskj.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204449/daniel-mccullough-HtBlQdxfG9k-unsplash_suhhvo.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204444/jo-szczepanska-5aiRb5f464A-unsplash_btsp8f.jpg"
         ],
         "rating": 4.9,
         "reviews": 31,
@@ -188,9 +188,9 @@
         "deliveryTime": "21 hari",
         "category": "Backend Development",
         "images": [
-            "https://images.unsplash.com/photo-1451187580459-43490279c0fa",
-            "https://images.unsplash.com/photo-1558494949-ef010cbdcc31",
-            "https://images.unsplash.com/photo-1563986768494-4dee2763ff3f"
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204483/krakenimages-376KN_ISplE-unsplash_q2kr2x.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204472/headway-5QgIuuBxKwM-unsplash_gio6ad.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204471/laura-adai-7PbJAJAg5Ig-unsplash_phqhcv.jpg"
         ],
         "rating": 4.8,
         "reviews": 25,
@@ -219,9 +219,9 @@
         "deliveryTime": "30 hari",
         "category": "Digital Marketing",
         "images": [
-            "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a",
-            "https://images.unsplash.com/photo-1557838923-2985c318be48",
-            "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0"
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204472/headway-5QgIuuBxKwM-unsplash_gio6ad.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204483/krakenimages-376KN_ISplE-unsplash_q2kr2x.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204471/laura-adai-7PbJAJAg5Ig-unsplash_phqhcv.jpg"
         ],
         "rating": 4.9,
         "reviews": 38,
@@ -250,9 +250,9 @@
         "deliveryTime": "14 hari",
         "category": "Frontend Development",
         "images": [
-            "https://images.unsplash.com/photo-1517180102446-f3ece451e9d8",
-            "https://images.unsplash.com/photo-1522542550221-31fd19575a2d",
-            "https://images.unsplash.com/photo-1460925895917-afdab827c52f"
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204471/laura-adai-7PbJAJAg5Ig-unsplash_phqhcv.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204483/krakenimages-376KN_ISplE-unsplash_q2kr2x.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204472/headway-5QgIuuBxKwM-unsplash_gio6ad.jpg"
         ],
         "rating": 4.7,
         "reviews": 42,
@@ -281,9 +281,9 @@
         "deliveryTime": "25 hari",
         "category": "Data Science",
         "images": [
-            "https://images.unsplash.com/photo-1551288049-bebda4e38f71",
-            "https://images.unsplash.com/photo-1518186285589-2f7649de83e0",
-            "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3"
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204464/brands-people-Ax8IA8GAjVg-unsplash_ixbdkv.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204471/laura-adai-7PbJAJAg5Ig-unsplash_phqhcv.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204457/markus-winkler-Q2J2qQsoYH8-unsplash_oxnxaa.jpg"
         ],
         "rating": 4.8,
         "reviews": 29,
@@ -312,9 +312,9 @@
         "deliveryTime": "30 hari",
         "category": "DevOps",
         "images": [
-            "https://images.unsplash.com/photo-1451187580459-43490279c0fa",
-            "https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9",
-            "https://images.unsplash.com/photo-1563986768494-4dee2763ff3f"
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204471/laura-adai-7PbJAJAg5Ig-unsplash_phqhcv.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204464/brands-people-Ax8IA8GAjVg-unsplash_ixbdkv.jpg",
+            "https://res.cloudinary.com/diom5njbc/image/upload/v1741204457/markus-winkler-Q2J2qQsoYH8-unsplash_oxnxaa.jpg"
         ],
         "rating": 4.9,
         "reviews": 31,
