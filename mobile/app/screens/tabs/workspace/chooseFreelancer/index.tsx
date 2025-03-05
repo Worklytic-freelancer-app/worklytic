@@ -19,6 +19,7 @@ interface User {
     location: string;
     rating: number;
     skills: string[];
+    balance: number;
 }
 
 interface ProjectFeature {
@@ -35,6 +36,9 @@ interface ProjectFeature {
     createdAt: string;
     updatedAt: string;
     freelancer?: User;
+    project: {
+        budget: number;
+    };
 }
 
 interface Project {
@@ -206,6 +210,13 @@ export default function ChooseFreelancer() {
         invalidateQueries: ['projectfeatures']
     });
 
+    const updateBalance = useMutation<User, Record<string, unknown>>({
+        endpoint: 'users',
+        method: 'PATCH',
+        requiresAuth: true,
+        invalidateQueries: ['users']
+    });
+
     // State untuk menyimpan ID feature yang akan diproses
     const [selectedFeatureId, setSelectedFeatureId] = useState<string | null>(null);
 
@@ -346,32 +357,61 @@ export default function ChooseFreelancer() {
         setActionType({ id: featureId, type: 'accept' });
         setConfirmation(prev => ({ ...prev, visible: false }));
         
-        markAsCompleted.mutate({ 
-            status: 'completed',
-            customEndpoint: `projectfeatures/${featureId}`
-        }, {
-            onSuccess: () => {
+        // Cari feature yang akan diupdate
+        const feature = applicants.find(app => app._id === featureId);
+        
+        if (!feature) {
+            setConfirmation({
+                visible: true,
+                title: 'Gagal',
+                message: 'Data proyek tidak ditemukan',
+                type: 'error',
+                onConfirm: () => setConfirmation(prev => ({ ...prev, visible: false })),
+            });
+            return;
+        }
+
+        // Ambil budget dari proyek
+        const projectBudget = feature.project.budget;
+        const freelancerId = feature.freelancerId;
+
+        // Buat promise array untuk kedua request
+        const promises = [
+            // Update status proyek
+            markAsCompleted.mutateAsync({ 
+                status: 'completed',
+                customEndpoint: `projectfeatures/${featureId}`
+            }),
+            // Update balance freelancer
+            updateBalance.mutateAsync({
+                balance: projectBudget,
+                customEndpoint: `users/${freelancerId}/balance`
+            })
+        ];
+
+        // Jalankan kedua request secara bersamaan
+        Promise.all(promises)
+            .then(() => {
                 refetchFeatures();
                 setActionType({ id: null, type: null });
                 setConfirmation({
                     visible: true,
                     title: 'Berhasil',
-                    message: 'Proyek berhasil ditandai sebagai selesai.',
+                    message: 'Proyek berhasil ditandai sebagai selesai dan pembayaran telah dikirim ke freelancer.',
                     type: 'success',
                     onConfirm: () => setConfirmation(prev => ({ ...prev, visible: false })),
                 });
-            },
-            onError: () => {
+            })
+            .catch((error) => {
                 setActionType({ id: null, type: null });
                 setConfirmation({
                     visible: true,
                     title: 'Gagal',
-                    message: 'Terjadi kesalahan saat menandai proyek sebagai selesai. Silakan coba lagi.',
+                    message: error instanceof Error ? error.message : 'Terjadi kesalahan saat menyelesaikan proyek',
                     type: 'error',
                     onConfirm: () => setConfirmation(prev => ({ ...prev, visible: false })),
                 });
-            }
-        });
+            });
     };
 
     const renderApplicant = ({ item }: { item: ProjectFeature }) => {

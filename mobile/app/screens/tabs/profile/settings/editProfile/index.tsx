@@ -87,7 +87,7 @@ export default function EditProfile() {
 
     // Mutation untuk update profile image
     const updateProfileImage = useMutation<User, Record<string, unknown>>({
-        endpoint: `users/${formData._id || ''}`,
+        endpoint: `users/${formData._id}/upload-image`,
         method: 'PATCH',
         requiresAuth: true,
         onSuccess: async (data) => {

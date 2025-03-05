@@ -12,6 +12,7 @@ import TopFreelancer from "../TopFreelancer";
 import { useFetch } from "@/hooks/tanstack/useFetch";
 import SkeletonClient from "./skeletonClient";
 import ImageWithSkeleton from "@/components/ImageWithSkeleton";
+import ErrorScreen from '@/components/ErrorScreen';
 
 type ClientScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -235,15 +236,15 @@ export default function Client() {
             </View>
             {servicesLoading ? (
               <SkeletonClient count={3} />
-            ) : servicesError ? (
-              <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>Failed to load services 😕</Text>
-                <TouchableOpacity style={styles.retryButton} onPress={() => refetchServices()}>
-                  <Text style={styles.retryButtonText}>Retry</Text>
-                </TouchableOpacity>
-              </View>
             ) : (
-              <FlatList<Service> data={item.data as Service[]} renderItem={renderService} keyExtractor={(item) => item.id.toString()} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.servicesScroll} />
+              <FlatList<Service> 
+                data={item.data as Service[]} 
+                renderItem={renderService} 
+                keyExtractor={(item) => item.id.toString()} 
+                horizontal 
+                showsHorizontalScrollIndicator={false} 
+                contentContainerStyle={styles.servicesScroll} 
+              />
             )}
           </View>
         );
@@ -263,6 +264,18 @@ export default function Client() {
         return null;
     }
   };
+
+  // Cek jika ada error pada freelancer atau services
+  if (freelancersError || servicesError) {
+    return (
+      <ErrorScreen 
+        onRetry={() => {
+          refetchFreelancers();
+          refetchServices();
+        }}
+      />
+    );
+  }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -479,48 +492,5 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: COLORS.darkGray,
     fontWeight: "500",
-  },
-
-  // Loading and error states
-  loadingContainer: {
-    padding: 24,
-    alignItems: "center",
-    height: 200,
-    justifyContent: "center",
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 15,
-    fontWeight: "500",
-    color: COLORS.gray,
-  },
-  errorContainer: {
-    padding: 24,
-    alignItems: "center",
-    height: 200,
-    justifyContent: "center",
-  },
-  errorText: {
-    fontSize: 15,
-    color: COLORS.error,
-    marginBottom: 12,
-    textAlign: "center",
-    fontWeight: "500",
-  },
-  retryButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: COLORS.primary,
-    borderRadius: 12,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  retryButtonText: {
-    fontSize: 14,
-    color: COLORS.background,
-    fontWeight: "700",
   },
 });

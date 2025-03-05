@@ -4,7 +4,7 @@ import { Service as ProjectService } from "../../../../modules/Projects/project.
 export async function GET(req: NextRequest) {
     try {
         const userHeader = req.headers.get("user");
-        console.log(userHeader, "userHeader");
+        // sconsole.log(userHeader, "userHeader");
         if (!userHeader) {
             return NextResponse.json({ error: "User header is required" }, { status: 401 });
         }
@@ -13,7 +13,10 @@ export async function GET(req: NextRequest) {
         return NextResponse.json(result);
     } catch (error) {
         return NextResponse.json(
-            { message: error instanceof Error ? error.message : "Failed to get project recommendations" },
+            { message: error instanceof Error 
+                ? error.message 
+                : "Failed to get project recommendations" 
+            },
             { status: 500 }
         );
     }

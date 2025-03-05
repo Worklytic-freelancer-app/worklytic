@@ -7,18 +7,17 @@ import {
 import type { Result } from "./project.repository";
 import { ZodError } from "zod";
 import { uploadMultipleToCloudinary } from "../../utils/upload";
-import { Service as UserService } from "../Users/user.service";
 import gemini from "../../config/gemini";
+import { Service as UserService } from "../Users/user.service";
 
-// Tambahkan interface untuk rekomendasi proyek
 interface ProjectRecommendation {
-  projectId: string;
-  title: string;
-  matchPercentage: number;
-  budget: number;
-  category: string;
-  skills: string[];
-  image: string[];
+    projectId: string;
+    title: string;
+    matchPercentage: number;
+    budget: number;
+    category: string;
+    skills: string[];
+    image: string[];
 }
 
 class ProjectService {
@@ -171,7 +170,7 @@ class ProjectService {
             ] 
             `
             const response = await gemini(prompt) as ProjectRecommendation[];
-            console.log(response, "response");
+            // console.log(response, "response");
             
             return {
                 success: true,

@@ -7,8 +7,8 @@ import {
 import type { Result } from "./service.repository";
 import { ZodError } from "zod";
 import { uploadMultipleToCloudinary } from "../../utils/upload";
+import gemini from "../../config/gemini";
 import { Service as UserService } from "../Users/user.service";
-import gemini from "@/config/gemini";
 
 interface ServiceRecommendation {
     serviceId: string;
@@ -16,7 +16,9 @@ interface ServiceRecommendation {
     matchPercentage: number;
     budget: number;
     category: string;
-}   
+    include: string[];
+    image: string[];
+}
 
 class ServiceService {
     async create(data: CreateService): Promise<Result<Services>> {
@@ -143,7 +145,7 @@ class ServiceService {
             ]`;
 
             const response = await gemini(prompt) as ServiceRecommendation[];
-            console.log(response, "response");
+            // console.log(response, "response");
             
             return {
                 success: true,
@@ -153,9 +155,6 @@ class ServiceService {
             throw new Error(error instanceof Error ? error.message : "Failed to get service recommendations");
         }
     }
-
-
-
 }
 
 export const Service = new ServiceService();

@@ -3,18 +3,21 @@ import midtransClient from 'midtrans-client';
 // Konfigurasi Midtrans
 const isProduction = process.env.NODE_ENV === 'production';
 
+const serverKey = process.env.NEXT_PUBLIC_MIDTRANS_SERVER_KEY || '';
+const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || '';
+
 // Buat instance Snap untuk payment gateway
 export const snap = new midtransClient.Snap({
     isProduction,
-    serverKey: 'SB-Mid-server-cqmJ4UGEj-5Ks3Zo5f30pKXj',
-    clientKey: 'SB-Mid-client-9H7mfNNmWezLfAxL'
+    serverKey,
+    clientKey
 });
 
 // Buat instance Core API untuk operasi lanjutan
 export const coreApi = new midtransClient.CoreApi({
     isProduction,
-    serverKey: 'SB-Mid-server-cqmJ4UGEj-5Ks3Zo5f30pKXj',
-    clientKey: 'SB-Mid-client-9H7mfNNmWezLfAxL'
+    serverKey,
+    clientKey
 });
 
 // Helper function untuk membuat transaction token

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import { Star } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
@@ -7,6 +7,7 @@ import { RootStackParamList } from "@/navigators";
 import { COLORS } from "@/constant/color";
 import SkeletonTopFreelancer from "./SkeletonTopFreelancer";
 import ImageWithSkeleton from "@/components/ImageWithSkeleton";
+// import ErrorScreen from "@/components/ErrorScreen";
 
 interface ApiFreelancer {
     _id: string;
@@ -40,17 +41,21 @@ export default function TopFreelancer({
         navigation.navigate("Freelancers");
     };
 
+    const renderHeader = () => (
+        <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>{title}</Text>
+            {showSeeAll && (
+                <TouchableOpacity onPress={handleSeeAll}>
+                    <Text style={styles.seeAllText}>See All</Text>
+                </TouchableOpacity>
+            )}
+        </View>
+    );
+
     if (loading) {
         return (
             <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>{title}</Text>
-                    {showSeeAll && (
-                        <TouchableOpacity onPress={handleSeeAll}>
-                            <Text style={styles.seeAllText}>See All</Text>
-                        </TouchableOpacity>
-                    )}
-                </View>
+                {renderHeader()}
                 <SkeletonTopFreelancer count={5} />
             </View>
         );
@@ -59,19 +64,9 @@ export default function TopFreelancer({
     if (error) {
         return (
             <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>{title}</Text>
-                    {showSeeAll && (
-                        <TouchableOpacity onPress={handleSeeAll}>
-                            <Text style={styles.seeAllText}>See All</Text>
-                        </TouchableOpacity>
-                    )}
-                </View>
-                <View style={styles.errorContainer}>
-                    <Text style={styles.errorText}>{error}</Text>
-                    <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
-                        <Text style={styles.retryButtonText}>Coba Lagi</Text>
-                    </TouchableOpacity>
+                {renderHeader()}
+                <View style={styles.emptyContainer}>
+                    <Text style={styles.emptyText}>Gagal memuat data freelancer</Text>
                 </View>
             </View>
         );
@@ -80,14 +75,7 @@ export default function TopFreelancer({
     if (!freelancers || freelancers.length === 0) {
         return (
             <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>{title}</Text>
-                    {showSeeAll && (
-                        <TouchableOpacity onPress={handleSeeAll}>
-                            <Text style={styles.seeAllText}>See All</Text>
-                        </TouchableOpacity>
-                    )}
-                </View>
+                {renderHeader()}
                 <View style={styles.emptyContainer}>
                     <Text style={styles.emptyText}>Tidak ada freelancer tersedia</Text>
                 </View>
@@ -97,14 +85,7 @@ export default function TopFreelancer({
 
     return (
         <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>{title}</Text>
-                {showSeeAll && (
-                    <TouchableOpacity onPress={handleSeeAll}>
-                        <Text style={styles.seeAllText}>See All</Text>
-                    </TouchableOpacity>
-                )}
-            </View>
+            {renderHeader()}
             <FlatList
                 data={freelancers}
                 renderItem={({ item }) => (
@@ -208,29 +189,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         height: 200,
-    },
-    errorContainer: {
-        padding: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: 200,
-    },
-    errorText: {
-        fontSize: 14,
-        color: '#ef4444',
-        marginBottom: 12,
-        textAlign: 'center',
-    },
-    retryButton: {
-        backgroundColor: COLORS.primary,
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 8,
-    },
-    retryButtonText: {
-        color: '#ffffff',
-        fontSize: 14,
-        fontWeight: '500',
     },
     emptyContainer: {
         padding: 20,

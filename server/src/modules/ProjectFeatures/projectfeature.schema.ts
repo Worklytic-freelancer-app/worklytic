@@ -10,7 +10,8 @@ export class ProjectFeature {
 const ProjectFeatureSchema = z.object({
     projectId: z.string().transform((val) => new ObjectId(val)),
     freelancerId: z.string().transform((val) => new ObjectId(val)),
-    status: z.enum(["pending", "in progress", "completed"]),
+    status: z.enum(["pending", "in progress", "completed"]).default("pending"),
+    isPaid: z.boolean().default(false),
 })
 
 const WithIdSchema = z.object({

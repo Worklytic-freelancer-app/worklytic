@@ -16,7 +16,10 @@ export async function GET(req: NextRequest) {
     } catch (error) {
         // console.log(error, "error");
         return NextResponse.json(
-            { message: error instanceof Error ? error.message : "Failed to get project recommendations" },
+            { message: error instanceof Error 
+                ? error.message 
+                : "Failed to get service recommendations" 
+            },
             { status: 500 }
         );
     }

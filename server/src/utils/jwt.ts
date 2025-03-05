@@ -8,7 +8,7 @@ interface Payload {
   User: Users;
 }
 
-const JWT_SECRET = "rahasia";
+const JWT_SECRET = process.env.NEXT_PUBLIC_JWT_SECRET || "rahasiawkoawkoawko";
 
 if (!JWT_SECRET) {
   throw new Error("JWT_SECRET is not defined");
