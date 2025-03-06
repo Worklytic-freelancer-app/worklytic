@@ -2,11 +2,11 @@ import { NextResponse } from "next/server";
 import { Service as Payment } from "../../../../../modules/Payments/payment.service";
 
 export async function GET(
-    req: Request,
-    { params }: { params: { orderId: string } }
+    _req: Request,
+    { params }: { params: Promise<{ orderId: string }> }
 ) {
     try {
-        const orderId = params.orderId;
+        const { orderId } = await params;
         
         if (!orderId) {
             return NextResponse.json(
