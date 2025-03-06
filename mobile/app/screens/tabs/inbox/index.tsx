@@ -86,8 +86,8 @@ export default function Chat(): JSX.Element {
                 // Fallback jika API gagal
                 return {
                   id: chat.id,
-                  name: `Pengguna (${otherUserId.substring(0, 6)}...)`,
-                  lastMessage: chat.lastMessage || 'Belum ada pesan',
+                  name: `User (${otherUserId.substring(0, 6)}...)`,
+                  lastMessage: chat.lastMessage || 'No message yet',
                   profilePic: 'https://picsum.photos/200',
                   time: chat.lastMessageTime ? format(new Date(chat.lastMessageTime), 'HH:mm') : '',
                   unread: chat.unreadCount || 0,
@@ -102,8 +102,8 @@ export default function Chat(): JSX.Element {
                 // Fallback jika data user tidak ada
                 return {
                   id: chat.id,
-                  name: `Pengguna (${otherUserId.substring(0, 6)}...)`,
-                  lastMessage: chat.lastMessage || 'Belum ada pesan',
+                  name: `User (${otherUserId.substring(0, 6)}...)`,
+                  lastMessage: chat.lastMessage || 'No message yet',
                   profilePic: 'https://picsum.photos/200',
                   time: chat.lastMessageTime ? format(new Date(chat.lastMessageTime), 'HH:mm') : '',
                   unread: chat.unreadCount || 0,
@@ -120,8 +120,8 @@ export default function Chat(): JSX.Element {
               
               return {
                 id: chat.id,
-                name: otherUser.fullName || `Pengguna (${otherUserId.substring(0, 6)}...)`,
-                lastMessage: chat.lastMessage || 'Belum ada pesan',
+                name: otherUser.fullName || `User (${otherUserId.substring(0, 6)}...)`,
+                lastMessage: chat.lastMessage || 'No message yet',
                 profilePic: otherUser.profileImage || 'https://picsum.photos/200',
                 time: timeString,
                 unread: chat.unreadCount || 0,
@@ -132,8 +132,8 @@ export default function Chat(): JSX.Element {
               // Fallback jika terjadi error
               return {
                 id: chat.id,
-                name: `Pengguna (${otherUserId.substring(0, 6)}...)`,
-                lastMessage: chat.lastMessage || 'Belum ada pesan',
+                name: `User (${otherUserId.substring(0, 6)}...)`,
+                lastMessage: chat.lastMessage || 'No message yet',
                 profilePic: 'https://picsum.photos/200',
                 time: chat.lastMessageTime ? format(new Date(chat.lastMessageTime), 'HH:mm') : '',
                 unread: chat.unreadCount || 0,
@@ -243,10 +243,10 @@ export default function Chat(): JSX.Element {
   if (loading || localLoading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        <Header title="Pesan" />
+        <Header title="Message" />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Memuat pesan...</Text>
+          <Text style={styles.loadingText}>Loading messages...</Text>
         </View>
       </View>
     );
@@ -255,11 +255,11 @@ export default function Chat(): JSX.Element {
   if (error) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        <Header title="Pesan" />
+        <Header title="Message" />
         <View style={styles.errorContainer}>
-          <Text style={styles.errorTitle}>Terjadi Kesalahan</Text>
+          <Text style={styles.errorTitle}>Failed to load messages</Text>
           <Text style={styles.errorText}>
-            Tidak dapat memuat pesan. Silakan coba lagi nanti.
+            Failed to load messages. Please try again later.
           </Text>
         </View>
       </View>
@@ -268,7 +268,7 @@ export default function Chat(): JSX.Element {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <Header title="Pesan" />
+      <Header title="Message" />
       
       <View style={styles.content}>
         {renderSearchSection()}
@@ -278,9 +278,9 @@ export default function Chat(): JSX.Element {
             <View style={styles.emptyIconContainer}>
               <MessageCircle size={48} color={COLORS.primary} />
             </View>
-            <Text style={styles.emptyTitle}>Belum Ada Pesan</Text>
+            <Text style={styles.emptyTitle}>No messages yet</Text>
             <Text style={styles.emptyText}>
-              Pesan yang Anda kirim dan terima akan muncul di sini
+              Messages you send and receive will appear here
             </Text>
           </View>
         ) : (
@@ -294,7 +294,7 @@ export default function Chat(): JSX.Element {
               searchQuery.length > 0 ? (
                 <View style={styles.noResultsContainer}>
                   <Text style={styles.noResultsText}>
-                    Tidak ada hasil untuk "{searchQuery}"
+                    No results for "{searchQuery}"
                   </Text>
                 </View>
               ) : null

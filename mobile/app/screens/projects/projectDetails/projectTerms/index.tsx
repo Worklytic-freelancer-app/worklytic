@@ -6,87 +6,103 @@ import { useUser } from "@/hooks/tanstack/useUser";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/navigators";
-import { COLORS } from '@/constant/color';
+import { COLORS } from "@/constant/color";
 import Confirmation from "@/components/Confirmation";
 
 type ProjectTermsRouteProp = RouteProp<RootStackParamList, "ProjectTerms">;
 
 interface ProjectFeatureResponse {
-    _id: string;
-    projectId: string;
-    freelancerId: string;
-    status: string;
-    createdAt: string;
-    updatedAt: string;
+  _id: string;
+  projectId: string;
+  freelancerId: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default function ProjectTerms() {
-    const [canAccept, setCanAccept] = useState(false);
-    const [showAlreadyApplied, setShowAlreadyApplied] = useState(false);
-    const scrollViewRef = useRef<ScrollView>(null);
-    const insets = useSafeAreaInsets();
-    const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-    const route = useRoute<ProjectTermsRouteProp>();
-    
-    // Gunakan useUser untuk mendapatkan data user
-    const { data: userData } = useUser();
-    
-    // Gunakan useMutation untuk membuat project feature
-    const createProjectFeatureMutation = useMutation<ProjectFeatureResponse, {
-        projectId: string;
-        freelancerId: string;
-        status: string;
-    }>({
-        endpoint: 'projectfeatures',
-        method: 'POST',
-        requiresAuth: true,
-        onSuccess: () => {
-            // Navigasi ke halaman workspace
-            navigation.navigate('Workspace');
-        },
-    });
+  const [canAccept, setCanAccept] = useState(false);
+  const [showAlreadyApplied, setShowAlreadyApplied] = useState(false);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const insets = useSafeAreaInsets();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const route = useRoute<ProjectTermsRouteProp>();
 
-    const handleScroll = (event: any) => {
-        const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
-        const paddingToBottom = 20;
-        const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
+  // Gunakan useUser untuk mendapatkan data user
+  const { data: userData } = useUser();
 
-        if (isCloseToBottom) {
-            setCanAccept(true);
-        }
-    };
+  // Gunakan useMutation untuk membuat project feature
+  const createProjectFeatureMutation = useMutation<
+    ProjectFeatureResponse,
+    {
+      projectId: string;
+      freelancerId: string;
+      status: string;
+    }
+  >({
+    endpoint: "projectfeatures",
+    method: "POST",
+    requiresAuth: true,
+    // onSuccess: () => {
+    //     // Navigasi ke halaman workspace
+    //     navigation.navigate('Workspace');
+    // },
+    onSuccess: () => {
+      // Reset navigation state and navigate to Workspace tab
+      navigation.reset({
+        index: 0,
+        routes: [
+          {
+            name: "BottomTab", // Changed from 'MainTabs' to 'BottomTab'
+            params: {
+              screen: "Workspace",
+            },
+          },
+        ],
+      });
+    },
+  });
 
-    const handleAccept = async () => {
-        if (!canAccept || createProjectFeatureMutation.isPending) return;
-        
-        try {
-            if (!userData?._id) {
-                throw new Error('User ID tidak ditemukan');
-            }
+  const handleScroll = (event: any) => {
+    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+    const paddingToBottom = 20;
+    const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
 
-            if (!route.params.projectId) {
-                throw new Error('Project ID tidak ditemukan');
-            }
-            
-            await createProjectFeatureMutation.mutateAsync({
-                projectId: route.params.projectId.toString(),
-                freelancerId: userData._id.toString(),
-                status: 'pending'
-            });
-            
-        } catch (error) {
-            console.error('Error applying to project:', error);
-            
-            if (error instanceof Error && error.message.includes('already applied')) {
-                setShowAlreadyApplied(true);
-                return;
-            }
-            
-            throw error;
-        }
-    };
+    if (isCloseToBottom) {
+      setCanAccept(true);
+    }
+  };
 
-    const termsAndConditions = `
+  const handleAccept = async () => {
+    if (!canAccept || createProjectFeatureMutation.isPending) return;
+
+    try {
+      if (!userData?._id) {
+        throw new Error("User ID tidak ditemukan");
+      }
+
+      if (!route.params.projectId) {
+        throw new Error("Project ID tidak ditemukan");
+      }
+
+      await createProjectFeatureMutation.mutateAsync({
+        projectId: route.params.projectId.toString(),
+        freelancerId: userData._id.toString(),
+        status: "pending",
+      });
+    } catch (error) {
+      console.error("Error applying to project:", error);
+
+      if (error instanceof Error && error.message.includes("already applied")) {
+        setShowAlreadyApplied(true);
+        return;
+      }
+
+      throw error;
+    }
+  };
+
+  const termsAndConditions = `
 1. Project Terms and Agreement
 
 1.1 Project Scope
@@ -158,132 +174,122 @@ By accepting these terms, you agree to:
 - Comply with all legal requirements
   `;
 
-    return (
-        <View style={styles.container}>
-            <View style={[styles.content, { paddingTop: insets.top }]}>
-                <View style={styles.header}>
-                    <View style={styles.pullBar} />
-                </View>
-                <Text style={styles.title}>Terms & Conditions</Text>
-
-                <ScrollView showsVerticalScrollIndicator={false} ref={scrollViewRef} style={styles.termsScroll} onScroll={handleScroll} scrollEventThrottle={400}>
-                    <Text style={styles.termsText}>{termsAndConditions}</Text>
-                </ScrollView>
-
-                <View style={[styles.footer, { paddingBottom: insets.bottom }]}>
-                    <View style={styles.buttonContainer}>
-                        <TouchableOpacity 
-                            style={[
-                                styles.button, 
-                                styles.buttonFlex, 
-                                (!canAccept || createProjectFeatureMutation.isPending) && styles.buttonDisabled
-                            ]} 
-                            disabled={!canAccept || createProjectFeatureMutation.isPending} 
-                            onPress={handleAccept}
-                        >
-                            {createProjectFeatureMutation.isPending ? (
-                                <ActivityIndicator size="small" color={COLORS.background} />
-                            ) : (
-                                <Text style={[styles.buttonText, !canAccept && styles.buttonTextDisabled]}>
-                                    {canAccept ? "Accept & Continue" : "Please read all terms"}
-                                </Text>
-                            )}
-                        </TouchableOpacity>
-
-                        <TouchableOpacity 
-                            style={[styles.button, styles.cancelButton, styles.buttonFlex]} 
-                            onPress={() => navigation.goBack()}
-                            disabled={createProjectFeatureMutation.isPending}
-                        >
-                            <Text style={[styles.buttonText, styles.cancelButtonText]}>Cancel</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </View>
-
-            <Confirmation
-                visible={showAlreadyApplied}
-                title="Sudah Melamar"
-                message="Kamu sudah melamar untuk proyek ini"
-                type="error"
-                confirmText="OK"
-                cancelText=""
-                onConfirm={() => {
-                    setShowAlreadyApplied(false);
-                    navigation.goBack();
-                }}
-                onCancel={() => {}}
-            />
+  return (
+    <View style={styles.container}>
+      <View style={[styles.content, { paddingTop: insets.top }]}>
+        <View style={styles.header}>
+          <View style={styles.pullBar} />
         </View>
-    );
+        <Text style={styles.title}>Terms & Conditions</Text>
+
+        <ScrollView showsVerticalScrollIndicator={false} ref={scrollViewRef} style={styles.termsScroll} onScroll={handleScroll} scrollEventThrottle={400}>
+          <Text style={styles.termsText}>{termsAndConditions}</Text>
+        </ScrollView>
+
+        <View style={[styles.footer, { paddingBottom: insets.bottom }]}>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={[styles.button, styles.buttonFlex, (!canAccept || createProjectFeatureMutation.isPending) && styles.buttonDisabled]}
+              disabled={!canAccept || createProjectFeatureMutation.isPending}
+              onPress={handleAccept}
+            >
+              {createProjectFeatureMutation.isPending ? (
+                <ActivityIndicator size="small" color={COLORS.background} />
+              ) : (
+                <Text style={[styles.buttonText, !canAccept && styles.buttonTextDisabled]}>{canAccept ? "Accept & Continue" : "Please read all terms"}</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.button, styles.cancelButton, styles.buttonFlex]} onPress={() => navigation.goBack()} disabled={createProjectFeatureMutation.isPending}>
+              <Text style={[styles.buttonText, styles.cancelButtonText]}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+
+      <Confirmation
+        visible={showAlreadyApplied}
+        title="Already Applied"
+        message="You have already applied for this project"
+        type="error"
+        confirmText="OK"
+        cancelText=""
+        onConfirm={() => {
+          setShowAlreadyApplied(false);
+          navigation.goBack();
+        }}
+        onCancel={() => {}}
+      />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: COLORS.background,
-    },
-    content: {
-        flex: 1,
-        padding: 20,
-    },
-    header: {
-        alignItems: "center",
-        marginBottom: 8,
-    },
-    pullBar: {
-        width: 40,
-        height: 4,
-        backgroundColor: COLORS.lightGray,
-        borderRadius: 2,
-        marginBottom: 8,
-    },
-    title: {
-        fontSize: 20,
-        fontWeight: "600",
-        color: COLORS.black,
-        marginBottom: 16,
-        textAlign: "center",
-    },
-    termsScroll: {
-        flex: 1,
-    },
-    termsText: {
-        fontSize: 14,
-        color: COLORS.darkGray,
-        lineHeight: 20,
-    },
-    footer: {
-        marginTop: 20,
-    },
-    buttonContainer: {
-        flexDirection: 'row',
-        gap: 12,
-    },
-    buttonFlex: {
-        flex: 1,
-    },
-    button: {
-        paddingVertical: 16,
-        borderRadius: 12,
-        alignItems: "center",
-        backgroundColor: COLORS.primary,
-    },
-    buttonDisabled: {
-        backgroundColor: `${COLORS.primary}50`,
-    },
-    buttonText: {
-        color: COLORS.background,
-        fontSize: 16,
-        fontWeight: "600",
-    },
-    buttonTextDisabled: {
-        color: COLORS.lightGray,
-    },
-    cancelButton: {
-        backgroundColor: COLORS.inputBackground,
-    },
-    cancelButtonText: {
-        color: COLORS.darkGray,
-    },
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  content: {
+    flex: 1,
+    padding: 20,
+  },
+  header: {
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  pullBar: {
+    width: 40,
+    height: 4,
+    backgroundColor: COLORS.lightGray,
+    borderRadius: 2,
+    marginBottom: 8,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: COLORS.black,
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  termsScroll: {
+    flex: 1,
+  },
+  termsText: {
+    fontSize: 14,
+    color: COLORS.darkGray,
+    lineHeight: 20,
+  },
+  footer: {
+    marginTop: 20,
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  buttonFlex: {
+    flex: 1,
+  },
+  button: {
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    backgroundColor: COLORS.primary,
+  },
+  buttonDisabled: {
+    backgroundColor: `${COLORS.primary}50`,
+  },
+  buttonText: {
+    color: COLORS.background,
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  buttonTextDisabled: {
+    color: COLORS.lightGray,
+  },
+  cancelButton: {
+    backgroundColor: COLORS.inputBackground,
+  },
+  cancelButtonText: {
+    color: COLORS.darkGray,
+  },
 });

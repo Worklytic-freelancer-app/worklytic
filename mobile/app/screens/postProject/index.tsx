@@ -134,30 +134,30 @@ export default function PostProject() {
         try {
             // Validasi form
             if (!form.title) {
-                Alert.alert("Error", "Judul proyek harus diisi");
+                Alert.alert("Error", "Project title must be filled");
                 return;
             }
             
             if (!form.description) {
-                Alert.alert("Error", "Deskripsi proyek harus diisi");
+                Alert.alert("Error", "Project description must be filled");
                 return;
             }
             
             if (!form.budget) {
-                Alert.alert("Error", "Budget proyek harus diisi");
+                Alert.alert("Error", "Project budget must be filled");
                 return;
             }
             
             // Konversi budget ke number
             const budget = parseFloat(form.budget.replace(/[^0-9]/g, ''));
             if (isNaN(budget) || budget <= 0) {
-                Alert.alert("Error", "Budget harus berupa angka positif");
+                Alert.alert("Error", "Budget must be a positive number");
                 return;
             }
             
             // Cek apakah userData tersedia
             if (!userData?._id) {
-                Alert.alert("Error", "Data user tidak ditemukan");
+                Alert.alert("Error", "User data not found");
                 return;
             }
             
@@ -199,17 +199,17 @@ export default function PostProject() {
                 >
                     <ChevronLeft size={24} color={COLORS.primary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Buat Proyek Baru</Text>
+                <Text style={styles.headerTitle}>Create New Project</Text>
                 <View style={{ width: 40 }} />
             </View>
 
             <ScrollView style={styles.formContainer} showsVerticalScrollIndicator={false}>
                 <View style={styles.card}>
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Judul Proyek <Text style={styles.required}>*</Text></Text>
+                        <Text style={styles.label}>Project Title <Text style={styles.required}>*</Text></Text>
                         <TextInput 
                             style={styles.input} 
-                            placeholder="Masukkan judul proyek" 
+                            placeholder="Enter project title" 
                             placeholderTextColor={COLORS.gray} 
                             value={form.title} 
                             onChangeText={(text) => setForm({ ...form, title: text })} 
@@ -217,10 +217,10 @@ export default function PostProject() {
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Deskripsi <Text style={styles.required}>*</Text></Text>
+                        <Text style={styles.label}>Description <Text style={styles.required}>*</Text></Text>
                         <TextInput
                             style={[styles.input, styles.textArea]}
-                            placeholder="Jelaskan detail proyek Anda"
+                            placeholder="Enter project description"
                             placeholderTextColor={COLORS.gray}
                             multiline
                             numberOfLines={4}
@@ -235,7 +235,7 @@ export default function PostProject() {
                             <DollarSign size={20} color={COLORS.primary} style={styles.inputIcon} />
                             <TextInput 
                                 style={[styles.input, styles.inputWithPadding]} 
-                                placeholder="Masukkan budget proyek (contoh: 5000000)" 
+                                placeholder="Enter project budget (example: 5000000)" 
                                 placeholderTextColor={COLORS.gray} 
                                 keyboardType="numeric" 
                                 value={form.budget} 
@@ -245,7 +245,7 @@ export default function PostProject() {
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Kategori</Text>
+                        <Text style={styles.label}>Category</Text>
                         <TouchableOpacity 
                             style={styles.inputWithIcon}
                             onPress={() => setShowCategoryPicker(!showCategoryPicker)}
@@ -274,7 +274,7 @@ export default function PostProject() {
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Lokasi</Text>
+                        <Text style={styles.label}>Location</Text>
                         <TouchableOpacity 
                             style={styles.inputWithIcon}
                             onPress={() => setShowLocationPicker(!showLocationPicker)}
@@ -303,7 +303,7 @@ export default function PostProject() {
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Tanggal Selesai</Text>
+                        <Text style={styles.label}>Completed Date</Text>
                         <View style={styles.inputWithIcon}>
                             <Calendar size={20} color={COLORS.primary} style={styles.inputIcon} />
                             <TextInput 
@@ -317,10 +317,10 @@ export default function PostProject() {
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Persyaratan</Text>
+                        <Text style={styles.label}>Requirements</Text>
                         <TextInput
                             style={[styles.input, styles.textArea]}
-                            placeholder="Masukkan persyaratan proyek (satu per baris)"
+                            placeholder="Enter project requirements (one per line)"
                             placeholderTextColor={COLORS.gray}
                             multiline
                             numberOfLines={4}
@@ -330,7 +330,7 @@ export default function PostProject() {
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Gambar Proyek</Text>
+                        <Text style={styles.label}>Project Image</Text>
                         <View style={styles.imageContainer}>
                             {images.map((image, index) => (
                                 <View key={index} style={styles.imageWrapper}>
@@ -365,13 +365,13 @@ export default function PostProject() {
                     {loading ? (
                         <ActivityIndicator color={COLORS.background} size="small" />
                     ) : (
-                        <Text style={styles.submitButtonText}>Buat Proyek</Text>
+                        <Text style={styles.submitButtonText}>Create Project</Text>
                     )}
                 </TouchableOpacity>
                 
                 <Text style={styles.disclaimer}>
-                    Dengan membuat proyek ini, kamu setuju untuk membayar biaya yang diperlukan. 
-                    Kamu akan diarahkan ke halaman pembayaran setelah pengajuan.
+                    By creating this project, you agree to pay the required fees. 
+                    You will be redirected to the payment page after submitting.
                 </Text>
             </ScrollView>
         </KeyboardAvoidingView>

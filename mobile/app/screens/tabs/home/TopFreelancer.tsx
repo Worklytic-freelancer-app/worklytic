@@ -77,7 +77,7 @@ export default function TopFreelancer({
             <View style={styles.section}>
                 {renderHeader()}
                 <View style={styles.emptyContainer}>
-                    <Text style={styles.emptyText}>Tidak ada freelancer tersedia</Text>
+                    <Text style={styles.emptyText}>No freelancer available</Text>
                 </View>
             </View>
         );

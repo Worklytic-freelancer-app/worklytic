@@ -162,7 +162,7 @@ export default function Search(): JSX.Element {
           <View style={styles.resultContent}>
             <Text style={styles.resultTitle}>{freelancer.fullName}</Text>
             <Text style={styles.resultDescription} numberOfLines={2}>
-              {freelancer.about || 'Tidak ada deskripsi'}
+              {freelancer.about || 'No description'}
             </Text>
             <View style={styles.locationContainer}>
               <MapPin size={14} color={COLORS.darkGray} />
@@ -200,7 +200,7 @@ export default function Search(): JSX.Element {
           <View style={styles.resultContent}>
             <Text style={styles.resultTitle}>{project.title}</Text>
             <Text style={styles.resultDescription} numberOfLines={2}>
-              {project.description || 'Tidak ada deskripsi'}
+              {project.description || 'No description'}
             </Text>
             <Text style={styles.budget}>Rp {project.budget.toLocaleString('id-ID')}</Text>
             <View style={styles.projectInfo}>
@@ -267,10 +267,10 @@ export default function Search(): JSX.Element {
       return (
         <View style={styles.emptyContainer}>
           <Text style={styles.errorText}>
-            {error.message || 'Terjadi kesalahan saat memuat data. Silakan coba lagi.'}
+            {error.message || 'An error occurred while loading data. Please try again.'}
           </Text>
           <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
-            <Text style={styles.retryButtonText}>Coba Lagi</Text>
+            <Text style={styles.retryButtonText}>Try Again</Text>
           </TouchableOpacity>
         </View>
       );
@@ -280,10 +280,10 @@ export default function Search(): JSX.Element {
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyText}>
           {searchQuery 
-            ? `Tidak ada hasil untuk "${searchQuery}"` 
+            ? `No results for "${searchQuery}"` 
             : user?.role === 'client' 
-              ? 'Belum ada freelancer yang tersedia' 
-              : 'Belum ada proyek yang tersedia'
+              ? 'No freelancers available' 
+              : 'No projects available'
           }
         </Text>
       </View>
@@ -303,7 +303,7 @@ export default function Search(): JSX.Element {
           <SearchIcon size={20} color={COLORS.gray} strokeWidth={2} />
           <TextInput 
             style={styles.searchInput} 
-            placeholder={user?.role === 'client' ? "Cari freelancer terbaik..." : "Cari proyek menarik..."}
+            placeholder={user?.role === 'client' ? "Search for the best freelancer..." : "Search for interesting projects..."}
             placeholderTextColor={COLORS.gray} 
             value={searchQuery} 
             onChangeText={setSearchQuery}
@@ -321,7 +321,7 @@ export default function Search(): JSX.Element {
 
       <View style={styles.resultsContainer}>
         <Text style={styles.resultsTitle}>
-          {searchQuery ? `Hasil pencarian "${searchQuery}"` : user?.role === 'client' ? "Freelancer Teratas" : "Proyek Terbaru"}
+          {searchQuery ? `Search results for "${searchQuery}"` : user?.role === 'client' ? "Top Freelancers" : "Latest Projects"}
         </Text>
         
         <FlatList<SearchResult>

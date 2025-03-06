@@ -42,7 +42,7 @@ export default function Profile() {
             <View style={[styles.safeArea, { paddingTop: insets.top }]}>
                 <Header />
                 <View style={styles.errorContainer}>
-                    <Text style={styles.errorText}>Tidak dapat memuat data profil 😕</Text>
+                    <Text style={styles.errorText}>Failed to load profile data 😕</Text>
                     <Text style={styles.errorDescription}>{error?.message}</Text>
                 </View>
             </View>
@@ -74,7 +74,7 @@ export default function Profile() {
                         <View style={styles.emptyContainer}>
                             <Text style={styles.emptyText}>📝</Text>
                             <Text style={styles.emptyDescription}>
-                                Belum ada data tentang profil dan keahlian
+                                No data about profile and skills
                             </Text>
                         </View>
                     ) : (

@@ -157,7 +157,7 @@ export default function Freelancers() {
                     <Search size={20} color={COLORS.gray} />
                     <TextInput
                         style={styles.searchInput}
-                        placeholder="Cari freelancer atau skill..."
+                        placeholder="Search freelancer or skill..."
                         editable={false}
                         placeholderTextColor={COLORS.gray}
                     />
@@ -179,12 +179,12 @@ export default function Freelancers() {
                     <View style={{ width: 24 }} />
                 </View>
                 <View style={styles.errorContainer}>
-                    <Text style={styles.errorText}>Tidak dapat memuat data freelancer</Text>
+                    <Text style={styles.errorText}>Failed to load freelancer data</Text>
                     <TouchableOpacity 
                         style={styles.retryButton}
                         onPress={() => refetch()}
                     >
-                        <Text style={styles.retryText}>Coba Lagi</Text>
+                        <Text style={styles.retryText}>Try Again</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -210,7 +210,7 @@ export default function Freelancers() {
                 <Search size={20} color={COLORS.gray} />
                 <TextInput
                     style={styles.searchInput}
-                    placeholder="Cari freelancer atau skill..."
+                    placeholder="Search freelancer or skill..."
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                     placeholderTextColor={COLORS.gray}
@@ -219,7 +219,7 @@ export default function Freelancers() {
 
             {filteredFreelancers.length === 0 ? (
                 <View style={styles.emptyContainer}>
-                    <Text style={styles.emptyText}>Tidak ada freelancer yang ditemukan 😕</Text>
+                    <Text style={styles.emptyText}>No freelancer found 😕</Text>
                 </View>
             ) : (
                 <FlatList

@@ -96,8 +96,8 @@ export default function WorklyticAIFreelancer() {
                 >
                     <View style={styles.heroSection}>
                         <View style={styles.heroContent}>
-                            <Text style={styles.heroTitle}>Rekomendasi AI</Text>
-                            <Text style={styles.heroSubtitle}>Temukan pekerjaan yang paling cocok untukmu</Text>
+                            <Text style={styles.heroTitle}>AI Recommendations</Text>
+                            <Text style={styles.heroSubtitle}>Find the best job for you</Text>
                         </View>
                         <View style={styles.heroIcon}>
                             <Brain size={48} color={COLORS.primary} />
@@ -132,7 +132,7 @@ export default function WorklyticAIFreelancer() {
                         {recommendations.length === 0 ? (
                             <View style={styles.emptyState}>
                                 <Brain size={40} color={COLORS.gray} />
-                                <Text style={styles.emptyStateText}>Belum ada rekomendasi tersedia</Text>
+                                <Text style={styles.emptyStateText}>No recommendations available</Text>
                             </View>
                         ) : (
                             <View style={styles.matchesContainer}>
@@ -198,8 +198,8 @@ export default function WorklyticAIFreelancer() {
                                     <Target size={24} color={COLORS.primary} />
                                 </View>
                                 <View style={styles.featureContent}>
-                                    <Text style={styles.featureTitle}>Analisis Keahlian</Text>
-                                    <Text style={styles.featureDescription}>Dapatkan insight tentang keahlianmu</Text>
+                                    <Text style={styles.featureTitle}>Skill Analysis</Text>
+                                    <Text style={styles.featureDescription}>Get insights about your skills</Text>
                                 </View>
                                 <ChevronRight size={20} color={COLORS.gray} />
                             </TouchableOpacity>
@@ -209,8 +209,8 @@ export default function WorklyticAIFreelancer() {
                                     <Brain size={24} color={COLORS.primary} />
                                 </View>
                                 <View style={styles.featureContent}>
-                                    <Text style={styles.featureTitle}>Rekomendasi Cerdas</Text>
-                                    <Text style={styles.featureDescription}>Terima saran projek yang dipersonalisasi</Text>
+                                    <Text style={styles.featureTitle}>Smart Recommendations</Text>
+                                    <Text style={styles.featureDescription}>Receive personalized project recommendations</Text>
                                 </View>
                                 <ChevronRight size={20} color={COLORS.gray} />
                             </TouchableOpacity>

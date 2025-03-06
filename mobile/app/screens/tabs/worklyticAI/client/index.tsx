@@ -102,8 +102,8 @@ export default function WorklyticAIClient() {
         >
           <View style={styles.heroSection}>
             <View style={styles.heroContent}>
-              <Text style={styles.heroTitle}>Rekomendasi AI</Text>
-              <Text style={styles.heroSubtitle}>Temukan pekerjaan yang paling cocok untukmu</Text>
+              <Text style={styles.heroTitle}>AI Recommendations</Text>
+              <Text style={styles.heroSubtitle}>Find the best job for you</Text>
             </View>
             <View style={styles.heroIcon}>
               <Brain size={48} color={COLORS.primary} />
@@ -138,7 +138,7 @@ export default function WorklyticAIClient() {
             {recommendations.length === 0 ? (
               <View style={styles.emptyState}>
                 <Brain size={40} color={COLORS.gray} />
-                <Text style={styles.emptyStateText}>Belum ada rekomendasi tersedia</Text>
+                <Text style={styles.emptyStateText}>No recommendations available</Text>
               </View>
             ) : (
               <View style={styles.matchesContainer}>
@@ -191,7 +191,7 @@ export default function WorklyticAIClient() {
           </View>
 
           <View style={styles.aiFeatures}>
-            <Text style={styles.sectionTitle}>Fitur AI</Text>
+            <Text style={styles.sectionTitle}>AI Features</Text>
             
             <View style={styles.featuresContainer}>
               <TouchableOpacity style={styles.featureCard} activeOpacity={0.8}>
@@ -199,8 +199,8 @@ export default function WorklyticAIClient() {
                   <Target size={24} color={COLORS.primary} />
                 </View>
                 <View style={styles.featureContent}>
-                  <Text style={styles.featureTitle}>Analisis Keahlian</Text>
-                  <Text style={styles.featureDescription}>Dapatkan insight tentang keahlianmu</Text>
+                  <Text style={styles.featureTitle}>Skill Analysis</Text>
+                  <Text style={styles.featureDescription}>Get insights about your skills</Text>
                 </View>
                 <ChevronRight size={20} color={COLORS.gray} />
               </TouchableOpacity>
@@ -210,8 +210,8 @@ export default function WorklyticAIClient() {
                   <Brain size={24} color={COLORS.primary} />
                 </View>
                 <View style={styles.featureContent}>
-                  <Text style={styles.featureTitle}>Rekomendasi Cerdas</Text>
-                  <Text style={styles.featureDescription}>Terima saran projek yang dipersonalisasi</Text>
+                  <Text style={styles.featureTitle}>Smart Recommendations</Text>
+                  <Text style={styles.featureDescription}>Receive personalized project recommendations</Text>
                 </View>
                 <ChevronRight size={20} color={COLORS.gray} />
               </TouchableOpacity>

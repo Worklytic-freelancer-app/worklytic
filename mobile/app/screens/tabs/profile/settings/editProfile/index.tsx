@@ -100,7 +100,7 @@ export default function EditProfile() {
             // Refresh data user
             refetchUser();
             
-            Alert.alert("Sukses", "Foto profil berhasil diperbarui");
+            Alert.alert("Success", "Profile image updated successfully");
         },
         invalidateQueries: ['user']
     });
@@ -168,7 +168,7 @@ export default function EditProfile() {
                     });
                 } catch (error) {
                     console.error("Error uploading image:", error);
-                    Alert.alert("Error", "Gagal mengupload foto profil");
+                    Alert.alert("Error", "Failed to upload profile image");
                     
                     // Reset ke data user asli jika gagal
                     if (userData) {
@@ -181,7 +181,7 @@ export default function EditProfile() {
             }
         } catch (error) {
             console.error("Error picking image:", error);
-            Alert.alert("Error", "Gagal memilih gambar");
+            Alert.alert("Error", "Failed to pick image");
         } finally {
             setImageLoading(false);
         }
@@ -223,7 +223,7 @@ export default function EditProfile() {
                     {updateProfile.isPending ? (
                         <ActivityIndicator size="small" color="#2563eb" />
                     ) : (
-                        <Text style={styles.saveButton}>Simpan</Text>
+                        <Text style={styles.saveButton}>Save</Text>
                     )}
                 </TouchableOpacity>
             </View>
@@ -255,15 +255,15 @@ export default function EditProfile() {
                 </View>
 
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Informasi Dasar</Text>
+                    <Text style={styles.sectionTitle}>Basic Information</Text>
                     
                     <View style={styles.formGroup}>
-                        <Text style={styles.label}>Nama Lengkap</Text>
+                        <Text style={styles.label}>Full Name</Text>
                         <TextInput
                             style={styles.input}
                             value={formData.fullName}
                             onChangeText={(text) => setFormData({ ...formData, fullName: text })}
-                            placeholder="Masukkan nama lengkap"
+                            placeholder="Enter your full name"
                         />
                     </View>
 
@@ -275,32 +275,32 @@ export default function EditProfile() {
                                 style={[styles.input, styles.inputIcon]}
                                 value={formData.email}
                                 editable={false}
-                                placeholder="Email"
+                                placeholder="Enter your email"
                             />
                         </View>
                     </View>
 
                     <View style={styles.formGroup}>
-                        <Text style={styles.label}>Nomor Telepon</Text>
+                        <Text style={styles.label}>Phone Number</Text>
                         <View style={styles.inputWithIcon}>
                             <Phone size={20} color="#6b7280" />
                             <TextInput
                                 style={[styles.input, styles.inputIcon]}
                                 value={formData.phone}
                                 onChangeText={(text) => setFormData({ ...formData, phone: text })}
-                                placeholder="Masukkan nomor telepon"
+                                placeholder="Enter your phone number"
                                 keyboardType="phone-pad"
                             />
                         </View>
                     </View>
 
                     <View style={styles.formGroup}>
-                        <Text style={styles.label}>Lokasi</Text>
+                        <Text style={styles.label}>Location</Text>
                         <TextInput
                             style={styles.input}
                             value={formData.location}
                             onChangeText={(text) => setFormData({ ...formData, location: text })}
-                            placeholder="Masukkan lokasi Anda"
+                            placeholder="Enter your location"
                         />
                     </View>
 
@@ -312,7 +312,7 @@ export default function EditProfile() {
                                 style={[styles.input, styles.inputIcon]}
                                 value={formData.website}
                                 onChangeText={(text) => setFormData({ ...formData, website: text })}
-                                placeholder="Masukkan URL website"
+                                placeholder="Enter your website URL"
                                 keyboardType="url"
                             />
                         </View>
@@ -320,13 +320,13 @@ export default function EditProfile() {
                 </View>
 
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Tentang Saya</Text>
+                    <Text style={styles.sectionTitle}>About Me</Text>
                     <View style={styles.formGroup}>
                         <TextInput
                             style={[styles.input, styles.textArea]}
                             value={formData.about}
                             onChangeText={(text) => setFormData({ ...formData, about: text })}
-                            placeholder="Ceritakan tentang diri Anda, pengalaman, dan keahlian"
+                            placeholder="Tell us about yourself, your experience, and your skills"
                             multiline
                             numberOfLines={4}
                         />
@@ -335,7 +335,7 @@ export default function EditProfile() {
 
                 {userRole === "freelancer" && (
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Keahlian</Text>
+                        <Text style={styles.sectionTitle}>Skills</Text>
                         <View style={styles.skillsContainer}>
                             {formData.skills.map((skill, index) => (
                                 <View key={index} style={styles.skillItem}>
@@ -351,10 +351,10 @@ export default function EditProfile() {
                                 style={[styles.input, styles.skillInput]}
                                 value={newSkill}
                                 onChangeText={setNewSkill}
-                                placeholder="Tambahkan keahlian"
+                                placeholder="Add your skill"
                             />
                             <TouchableOpacity style={styles.addButton} onPress={handleAddSkill}>
-                                <Text style={styles.addButtonText}>Tambah</Text>
+                                <Text style={styles.addButtonText}>Add</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -362,26 +362,26 @@ export default function EditProfile() {
 
                 {userRole === "client" && (
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Informasi Perusahaan</Text>
+                        <Text style={styles.sectionTitle}>Company Information</Text>
                         <View style={styles.formGroup}>
-                            <Text style={styles.label}>Nama Perusahaan</Text>
+                            <Text style={styles.label}>Company Name</Text>
                             <View style={styles.inputWithIcon}>
                                 <Briefcase size={20} color="#6b7280" />
                                 <TextInput
                                     style={[styles.input, styles.inputIcon]}
                                     value={formData.companyName}
                                     onChangeText={(text) => setFormData({ ...formData, companyName: text })}
-                                    placeholder="Masukkan nama perusahaan"
+                                    placeholder="Enter your company name"
                                 />
                             </View>
                         </View>
                         <View style={styles.formGroup}>
-                            <Text style={styles.label}>Industri</Text>
+                            <Text style={styles.label}>Industry</Text>
                             <TextInput
                                 style={styles.input}
                                 value={formData.industry}
                                 onChangeText={(text) => setFormData({ ...formData, industry: text })}
-                                placeholder="Masukkan industri perusahaan"
+                                placeholder="Enter your industry"
                             />
                         </View>
                     </View>

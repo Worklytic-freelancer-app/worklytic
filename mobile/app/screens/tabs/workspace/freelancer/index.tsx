@@ -252,9 +252,9 @@ export default function FreelancerWorkspace() {
                 }
                 ListEmptyComponent={
                     <View style={styles.emptyContainer}>
-                        <Text style={styles.emptyTitle}>Belum Ada Proyek</Text>
+                        <Text style={styles.emptyTitle}>No Projects</Text>
                         <Text style={styles.emptyText}>
-                            Kamu belum memiliki proyek yang aktif saat ini
+                            You don't have any active projects at the moment
                         </Text>
                     </View>
                 }

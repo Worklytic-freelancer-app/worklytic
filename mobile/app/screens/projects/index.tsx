@@ -101,13 +101,13 @@ export default function Projects() {
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 1) return "1 hari yang lalu";
-    if (diffDays < 30) return `${diffDays} hari yang lalu`;
+    if (diffDays === 1) return "1 day ago";
+    if (diffDays < 30) return `${diffDays} days ago`;
     if (diffDays < 365) {
       const months = Math.floor(diffDays / 30);
-      return `${months} bulan yang lalu`;
+      return `${months} months ago`;
     }
-    return `${Math.floor(diffDays / 365)} tahun yang lalu`;
+    return `${Math.floor(diffDays / 365)} years ago`;
   };
 
   const renderProject = ({ item }: { item: ProjectWithClient }) => (
@@ -269,10 +269,10 @@ export default function Projects() {
       {error ? (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>
-            {(error as Error).message || "Terjadi kesalahan saat memuat data"}
+            {(error as Error).message || "Failed to load data"}
           </Text>
           <TouchableOpacity style={styles.retryButton} onPress={() => refetchProjects()}>
-            <Text style={styles.retryButtonText}>Coba Lagi</Text>
+            <Text style={styles.retryButtonText}>Try Again</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -293,7 +293,7 @@ export default function Projects() {
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>Belum ada project yang tersedia</Text>
+              <Text style={styles.emptyText}>No projects available</Text>
             </View>
           }
         />

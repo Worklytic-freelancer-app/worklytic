@@ -247,7 +247,7 @@ export default function ServiceDetails() {
               <View style={styles.carouselImage}>
                 <View style={styles.noImageContainer}>
                   <ImageIcon size={60} color={COLORS.lightGray} />
-                  <Text style={styles.noImageText}>Tidak ada gambar</Text>
+                  <Text style={styles.noImageText}>No image</Text>
                 </View>
               </View>
             )}
@@ -311,14 +311,14 @@ export default function ServiceDetails() {
             <View style={styles.statsCard}>
               <DollarSign size={20} color={COLORS.primary} />
               <View style={styles.statsInfo}>
-                <Text style={styles.statsLabel}>Harga</Text>
+                <Text style={styles.statsLabel}>Price</Text>
                 <Text style={styles.statsValue}>Rp{service.price.toLocaleString('id-ID')}</Text>
               </View>
             </View>
             <View style={styles.statsCard}>
               <Clock size={20} color={COLORS.primary} />
               <View style={styles.statsInfo}>
-                <Text style={styles.statsLabel}>Waktu Pengerjaan</Text>
+                <Text style={styles.statsLabel}>Delivery Time</Text>
                 <Text style={styles.statsValue}>{service.deliveryTime}</Text>
               </View>
             </View>
@@ -332,7 +332,7 @@ export default function ServiceDetails() {
             <View style={styles.statsCard}>
               <Briefcase size={20} color={COLORS.primary} />
               <View style={styles.statsInfo}>
-                <Text style={styles.statsLabel}>Kategori</Text>
+                <Text style={styles.statsLabel}>Category</Text>
                 <Text style={styles.statsValue}>{service.category}</Text>
               </View>
             </View>
@@ -340,13 +340,13 @@ export default function ServiceDetails() {
 
           {/* Description */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Deskripsi</Text>
+            <Text style={styles.sectionTitle}>Description</Text>
             <Text style={styles.description}>{service.description}</Text>
           </View>
 
           {/* Includes */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Yang Termasuk</Text>
+            <Text style={styles.sectionTitle}>What's Included</Text>
             {service.includes.map((item, index) => (
               <View key={index} style={styles.listItem}>
                 <CheckCircle2 size={20} color={COLORS.success} style={styles.listIcon} />
@@ -357,7 +357,7 @@ export default function ServiceDetails() {
 
           {/* Requirements */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Persyaratan</Text>
+            <Text style={styles.sectionTitle}>Requirements</Text>
             {service.requirements.map((item, index) => (
               <View key={index} style={styles.listItem}>
                 <View style={styles.bullet} />
@@ -371,14 +371,14 @@ export default function ServiceDetails() {
       {/* Footer */}
       <View style={[styles.footer, { paddingBottom: insets.bottom + 16 }]}>
         <View style={styles.priceContainer}>
-          <Text style={styles.priceLabel}>Total Harga</Text>
+          <Text style={styles.priceLabel}>Total Price</Text>
           <Text style={styles.price}>Rp{service.price.toLocaleString('id-ID')}</Text>
         </View>
         <TouchableOpacity 
           style={styles.hireMeButton}
           onPress={handleContinue}
         >
-          <Text style={styles.hireMeButtonText}>Mulai Chat</Text>
+          <Text style={styles.hireMeButtonText}>Start Chat</Text>
         </TouchableOpacity>
       </View>
     </View>

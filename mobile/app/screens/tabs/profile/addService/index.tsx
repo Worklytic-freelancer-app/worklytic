@@ -61,7 +61,7 @@ export default function AddService() {
     method: 'POST',
     invalidateQueries: ['users'],
     onSuccess: () => {
-      Alert.alert("Sukses", "Layanan berhasil ditambahkan", [
+      Alert.alert("Success", "Service added successfully", [
         { text: "OK", onPress: () => navigation.goBack() }
       ]);
     },
@@ -89,32 +89,32 @@ export default function AddService() {
     try {
       // Validasi form
       if (!formData.title) {
-        Alert.alert("Error", "Judul layanan tidak boleh kosong");
+        Alert.alert("Error", "Service title cannot be empty");
         return;
       }
       
       if (!formData.description) {
-        Alert.alert("Error", "Deskripsi layanan tidak boleh kosong");
+        Alert.alert("Error", "Service description cannot be empty");
         return;
       }
       
       if (!formData.price) {
-        Alert.alert("Error", "Harga layanan tidak boleh kosong");
+        Alert.alert("Error", "Service price cannot be empty");
         return;
       }
       
       if (!formData.category) {
-        Alert.alert("Error", "Kategori layanan tidak boleh kosong");
+        Alert.alert("Error", "Service category cannot be empty");
         return;
       }
       
       if (!formData.deliveryTime) {
-        Alert.alert("Error", "Waktu pengerjaan tidak boleh kosong");
+        Alert.alert("Error", "Delivery time cannot be empty");
         return;
       }
       
       if (images.length === 0) {
-        Alert.alert("Error", "Mohon tambahkan minimal 1 gambar");
+        Alert.alert("Error", "Please add at least 1 image");
         return;
       }
       
@@ -178,14 +178,14 @@ export default function AddService() {
         >
           <ArrowLeft size={24} color={COLORS.primary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Tambah Layanan Baru</Text>
+        <Text style={styles.headerTitle}>Add New Service</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView style={styles.container}>
         <View style={styles.card}>
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Gambar Layanan <Text style={styles.required}>*</Text></Text>
+            <Text style={styles.label}>Service Image <Text style={styles.required}>*</Text></Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imageList}>
               {images.map((uri, index) => (
                 <View key={index} style={styles.imageWrapper}>
@@ -206,30 +206,30 @@ export default function AddService() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Judul Layanan</Text>
+            <Text style={styles.label}>Service Title</Text>
             <TextInput
               style={styles.input}
-              placeholder="Contoh: Pengembangan Aplikasi Mobile"
+              placeholder="Example: Mobile Application Development"
               value={formData.title}
               onChangeText={(text) => setFormData({ ...formData, title: text })}
             />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Kategori</Text>
+            <Text style={styles.label}>Category</Text>
             <TextInput
               style={styles.input}
-              placeholder="Contoh: Pengembangan & IT"
+              placeholder="Example: Development & IT"
               value={formData.category}
               onChangeText={(text) => setFormData({ ...formData, category: text })}
             />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Deskripsi</Text>
+            <Text style={styles.label}>Description</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
-              placeholder="Jelaskan layanan Anda secara detail"
+              placeholder="Explain your service in detail"
               multiline
               numberOfLines={4}
               value={formData.description}
@@ -238,10 +238,10 @@ export default function AddService() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Harga (Rp)</Text>
+            <Text style={styles.label}>Price (IDR)</Text>
             <TextInput
               style={styles.input}
-              placeholder="Contoh: 5000000"
+              placeholder="Example: 5000000"
               keyboardType="numeric"
               value={formData.price}
               onChangeText={(text) => setFormData({ ...formData, price: text })}
@@ -249,20 +249,20 @@ export default function AddService() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Waktu Pengerjaan</Text>
+            <Text style={styles.label}>Delivery Time</Text>
             <TextInput
               style={styles.input}
-              placeholder="Contoh: 14 hari"
+              placeholder="Example: 14 days"
               value={formData.deliveryTime}
               onChangeText={(text) => setFormData({ ...formData, deliveryTime: text })}
             />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Persyaratan (pisahkan dengan koma)</Text>
+            <Text style={styles.label}>Requirements (separate with comma)</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
-              placeholder="Apa yang Anda butuhkan dari klien?"
+              placeholder="What do you need from the client?"
               multiline
               numberOfLines={4}
               value={formData.requirements}
@@ -271,10 +271,10 @@ export default function AddService() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Yang Termasuk (pisahkan dengan koma)</Text>
+            <Text style={styles.label}>What's Included (separate with comma)</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
-              placeholder="Apa yang akan klien terima?"
+              placeholder="What will the client receive?"
               multiline
               numberOfLines={4}
               value={formData.includes}
@@ -293,7 +293,7 @@ export default function AddService() {
           {isLoading ? (
             <ActivityIndicator color={COLORS.background} size="small" />
           ) : (
-            <Text style={styles.submitButtonText}>Buat Layanan</Text>
+            <Text style={styles.submitButtonText}>Create Service</Text>
           )}
         </TouchableOpacity>
       </View>

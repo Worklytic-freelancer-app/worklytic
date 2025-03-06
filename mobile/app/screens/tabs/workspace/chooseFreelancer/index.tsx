@@ -159,8 +159,8 @@ export default function ChooseFreelancer() {
             // Ganti Alert dengan Confirmation
             setConfirmation({
                 visible: true,
-                title: 'Berhasil',
-                message: 'Freelancer berhasil diterima untuk mengerjakan proyek.',
+                title: 'Success',
+                message: 'Freelancer has been accepted to work on the project.',
                 type: 'success',
                 onConfirm: () => setConfirmation(prev => ({ ...prev, visible: false })),
             });
@@ -180,8 +180,8 @@ export default function ChooseFreelancer() {
             // Ganti Alert dengan Confirmation
             setConfirmation({
                 visible: true,
-                title: 'Berhasil',
-                message: 'Freelancer berhasil ditolak.',
+                title: 'Success',
+                message: 'Freelancer has been rejected.',
                 type: 'success',
                 onConfirm: () => setConfirmation(prev => ({ ...prev, visible: false })),
             });
@@ -201,8 +201,8 @@ export default function ChooseFreelancer() {
             // Tampilkan konfirmasi
             setConfirmation({
                 visible: true,
-                title: 'Berhasil',
-                message: 'Proyek berhasil ditandai sebagai selesai.',
+                title: 'Success',
+                message: 'Project has been marked as completed.',
                 type: 'success',
                 onConfirm: () => setConfirmation(prev => ({ ...prev, visible: false })),
             });
@@ -261,8 +261,8 @@ export default function ChooseFreelancer() {
         setSelectedFeatureId(featureId);
         setConfirmation({
             visible: true,
-            title: 'Terima Freelancer',
-            message: 'Apakah kamu yakin ingin menerima freelancer ini untuk mengerjakan proyek?',
+            title: 'Accept Freelancer',
+            message: 'Are you sure you want to accept this freelancer to work on the project?',
             type: 'confirm',
             onConfirm: () => confirmAcceptFreelancer(featureId),
         });
@@ -281,8 +281,8 @@ export default function ChooseFreelancer() {
                 setActionType({ id: null, type: null });
                 setConfirmation({
                     visible: true,
-                    title: 'Berhasil',
-                    message: 'Freelancer berhasil diterima untuk mengerjakan proyek.',
+                    title: 'Success',
+                    message: 'Freelancer has been accepted to work on the project.',
                     type: 'success',
                     onConfirm: () => setConfirmation(prev => ({ ...prev, visible: false })),
                 });
@@ -291,8 +291,8 @@ export default function ChooseFreelancer() {
                 setActionType({ id: null, type: null });
                 setConfirmation({
                     visible: true,
-                    title: 'Gagal',
-                    message: 'Terjadi kesalahan saat menerima freelancer. Silakan coba lagi.',
+                    title: 'Error',
+                    message: 'An error occurred while accepting the freelancer. Please try again.',
                     type: 'error',
                     onConfirm: () => setConfirmation(prev => ({ ...prev, visible: false })),
                 });
@@ -304,8 +304,8 @@ export default function ChooseFreelancer() {
         setSelectedFeatureId(featureId);
         setConfirmation({
             visible: true,
-            title: 'Tolak Freelancer',
-            message: 'Apakah kamu yakin ingin menolak freelancer ini? Tindakan ini tidak dapat dibatalkan.',
+            title: 'Reject Freelancer',
+            message: 'Are you sure you want to reject this freelancer? This action cannot be undone.',
             type: 'warning',
             onConfirm: () => confirmRejectFreelancer(featureId),
         });
@@ -323,8 +323,8 @@ export default function ChooseFreelancer() {
                 setActionType({ id: null, type: null });
                 setConfirmation({
                     visible: true,
-                    title: 'Berhasil',
-                    message: 'Freelancer berhasil ditolak.',
+                    title: 'Success',
+                    message: 'Freelancer has been rejected.',
                     type: 'success',
                     onConfirm: () => setConfirmation(prev => ({ ...prev, visible: false })),
                 });
@@ -333,8 +333,8 @@ export default function ChooseFreelancer() {
                 setActionType({ id: null, type: null });
                 setConfirmation({
                     visible: true,
-                    title: 'Gagal',
-                    message: 'Terjadi kesalahan saat menolak freelancer. Silakan coba lagi.',
+                    title: 'Error',
+                    message: 'An error occurred while rejecting the freelancer. Please try again.',
                     type: 'error',
                     onConfirm: () => setConfirmation(prev => ({ ...prev, visible: false })),
                 });
@@ -347,8 +347,8 @@ export default function ChooseFreelancer() {
         setSelectedFeatureId(featureId);
         setConfirmation({
             visible: true,
-            title: 'Tandai Selesai',
-            message: 'Apakah kamu yakin ingin menandai proyek ini sebagai selesai?',
+            title: 'Mark as Completed',
+            message: 'Are you sure you want to mark this project as completed?',
             type: 'confirm',
             onConfirm: () => confirmMarkAsCompleted(featureId),
         });
@@ -364,8 +364,8 @@ export default function ChooseFreelancer() {
         if (!feature) {
             setConfirmation({
                 visible: true,
-                title: 'Gagal',
-                message: 'Data proyek tidak ditemukan',
+                title: 'Error',
+                message: 'Project data not found',
                 type: 'error',
                 onConfirm: () => setConfirmation(prev => ({ ...prev, visible: false })),
             });
@@ -397,8 +397,8 @@ export default function ChooseFreelancer() {
                 setActionType({ id: null, type: null });
                 setConfirmation({
                     visible: true,
-                    title: 'Berhasil',
-                    message: 'Proyek berhasil ditandai sebagai selesai dan pembayaran telah dikirim ke freelancer.',
+                    title: 'Success',
+                    message: 'Project has been marked as completed and payment has been sent to the freelancer.',
                     type: 'success',
                     onConfirm: () => setConfirmation(prev => ({ ...prev, visible: false })),
                 });
@@ -407,8 +407,8 @@ export default function ChooseFreelancer() {
                 setActionType({ id: null, type: null });
                 setConfirmation({
                     visible: true,
-                    title: 'Gagal',
-                    message: error instanceof Error ? error.message : 'Terjadi kesalahan saat menyelesaikan proyek',
+                    title: 'Error',
+                    message: error instanceof Error ? error.message : 'An error occurred while completing the project. Please try again.',
                     type: 'error',
                     onConfirm: () => setConfirmation(prev => ({ ...prev, visible: false })),
                 });
@@ -461,7 +461,7 @@ export default function ChooseFreelancer() {
                                             }}
                                         >
                                             <Check size={18} color={COLORS.success} />
-                                            <Text style={[styles.menuItemText, { color: COLORS.success }]}>Terima</Text>
+                                            <Text style={[styles.menuItemText, { color: COLORS.success }]}>Accept</Text>
                                         </TouchableOpacity>
                                         
                                         <TouchableOpacity 
@@ -472,7 +472,7 @@ export default function ChooseFreelancer() {
                                             }}
                                         >
                                             <X size={18} color={COLORS.error} />
-                                            <Text style={[styles.menuItemText, { color: COLORS.error }]}>Tolak</Text>
+                                            <Text style={[styles.menuItemText, { color: COLORS.error }]}>Reject</Text>
                                         </TouchableOpacity>
                                     </>
                                 )}
@@ -487,7 +487,7 @@ export default function ChooseFreelancer() {
                                             }}
                                         >
                                             <CheckSquare size={18} color={COLORS.success} />
-                                            <Text style={[styles.menuItemText, { color: COLORS.success }]}>Tandai Selesai</Text>
+                                            <Text style={[styles.menuItemText, { color: COLORS.success }]}>Mark as Completed</Text>
                                         </TouchableOpacity>
                                         
                                         <TouchableOpacity 
@@ -498,7 +498,7 @@ export default function ChooseFreelancer() {
                                             }}
                                         >
                                             <MessageSquare size={18} color={COLORS.primary} />
-                                            <Text style={[styles.menuItemText, { color: COLORS.primary }]}>Lihat Detail</Text>
+                                            <Text style={[styles.menuItemText, { color: COLORS.primary }]}>View Details</Text>
                                         </TouchableOpacity>
                                         
                                         <TouchableOpacity 
@@ -509,7 +509,7 @@ export default function ChooseFreelancer() {
                                             }}
                                         >
                                             <X size={18} color={COLORS.error} />
-                                            <Text style={[styles.menuItemText, { color: COLORS.error }]}>Hapus</Text>
+                                            <Text style={[styles.menuItemText, { color: COLORS.error }]}>Delete</Text>
                                         </TouchableOpacity>
                                     </>
                                 )}
@@ -524,7 +524,7 @@ export default function ChooseFreelancer() {
                                             }}
                                         >
                                             <MessageSquare size={18} color={COLORS.primary} />
-                                            <Text style={[styles.menuItemText, { color: COLORS.primary }]}>Lihat Detail</Text>
+                                            <Text style={[styles.menuItemText, { color: COLORS.primary }]}>View Details</Text>
                                         </TouchableOpacity>
                                         
                                         <TouchableOpacity 
@@ -535,7 +535,7 @@ export default function ChooseFreelancer() {
                                             }}
                                         >
                                             <X size={18} color={COLORS.error} />
-                                            <Text style={[styles.menuItemText, { color: COLORS.error }]}>Hapus</Text>
+                                            <Text style={[styles.menuItemText, { color: COLORS.error }]}>Delete</Text>
                                         </TouchableOpacity>
                                     </>
                                 )}
@@ -571,7 +571,7 @@ export default function ChooseFreelancer() {
                             {isRejectLoading ? (
                                 <ActivityIndicator size="small" color="#EF4444" />
                             ) : (
-                                <Text style={styles.rejectButtonText}>Tolak</Text>
+                                <Text style={styles.rejectButtonText}>Reject</Text>
                             )}
                         </TouchableOpacity>
                         
@@ -583,7 +583,7 @@ export default function ChooseFreelancer() {
                             {isAcceptLoading ? (
                                 <ActivityIndicator size="small" color="#FFFFFF" />
                             ) : (
-                                <Text style={styles.acceptButtonText}>Terima</Text>
+                                <Text style={styles.acceptButtonText}>Accept</Text>
                             )}
                         </TouchableOpacity>
                     </View>
@@ -592,7 +592,7 @@ export default function ChooseFreelancer() {
                         style={styles.viewButtonFull}
                         onPress={() => navigation.navigate("WorkspaceDetails", { projectId, freelancerId: item.freelancer?._id })}
                     >
-                        <Text style={styles.viewButtonText}>Lihat Detail</Text>
+                        <Text style={styles.viewButtonText}>View Details</Text>
                     </TouchableOpacity>
                 )}
             </View>

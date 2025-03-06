@@ -180,7 +180,7 @@ export default function ClientWorkspace() {
             setConfirmation({
                 visible: true,
                 title: 'Error',
-                message: 'ID proyek tidak valid. Silakan coba lagi nanti.',
+                message: 'Invalid project ID. Please try again later.',
                 type: 'error',
                 onConfirm: () => setConfirmation(prev => ({ ...prev, visible: false })),
             });
@@ -202,7 +202,7 @@ export default function ClientWorkspace() {
             setConfirmation({
                 visible: true,
                 title: 'Error',
-                message: 'ID proyek tidak valid. Silakan coba lagi nanti.',
+                message: 'Invalid project ID. Please try again later.',
                 type: 'error',
                 onConfirm: () => setConfirmation(prev => ({ ...prev, visible: false })),
             });
@@ -213,8 +213,8 @@ export default function ClientWorkspace() {
         setDropdownVisible(null);
         setConfirmation({
             visible: true,
-            title: 'Hapus Proyek',
-            message: 'Apakah kamu yakin ingin menghapus proyek ini? Tindakan ini tidak dapat dibatalkan.',
+            title: 'Delete Project',
+            message: 'Are you sure you want to delete this project? This action cannot be undone.',
             type: 'warning',
             onConfirm: () => confirmDeleteProject(projectId),
         });
@@ -233,8 +233,8 @@ export default function ClientWorkspace() {
                 onSuccess: (data) => {
                     setConfirmation({
                         visible: true,
-                        title: 'Berhasil',
-                        message: 'Proyek berhasil dihapus',
+                        title: 'Success',
+                        message: 'Project has been deleted',
                         type: 'success',
                         onConfirm: () => setConfirmation(prev => ({ ...prev, visible: false })),
                     });
@@ -243,8 +243,8 @@ export default function ClientWorkspace() {
                     console.error("Delete error:", error);
                     setConfirmation({
                         visible: true,
-                        title: 'Gagal',
-                        message: error.message || "Gagal menghapus proyek",
+                        title: 'Error',
+                        message: error.message || "Failed to delete project",
                         type: 'error',
                         onConfirm: () => setConfirmation(prev => ({ ...prev, visible: false })),
                     });
@@ -379,15 +379,15 @@ export default function ClientWorkspace() {
                 </View>
             ) : projects.length === 0 ? (
                 <View style={styles.emptyContainer}>
-                    <Text style={styles.emptyTitle}>Belum Ada Proyek</Text>
+                    <Text style={styles.emptyTitle}>No Projects</Text>
                     <Text style={styles.emptyText}>
-                        Kamu belum memiliki proyek. Mulai dengan membuat proyek baru untuk menemukan freelancer terbaik.
+                        You don't have any projects yet. Start by creating a new project to find the best freelancer.
                     </Text>
                     <TouchableOpacity 
                         style={styles.postProjectButton}
                         onPress={() => navigation.navigate('PostProject')}
                     >
-                        <Text style={styles.postProjectButtonText}>Buat Proyek Baru</Text>
+                        <Text style={styles.postProjectButtonText}>Create New Project</Text>
                     </TouchableOpacity>
                 </View>
             ) : (

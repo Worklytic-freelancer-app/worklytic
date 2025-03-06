@@ -60,7 +60,7 @@ export default function Services() {
         method: 'DELETE',
         invalidateQueries: ['user'],
         onSuccess: () => {
-            Alert.alert("Sukses", "Layanan berhasil dihapus");
+            Alert.alert("Success", "Service deleted successfully");
         },
     });
 
@@ -105,9 +105,9 @@ export default function Services() {
     if (userError) {
         return (
             <View style={[styles.section, styles.errorContainer]}>
-                <Text style={styles.errorText}>Gagal memuat layanan: {userError.message}</Text>
+                <Text style={styles.errorText}>Failed to load services: {userError.message}</Text>
                 <TouchableOpacity style={styles.retryButton} onPress={() => refetchUser()}>
-                    <Text style={styles.retryButtonText}>Coba Lagi</Text>
+                    <Text style={styles.retryButtonText}>Try Again</Text>
                 </TouchableOpacity>
             </View>
         );
@@ -128,13 +128,13 @@ export default function Services() {
 
             {services.length === 0 ? (
                 <View style={styles.emptyContainer}>
-                    <Text style={styles.emptyText}>Anda belum memiliki layanan</Text>
+                    <Text style={styles.emptyText}>You don't have any services yet</Text>
                     <TouchableOpacity 
                         onPress={() => navigation.navigate("AddService")}
                         style={[styles.addButton, { marginTop: 12 }]}
                     >
                         <Plus size={20} color={COLORS.background} />
-                        <Text style={styles.addButtonText}>Tambah Layanan</Text>
+                        <Text style={styles.addButtonText}>Add Service</Text>
                     </TouchableOpacity>
                 </View>
             ) : (
@@ -208,11 +208,11 @@ export default function Services() {
 
             <Confirmation
                 visible={showConfirmation}
-                title="Hapus Layanan"
-                message="Apakah kamu yakin ingin menghapus layanan ini?"
+                title="Delete Service"
+                message="Are you sure you want to delete this service?"
                 type="warning"
-                confirmText="Hapus"
-                cancelText="Batal"
+                confirmText="Delete"
+                cancelText="Cancel"
                 onConfirm={() => serviceToDelete && handleDeleteService(serviceToDelete)}
                 onCancel={() => {
                     setShowConfirmation(false);

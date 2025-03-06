@@ -38,7 +38,7 @@ export default function Input({ onSend, loading }: InputProps) {
                 const asset = result.assets[0];
                 
                 if (!asset.base64) {
-                    Alert.alert("Error", "Gagal mendapatkan data gambar");
+                    Alert.alert("Error", "Failed to get image data");
                     return;
                 }
                 
@@ -57,7 +57,7 @@ export default function Input({ onSend, loading }: InputProps) {
             }
         } catch (error) {
             console.error('Error picking image:', error);
-            Alert.alert("Error", "Gagal memilih gambar");
+            Alert.alert("Error", "Failed to pick image");
         }
     };
 
@@ -74,7 +74,7 @@ export default function Input({ onSend, loading }: InputProps) {
                 
                 // Periksa ukuran file (batasi hingga 5MB)
                 if (asset.size && asset.size > 5 * 1024 * 1024) {
-                    Alert.alert("File terlalu besar", "Ukuran file maksimal adalah 5MB");
+                    Alert.alert("File too large", "The maximum file size is 5MB");
                     return;
                 }
                 
@@ -109,12 +109,12 @@ export default function Input({ onSend, loading }: InputProps) {
                     setAttachments(prev => [...prev, newAttachment]);
                 } catch (readError) {
                     console.error('Error reading file:', readError);
-                    Alert.alert("Error", "Gagal membaca file");
+                    Alert.alert("Error", "Failed to read file");
                 }
             }
         } catch (error) {
             console.error('Error picking document:', error);
-            Alert.alert("Error", "Gagal memilih dokumen");
+            Alert.alert("Error", "Failed to pick document");
         }
     };
 
@@ -139,8 +139,8 @@ export default function Input({ onSend, loading }: InputProps) {
             } catch (error) {
                 console.error('Error sending update:', error);
                 Alert.alert(
-                    "Gagal Mengirim", 
-                    "Terjadi kesalahan saat mengirim pesan. Silakan coba lagi."
+                    "Failed to send", 
+                    "An error occurred while sending the message. Please try again."
                 );
             }
         }

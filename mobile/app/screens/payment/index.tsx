@@ -100,8 +100,8 @@ export default function Payment() {
                 } else {
                     // Alur lama
                     Alert.alert(
-                        'Pembayaran Berhasil',
-                        'Pembayaran Anda telah berhasil diproses.',
+                        'Payment Success',
+                        'Your payment has been processed.',
                         [
                             { 
                                 text: 'OK', 
@@ -113,8 +113,8 @@ export default function Payment() {
             } else if (status === 'failed' || status === 'expired') {
                 setPaymentProcessed(true);
                 Alert.alert(
-                    'Pembayaran Gagal',
-                    `Pembayaran Anda ${status === 'failed' ? 'gagal' : 'kedaluwarsa'}. Silakan coba lagi.`,
+                    'Payment Failed',
+                    `Your payment ${status === 'failed' ? 'failed' : 'expired'}. Please try again.`,
                     [
                         { 
                             text: 'OK', 
@@ -288,8 +288,8 @@ export default function Payment() {
                     } else if ((paymentStatus === 'failed' || paymentStatus === 'expired') && !paymentProcessed) {
                         setPaymentProcessed(true);
                         Alert.alert(
-                            'Pembayaran Gagal',
-                            `Pembayaran Anda ${paymentStatus === 'failed' ? 'gagal' : 'kedaluwarsa'}. Silakan coba lagi.`,
+                            'Payment Failed',
+                            `Your payment ${paymentStatus === 'failed' ? 'failed' : 'expired'}. Please try again.`,
                             [
                                 { 
                                     text: 'OK', 
@@ -300,8 +300,8 @@ export default function Payment() {
                     } else if (!paymentProcessed) {
                         // Untuk status pending atau lainnya
                         Alert.alert(
-                            'Status Pembayaran',
-                            `Status pembayaran Anda: ${paymentStatus}`,
+                            'Payment Status',
+                            `Your payment status: ${paymentStatus}`,
                             [
                                 { 
                                     text: 'OK', 
@@ -336,9 +336,9 @@ export default function Payment() {
         
         // Tangani error jaringan dengan lebih baik
         if (err instanceof Error && err.message.includes('Network request failed')) {
-            setError('Tidak dapat terhubung ke server. Periksa koneksi internet Anda dan coba lagi.');
+            setError('Cannot connect to server. Check your internet connection and try again.');
         } else {
-            setError(err instanceof Error ? err.message : 'Terjadi kesalahan saat memproses pembayaran');
+            setError(err instanceof Error ? err.message : 'An error occurred while processing payment');
         }
         
         setInitialLoading(false);
@@ -363,8 +363,8 @@ export default function Payment() {
                 
                 // Tampilkan alert sukses
                 Alert.alert(
-                    'Proyek Berhasil Dibuat',
-                    'Proyek Anda telah berhasil dibuat dan pembayaran telah diproses.',
+                    'Project Successfully Created',
+                    'Your project has been successfully created and payment has been processed.',
                     [
                         { 
                             text: 'OK', 
@@ -382,7 +382,7 @@ export default function Payment() {
             const errorMessage = err instanceof Error ? err.message : 'An error occurred';
             Alert.alert(
                 'Error',
-                `Pembayaran berhasil tetapi gagal membuat proyek: ${errorMessage}. Silakan hubungi dukungan pelanggan.`
+                `Payment successful but failed to create project: ${errorMessage}. Please contact customer support.`
             );
         }
     };
@@ -398,13 +398,13 @@ export default function Payment() {
                     >
                         <ChevronLeft size={24} color={COLORS.primary} />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Pembayaran</Text>
+                    <Text style={styles.headerTitle}>Payment</Text>
                     <View style={{ width: 40 }} />
                 </View>
                 
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color={COLORS.primary} />
-                    <Text style={styles.loadingText}>Memuat halaman pembayaran...</Text>
+                    <Text style={styles.loadingText}>Loading payment page...</Text>
                 </View>
             </View>
         );
@@ -429,13 +429,13 @@ export default function Payment() {
                     <View style={styles.errorIconContainer}>
                         <CreditCard size={48} color={COLORS.error} />
                     </View>
-                    <Text style={styles.errorTitle}>Gagal Memuat Pembayaran</Text>
+                    <Text style={styles.errorTitle}>Failed to load payment</Text>
                     <Text style={styles.errorText}>{error}</Text>
                     <TouchableOpacity 
                         style={styles.retryButton}
                         onPress={initiatePayment}
                     >
-                        <Text style={styles.retryButtonText}>Coba Lagi</Text>
+                        <Text style={styles.retryButtonText}>Try Again</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -453,7 +453,7 @@ export default function Payment() {
                     >
                         <ChevronLeft size={24} color={COLORS.primary} />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Pembayaran</Text>
+                    <Text style={styles.headerTitle}>Payment</Text>
                     <View style={{ width: 40 }} />
                 </View>
                 
@@ -461,13 +461,13 @@ export default function Payment() {
                     <View style={styles.errorIconContainer}>
                         <CreditCard size={48} color={COLORS.error} />
                     </View>
-                    <Text style={styles.errorTitle}>Gagal Memuat Pembayaran</Text>
-                    <Text style={styles.errorText}>Tidak dapat memuat halaman pembayaran. Silakan coba lagi.</Text>
+                    <Text style={styles.errorTitle}>Failed to load payment</Text>
+                    <Text style={styles.errorText}>Cannot load payment page. Please try again.</Text>
                     <TouchableOpacity 
                         style={styles.retryButton}
                         onPress={initiatePayment}
                     >
-                        <Text style={styles.retryButtonText}>Coba Lagi</Text>
+                        <Text style={styles.retryButtonText}>Try Again</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -484,7 +484,7 @@ export default function Payment() {
                 >
                     <ChevronLeft size={24} color={COLORS.primary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Pembayaran</Text>
+                <Text style={styles.headerTitle}>Payment</Text>
                 <View style={{ width: 40 }} />
             </View>
 

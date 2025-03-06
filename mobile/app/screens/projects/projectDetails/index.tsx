@@ -249,7 +249,7 @@ export default function ProjectDetails() {
         </View>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>
-            {error instanceof Error ? error.message : "Terjadi kesalahan saat memuat data"}
+            {error instanceof Error ? error.message : "Failed to load data"}
           </Text>
           <TouchableOpacity 
             style={styles.retryButton} 
@@ -258,7 +258,7 @@ export default function ProjectDetails() {
               refetchClient();
             }}
           >
-            <Text style={styles.retryButtonText}>Coba Lagi</Text>
+            <Text style={styles.retryButtonText}>Try Again</Text>
           </TouchableOpacity>
         </View>
       </View>

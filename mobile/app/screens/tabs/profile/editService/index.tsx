@@ -50,7 +50,7 @@ export default function EditService() {
         method: 'PUT',
         invalidateQueries: ['services'],
         onSuccess: () => {
-            Alert.alert("Sukses", "Layanan berhasil diperbarui", [
+            Alert.alert("Success", "Service updated successfully", [
                 { text: "OK", onPress: () => navigation.goBack() }
             ]);
         },
@@ -80,7 +80,7 @@ export default function EditService() {
     // Show error if fetch fails
     useEffect(() => {
         if (fetchError) {
-            Alert.alert("Error", "Gagal mengambil data layanan");
+            Alert.alert("Error", "Failed to fetch service data");
         }
     }, [fetchError]);
 
@@ -106,32 +106,32 @@ export default function EditService() {
         try {
             // Validasi form
             if (!formData.title) {
-                Alert.alert("Error", "Judul layanan tidak boleh kosong");
+                Alert.alert("Error", "Service title cannot be empty");
                 return;
             }
             
             if (!formData.description) {
-                Alert.alert("Error", "Deskripsi layanan tidak boleh kosong");
+                Alert.alert("Error", "Service description cannot be empty");
                 return;
             }
             
             if (!formData.price) {
-                Alert.alert("Error", "Harga layanan tidak boleh kosong");
+                Alert.alert("Error", "Service price cannot be empty");
                 return;
             }
             
             if (!formData.category) {
-                Alert.alert("Error", "Kategori layanan tidak boleh kosong");
+                Alert.alert("Error", "Service category cannot be empty");
                 return;
             }
             
             if (!formData.deliveryTime) {
-                Alert.alert("Error", "Waktu pengerjaan tidak boleh kosong");
+                Alert.alert("Error", "Delivery time cannot be empty");
                 return;
             }
             
             if (images.length === 0) {
-                Alert.alert("Error", "Mohon tambahkan minimal 1 gambar");
+                Alert.alert("Error", "Please add at least 1 image");
                 return;
             }
             
@@ -203,14 +203,14 @@ export default function EditService() {
                 >
                     <ChevronLeft size={24} color={COLORS.primary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Edit Layanan</Text>
+                <Text style={styles.headerTitle}>Edit Service</Text>
                 <View style={{ width: 40 }} />
             </View>
 
             <ScrollView style={styles.formContainer} showsVerticalScrollIndicator={false}>
                 <View style={styles.card}>
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Gambar Layanan <Text style={styles.required}>*</Text></Text>
+                        <Text style={styles.label}>Service Image <Text style={styles.required}>*</Text></Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imageList}>
                             {images.map((uri, index) => (
                                 <View key={index} style={styles.imageWrapper}>
@@ -233,10 +233,10 @@ export default function EditService() {
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Judul Layanan <Text style={styles.required}>*</Text></Text>
+                        <Text style={styles.label}>Service Title <Text style={styles.required}>*</Text></Text>
                         <TextInput 
                             style={styles.input}
-                            placeholder="Contoh: Pengembangan Aplikasi Mobile"
+                            placeholder="Example: Mobile Application Development"
                             placeholderTextColor={COLORS.gray}
                             value={formData.title}
                             onChangeText={(text) => setFormData({ ...formData, title: text })}
@@ -244,10 +244,10 @@ export default function EditService() {
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Kategori <Text style={styles.required}>*</Text></Text>
+                        <Text style={styles.label}>Category <Text style={styles.required}>*</Text></Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="Contoh: Pengembangan & IT"
+                            placeholder="Example: Development & IT"
                             placeholderTextColor={COLORS.gray}
                             value={formData.category}
                             onChangeText={(text) => setFormData({ ...formData, category: text })}
@@ -255,10 +255,10 @@ export default function EditService() {
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Deskripsi <Text style={styles.required}>*</Text></Text>
+                        <Text style={styles.label}>Description <Text style={styles.required}>*</Text></Text>
                         <TextInput
                             style={[styles.input, styles.textArea]}
-                            placeholder="Jelaskan layanan Anda secara detail"
+                            placeholder="Explain your service in detail"
                             placeholderTextColor={COLORS.gray}
                             multiline
                             numberOfLines={4}
@@ -268,12 +268,12 @@ export default function EditService() {
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Harga <Text style={styles.required}>*</Text></Text>
+                        <Text style={styles.label}>Price <Text style={styles.required}>*</Text></Text>
                         <View style={styles.inputWithIcon}>
                             <DollarSign size={20} color={COLORS.primary} style={styles.inputIcon} />
                             <TextInput
                                 style={[styles.input, styles.inputWithPadding]}
-                                placeholder="Contoh: 5000000"
+                                placeholder="Example: 5000000"
                                 placeholderTextColor={COLORS.gray}
                                 keyboardType="numeric"
                                 value={formData.price}
@@ -283,10 +283,10 @@ export default function EditService() {
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Waktu Pengerjaan <Text style={styles.required}>*</Text></Text>
+                        <Text style={styles.label}>Delivery Time <Text style={styles.required}>*</Text></Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="Contoh: 14 hari"
+                            placeholder="Example: 14 days"
                             placeholderTextColor={COLORS.gray}
                             value={formData.deliveryTime}
                             onChangeText={(text) => setFormData({ ...formData, deliveryTime: text })}
@@ -294,10 +294,10 @@ export default function EditService() {
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Yang Termasuk</Text>
+                        <Text style={styles.label}>What's Included</Text>
                         <TextInput
                             style={[styles.input, styles.textArea]}
-                            placeholder="Apa yang akan klien terima? (pisahkan dengan koma)"
+                            placeholder="What will the client receive? (separate with comma)"
                             placeholderTextColor={COLORS.gray}
                             multiline
                             numberOfLines={4}
@@ -307,10 +307,10 @@ export default function EditService() {
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Persyaratan</Text>
+                        <Text style={styles.label}>Requirements</Text>
                         <TextInput
                             style={[styles.input, styles.textArea]}
-                            placeholder="Apa yang Anda butuhkan dari klien? (pisahkan dengan koma)"
+                            placeholder="What do you need from the client? (separate with comma)"
                             placeholderTextColor={COLORS.gray}
                             multiline
                             numberOfLines={4}
@@ -328,7 +328,7 @@ export default function EditService() {
                     {isLoading ? (
                         <ActivityIndicator color={COLORS.background} size="small" />
                     ) : (
-                        <Text style={styles.submitButtonText}>Simpan Perubahan</Text>
+                        <Text style={styles.submitButtonText}>Save Changes</Text>
                     )}
                 </TouchableOpacity>
             </ScrollView>
