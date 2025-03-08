@@ -60,7 +60,11 @@ export default function ClientWorkspace() {
     });
 
     // Filter proyek yang dimiliki oleh client yang sedang login
-    const projects = allProjects.filter(project => project.client?._id === user?._id);
+    // dan tidak memiliki status "completed"
+    const projects = allProjects.filter(project => 
+        project.client?._id === user?._id && 
+        project.status.toLowerCase() !== "completed"
+    );
 
     const [selectedProject, setSelectedProject] = useState<string | null>(null);
     const [showOptions, setShowOptions] = useState(false);
